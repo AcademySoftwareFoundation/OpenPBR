@@ -10,11 +10,11 @@ The contents of this repository are strictly confidential and should not be copi
 
 ### Resources
 
-* **[White paper](https://github.com/autodesk-external/standard-surface/)** – typeset in [Markdeep](https://casual-effects.com/markdeep/), mobile and print friendly
+* **[White paper](https://academysoftwarefoundation.github.io/OpenPBR/)** – typeset in [Markdeep](https://casual-effects.com/markdeep/)
 * **[Reference implementation](reference/standard_surface.osl)** – written in [OSL](https://github.com/imageworks/OpenShadingLanguage), work in progress
 
 ### Discussion
-* **[GitHub issues](https://github.com/autodesk-external/standard-surface/issues)**
+* **[GitHub issues](https://github.com/AcademySoftwareFoundation/OpenPBR/issues)**
 
 <br/>
 
