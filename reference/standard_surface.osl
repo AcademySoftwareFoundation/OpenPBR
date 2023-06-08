@@ -1,0 +1,250 @@
+/* 
+Copyright 2019 Autodesk
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+// List of shader closures
+// TODO: Missing closures. Align names with what appears in paper
+closure color emission() [[ int builtin = 1 ]];
+closure color oren_nayar(normal N, float sigma) [[ int builtin = 1 ]];
+closure color sheen(normal N, float roughness) [[ int builtin = 1 ]];
+closure color translucent(normal N, float sigma) [[ int builtin = 1 ]];
+closure color microfacet(string distribution, normal N, vector U, float xalpha,
+                         float yalpha, float eta, int refract) [[ int builtin = 1 ]];
+closure color transparent() [[ int builtin = 1 ]];
+closure color bssrdf(vector mfp, color albedo, float g) [[ int builtin = 1 ]];
+closure color metal(string distribution, normal N, vector U,
+                    color n, color k, float xalpha, float yalpha) [[ int builtin = 1 ]];
+
+// List of shader parameters
+struct StandardSurfaceParameters
+{
+  float base;
+  color base_color;
+  float diffuse_roughness;
+  float specular;
+  color specular_color;
+  float specular_IOR;
+  float metalness;
+  float transmission;
+  color transmission_color;
+  float subsurface;
+  color subsurface_color;
+  color subsurface_radius;
+  float subsurface_scale;
+  float subsurface_anisotropy;
+  float sheen;
+  color sheen_color;
+  float sheen_roughness;
+  int thin_walled;
+  vector input_normal;
+  float coat;
+  color coat_color;
+  float coat_roughness;
+  float coat_IOR;
+  normal coat_normal;
+  float coat_gamma;
+  float emission;
+  color emission_color;
+  vector U;
+  float rx;
+  float ry;
+};
+
+float sqr(float x) { return x*x; }
+
+// approximates the reflectance of a specular BSDF
+// by computing the dielectric fresnel
+// at the surface normal
+float reflectance(normal n, float IOR)
+{
+  float Kr, Kt;
+  fresnel(I, n, 1 / IOR, Kr, Kt);
+  return Kr;
+}
+
+// converts two colors to complex IOR
+void ArtisticToConductorFresnel(color reflectivity, color edgetint, output color n, output color k)
+{
+  color r = clamp(reflectivity, color(0), color(0.99));
+  color g = edgetint;
+
+  color r_sqrt = sqrt(r);
+  color n_min = (1 - r) / (1 + r);
+  color n_max = (1 + r_sqrt) / (1 - r_sqrt);
+
+  n = mix(n_max, n_min, g);
+
+  color k2 = ((n + 1) * (n + 1) * r - (n - 1) * (n - 1)) / (1 - r);
+  k2 = max(k2, 0);
+  k = sqrt(k2);
+}
+
+closure color diffuse_layer(StandardSurfaceParameters p)
+{
+  // TODO: use correct sheen reflectance
+  return p.sheen * p.sheen_color * sheen(N, p.sheen_roughness) +
+         (1 - p.sheen * reflectance(p.input_normal, p.specular_IOR)) *
+         pow(p.base * p.base_color, p.coat_gamma) * oren_nayar(p.input_normal, p.diffuse_roughness);
+}
+
+closure color subsurface_layer(StandardSurfaceParameters p)
+{
+  if (p.thin_walled)
+     return pow(p.subsurface_color, p.coat_gamma) * translucent(p.input_normal, 
+                                                                    p.diffuse_roughness);
+  else
+     return bssrdf(vector(p.subsurface_scale * p.subsurface_radius), 
+                         pow(p.subsurface_color, p.coat_gamma), p.subsurface_anisotropy);
+}
+
+closure color base_layer(StandardSurfaceParameters p)
+{
+  return (1 - p.subsurface) * diffuse_layer(p) + p.subsurface * subsurface_layer(p);
+}
+
+closure color spec_trans_layer(StandardSurfaceParameters p)
+{
+  float transmission_IOR = (p.thin_walled) ? 1 : max(p.specular_IOR, 1.e-04);
+  // TODO: handle dispersion
+  // TODO: handle absorption and interior closures
+  // TODO: handle specular transmission thin film
+  return p.transmission * p.transmission_color *
+     microfacet("ggx", p.input_normal, p.U, p.rx, p.ry, transmission_IOR, 1) +
+     (1 - p.transmission) * base_layer(p);
+}
+
+closure color spec_refl_layer(StandardSurfaceParameters p)
+{
+  // TODO: handle handle specular reflection thin film
+  // TODO: use correct microfacet reflectance
+  return p.specular * p.specular_color *
+     microfacet("ggx", p.input_normal, p.U, p.rx, p.ry, p.specular_IOR, 0) +
+     (1 - p.specular * p.specular_color * reflectance(p.input_normal, p.specular_IOR)) * 
+                                                                             spec_trans_layer(p);
+}
+
+closure color metal_layer(StandardSurfaceParameters p)
+{
+  color n, k;
+  ArtisticToConductorFresnel(p.base_color, p.specular_color, n, k);
+  return p.metalness * metal("ggx", p.input_normal, p.U, n, k, p.rx, p.ry) +
+                                                             (1 - p.metalness) * spec_refl_layer(p);
+}
+
+closure color emission_layer(StandardSurfaceParameters p)
+{
+  return p.emission * p.emission_color * emission() + metal_layer(p);
+}
+
+closure color coat_layer(StandardSurfaceParameters p)
+{
+  // TODO: use correct microfacet reflectance
+  return
+    p.coat *
+      microfacet("ggx", p.coat_normal, p.U, p.coat_roughness, p.coat_roughness, p.coat_IOR, 0) +
+    emission_layer(p) *
+      mix(color(1), clamp(1 - reflectance(p.coat_normal, p.coat_IOR), 0, 1) * p.coat_color, p.coat);
+}
+
+shader standard_surface(
+     float base = .8,
+     color base_color = color(1),
+     float diffuse_roughness = 0,
+     float specular = 1,
+     color specular_color = color(1),
+     float specular_roughness = .1,
+     float specular_IOR = 1.52,
+     float specular_anisotropy = 0,
+     float specular_rotation = 0,
+     float metalness = 0,
+     float transmission = 0,
+     color transmission_color = color(1),
+     float transmission_depth = 0,
+     float transmission_scatter = 0,
+     float transmission_scatter_anisotropy = 0,
+     float transmission_dispersion = 0,
+     float subsurface = 0,
+     color subsurface_color = color(1),
+     color subsurface_radius = color(1),
+     float subsurface_scale = 1,
+     float subsurface_anisotropy = 0,
+     float sheen = 0,
+     color sheen_color = color(1),
+     float sheen_roughness = 0.3,
+     int thin_walled = 0 [[ string widget = "boolean"]],
+     normal input_normal = N,
+     vector tangent = dPdu,
+     float coat = 0,
+     color coat_color = color(1),
+     float coat_roughness = .1,
+     float coat_IOR = 1.5,
+     normal coat_normal = N,
+     float coat_affect_color = 0,
+     float coat_affect_roughness = 0,
+     float thin_film_thickness = 0,
+     float thin_film_IOR = 1.5,
+     float emission_w = 0,
+     color emission_color = color(1),
+     color opacity = color(1),
+     output closure color standard_surface_closures = 0)
+{
+  StandardSurfaceParameters params;
+  params.base = base;
+  params.base_color = base_color;
+  params.diffuse_roughness = diffuse_roughness;
+  params.specular = specular;
+  params.specular_color = specular_color;
+  params.specular_IOR = specular_IOR;
+  params.metalness = clamp(metalness, 0.0, 1.0);
+  params.transmission = clamp(transmission, 0.0, 1.0);
+  params.transmission_color = transmission_color;
+  params.subsurface = clamp(subsurface, 0, 1);
+  params.subsurface_color = subsurface_color;
+  params.subsurface_radius = subsurface_radius;
+  params.subsurface_scale = subsurface_scale;
+  params.subsurface_anisotropy = subsurface_anisotropy;
+  params.sheen = sheen;
+  params.sheen_color = sheen_color;
+  params.sheen_roughness = sheen_roughness;
+  params.thin_walled = thin_walled;
+  params.input_normal = input_normal;
+  params.coat = clamp(coat, 0.0, 1.0);
+  params.coat_color = coat_color;
+  params.coat_roughness = sqr(coat_roughness);
+  params.coat_IOR = coat_IOR;
+  params.coat_normal = coat_normal;
+  params.coat_gamma = clamp(coat, 0.0, 1.0) * coat_affect_color + 1;
+  params.emission = emission_w;
+  params.emission_color = emission_color;
+
+  // specular roughness and anisotropy
+  float specular_roughness_sqr = mix(sqr(specular_roughness), 1, params.coat * 
+                                             coat_affect_roughness * params.coat_roughness);
+  params.U = normalize(tangent);
+  if (specular_anisotropy != 0)
+  {
+     float aspect = sqrt(1 - clamp(specular_anisotropy, 0, 0.98));
+     params.rx = min(specular_roughness_sqr / aspect, 1);
+     params.ry = specular_roughness_sqr * aspect;
+     float rot_angle = 2 * specular_rotation;
+     if (rot_angle != 0.0)
+     {
+        vector V = normalize(cross(input_normal, params.U));
+        float cos_rot_angle = cos(rot_angle * M_PI);
+        float sin_rot_angle = sin(rot_angle * M_PI);
+        params.U = cos_rot_angle * params.U - sin_rot_angle * V;
+     }
+  }
+  else
+  {
+     params.rx = params.ry = specular_roughness_sqr;
+  }
+
+  standard_surface_closures += (color(1) - opacity) * transparent() + opacity * coat_layer(params);
+}
