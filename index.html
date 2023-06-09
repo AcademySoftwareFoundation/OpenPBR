@@ -1,5 +1,6 @@
 <meta charset="utf-8" emacsmode="-*- markdown -*-">
-<link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/slate.css?">
+<link rel="stylesheet" href="style/style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 **OpenPBR Surface draft specification**
 Zap Andersson, Paul Edmondson, Julien Guertault, Adrien Herubel, Alan King, Peter Kutz, Andréa Machizaud, Jamie Portsmouth, Frédéric Servant.
@@ -26,7 +27,8 @@ In this proposal, rather than providing parameters for every conceivable case, w
 !!! WARNING
     TODO: We should probably treat this as a first version of a new hybrid model and not focus too much on similarities with Standard Surface specifically.
 
-The OpenPBR material formalism
+
+OpenPBR Surface material formalism
 ============================================
 
 Our goal is to create a surface shading model that is able to faithfully represent a wide variety of real-world materials. The light scattering characteristics at the surfaces of basic materials like metal, glass, or wall paint are well studied and can be accurately represented via simple analytical models. Other materials, such as finished wood, cloth, or skin, comprise semi-transparent layers of matter stacked on top of each other. The more intricate behavior of such materials is the result of light scattering at the interfaces between these layers and propagating through them, and each such scattering interface can typically be represented by an analytical model. Additionally, many real-world objects are made of several different materials, e.g. metal and plastic, and it is convenient to model the appearance of such objects by texturing the type of each material on their surfaces. While the material transitions are typically abrupt, the ability to continuously mix materials is useful for artistic purposes as well as for anti-aliasing.
@@ -77,8 +79,6 @@ Implementations may choose to compute light transport in this medium via e.g. a 
     TODO: Some remarks about how a renderer is supposed to deal with a VDF which varies over the surface. Something along the lines of, we assume that the renderer is aware that the volumetric properties may vary from point to point, inherited from the surface parameters, and how the fields are "filled-in" in the space surrounding the surfaces is a matter for implementations to deal with.
 
 It is understood that the medium $V$ specifies its own depth, which can also be unbounded denoting a semi-infinite "bulk" medium with no substrate (we denote such an unbounded semi-infinite volumetric medium as $V^\infty$). This is an abstraction of course, where we understand that such a semi-infinite medium actually just represents the bottom layer of the material structure and the medium will most likely terminate somewhere. Such a slab with a semi-infinite medium does not need to supply a base BSDF (it can be just omitted).
-
-
 
 We denote a general slab therefore as follows:
 
@@ -225,19 +225,18 @@ For convenience this may also be written more concisely as an operator which cov
 \mathrm{\mathbf{cover}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat})
 \end{equation}
 
-*******************************************************************************************************************
-*                                                                               cover(sub, coat, w_coat)          *
-*                        +-----------------+                               +-----------------+-----------------+  *
-*                        |                 |                               |                 |                 |  *
-*                        |      Scoat      |                               |                 |      Scoat      |  *
-*                        |                 |                               |                 |                 |  *
-* +-----------------+    +-----------------+    mix(bare, coated, w_coat)  +      Ssub       +-----------------+  *
-* |                 |    |                 |         ------------>         |                 |                 |  *
-* |      Ssub       |    |      Ssub       |                               |                 |      Ssub       |  *
-* |                 |    |                 |                               |                 |                 |  *
-* +-----------------+    +-----------------+                               +-----------------+-----------------+  *
-*    bare substrate        coated substrate                                   substrate coated intermittently     *
-*******************************************************************************************************************
+*******************************************
+*  +-----------------+-----------------+  *
+*  |                 |                 |  *
+*  |                 |      Scoat      |  *
+*  |                 |                 |  *
+*  +      Ssub       +-----------------+  *
+*  |                 |                 |  *
+*  |                 |      Ssub       |  *
+*  |                 |                 |  *
+*  +-----------------+-----------------+  *
+*     substrate coated intermittently     *
+*******************************************
 
 This physical picture of the mix operation becomes somewhat unrealistic in some cases where the bottom-most bulk materials being blended are not obviously consistent (e.g. blending dielectric and metallic bulks), but in such cases it is understood that the implementation should do the best it can to make sense of the physics (e.g. the metal bulk could be considered to actually be surface metallic flakes on top of a single consistent dielectric). 
 
@@ -257,8 +256,8 @@ We assume that each slab has emission distribution functions (EDFs) that come al
 As for the BSDFs, we remain agnostic about the specific functional form of the EDFs, giving enough information from a verbal description combined with parameters to make the implementation reasonably unambiguous.
 
 
-Other assumptions / recommendations
-============================================
+Other assumptions
+-------------------------------------
 
 !!! Tip
     TODO: Write these notes (some are quite possibly out of scope so we can ignore, or we can say something very vague)
@@ -275,7 +274,7 @@ Other assumptions / recommendations
    - include some "parameter reference", separate from main document?
    - give parameter ranges everywhere, not just for selected parameters?
 
-(insert parametrization.md.html here)
+
 
 OpenPBR Surface model - bulk case
 ============================================
@@ -366,11 +365,11 @@ The diffuse slab is simply a completely opaque diffuse surface, representing a s
 
 The BSDF $f^t_\mathrm{diffuse}$ is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the albedo of the lobe. A diffuse roughness parameter controls the shape of the lobe. The model is agnostic about the choice of diffuse BSDF model used, though typically it would be the Oren-Nayar microfacet model, where the roughness controls the roughness of the underlying microsurface of diffuse microfacets.
 
-Diffuse slab params       | Description
-------------------------- | ------------
-***`base_weight`***       | scaling of albedo of BRDF $f^t_\mathrm{diffuse}$
-***`base_color`***        | albedo color of BRDF $f^t_\mathrm{diffuse}$
-***`base_roughness`***    | roughness of the NDF of BRDF $f^t_\mathrm{diffuse}$
+Diffuse slab params     | Description
+----------------------- | ------------
+**`base_weight`**       | scaling of albedo of BRDF $f^t_\mathrm{diffuse}$
+**`base_color`**        | albedo color of BRDF $f^t_\mathrm{diffuse}$
+**`base_roughness`**    | roughness of the NDF of BRDF $f^t_\mathrm{diffuse}$
 
 
 Specular layer
@@ -783,6 +782,9 @@ OpenPBR Surface model - thin-walled case
 
 
 
+(insert parametrization.md.html here)
+
+
 References
 ============================================
 
@@ -791,7 +793,16 @@ References
 
 
 
+<!-- Markdeep: -->
+<style class="fallback">
+body { visibility:hidden }
+</style>
 
+<script src="style/markdeep-1.04.min.js" charset="utf-8">
+window.markdeepOptions = {tocStyle: "long", smartQuotes=true}
+</script>
 
+<script>
+window.alreadyProcessedMarkdeep || (document.body.style.visibility="visible")
+</script>
 
-<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://morgan3d.github.io/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
