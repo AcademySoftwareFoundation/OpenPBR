@@ -23,7 +23,7 @@ In this proposal, rather than providing parameters for every conceivable case, w
 
 !!! Tip
     TODO: Should we say something about the former closure/BSDF-lobe mixture model, as to why we have moved away from this?
-
+    
 !!! WARNING
     TODO: We should probably treat this as a first version of a new hybrid model and not focus too much on similarities with Standard Surface specifically.
 
@@ -219,10 +219,10 @@ The mix operation is also used to describe the probability that a particular lay
 \mathrm{\mathbf{mix}}(S_\mathrm{sub}, \mathrm{\mathbf{layer}}(S_\mathrm{coat}, S_\mathrm{sub}), w_\mathrm{coat}) \ .
 \end{equation}
 
-For convenience this may also be written more concisely as an operator which covers a given fraction of the substrate with the coat:
+For convenience this may also be written more concisely as an weighted layer operator which covers a given fraction of the substrate with the coat layer:
 
 \begin{equation}
-\mathrm{\mathbf{cover}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat})
+\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat})
 \end{equation}
 
 *******************************************
@@ -276,7 +276,7 @@ Other assumptions
 
 
 
-OpenPBR Surface model - bulk case
+OpenPBR Surface model overview
 ============================================
 
 Using the operator formalism and parametrization described, we now specify the structure of the OpenPBR surface model. The structure differs fundamentally depending on whether it is considered to be "thin-walled" or a "bulk". 
@@ -286,18 +286,18 @@ We describe first the latter case of a bulk, where the material structure inform
 ******************************************************************************************************
 *                                                                                                    *
 *  +-- - - - - - --+----------------------------------------------------------------------------+    *
-*  |               |                               sheen                                        |    *
+*  |               |                                fuzz                                        |    *
 *                  +----------------------------------------------------------------------------+    *
 *  |               |                               coat                                         |    *
 *                  +---------------------+---------------------+----------------+---------------+    *
 *  |               |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|    *
 *       ambient    |░░░░░░░░░░░░░░░░░░░░░+                     |                |░░░░░░░░░░░░░░░|    *
-*  |    medium     |░░░░░░░░metal░░░░░░░░|     dielectric      |   subsurface   |░░░░glossy░░░░░|    *
+*  |    medium     |░░░░░░░░metal░░░░░░░░|     translucent     |   subsurface   |░░░░glossy░░░░░|    *
 *                  |░░░░░░░░░░░░░░░░░░░░░|        base         |                |░░░░diffuse░░░░|    *
 *  |               |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|    *
 *  |               |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|    *
 *                  |░░░░░░░░░░░░░░░░░░░░░|                     |<--------- opaque base -------->|    *
-*  |               |░░░░░░░░░░░░░░░░░░░░░|<---------------- non-metallic base ----------------->|    *
+*  |               |░░░░░░░░░░░░░░░░░░░░░|<----------------- dielectric base ------------------>|    *
 *                  |<---------------------------------- base ---------------------------------->|    *
 ******************************************************************************************************
 
@@ -306,11 +306,11 @@ In summary, this consists of the following slabs:
 
 \begin{eqnarray}
 \mathrm{ambient\; medium}       &=& \mathrm{Slab}(\emptyset)                                                                                     \nonumber \\
-\mathrm{sheen}                  &=& \mathrm{Slab}(f^t_\mathrm{sheen}, V_\mathrm{sheen}, f^b_\mathrm{sheen})                                      \nonumber \\
+\mathrm{fuzz}                   &=& \mathrm{Slab}(f^t_\mathrm{fuzz}, V_\mathrm{fuzz}, f^b_\mathrm{fuzz})                                         \nonumber \\
 \mathrm{coat}                   &=& \mathrm{Slab}(f^t_\mathrm{coat}, V_\mathrm{coat}, f^b_\mathrm{coat})                                         \nonumber \\
 \mathrm{metal}                  &=& \mathrm{Slab}(f^t_\mathrm{conductor})                                                                        \nonumber \\
-\mathrm{dielectric\; base}      &=& \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{dielectric})                                         \nonumber \\
-\mathrm{subsurface}             &=& \mathrm{Slab}(f^t_\mathrm{subsurface}, V^\infty_\mathrm{subsurface})                                         \nonumber \\
+\mathrm{translucent\; base}     &=& \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{dielectric})                                         \nonumber \\
+\mathrm{subsurface}             &=& \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{subsurface})                                         \nonumber \\
 \mathrm{glossy\; diffuse}       &=& \mathrm{Slab}(f^t_\mathrm{AS})                                                                               \nonumber \\
 \end{eqnarray}
 
@@ -318,58 +318,118 @@ Which are composed to build the material structure as follows:
 
 \begin{eqnarray}
 \mathrm{PBR}                      &=& \mathrm{\mathbf{mix}}(\mathrm{ambient\; medium}, \mathrm{surface}, \mathtt{opacity})              \nonumber \\
-\mathrm{surface}                  &=& \mathrm{\mathbf{layer}}(\mathrm{coated\; base}, \mathrm{sheen}, \mathtt{sheen})                   \nonumber \\
+\mathrm{surface}                  &=& \mathrm{\mathbf{layer}}(\mathrm{coated\; base}, \mathrm{fuzz}, \mathtt{fuzz})                     \nonumber \\
 \mathrm{coated\; base}            &=& \mathrm{\mathbf{layer}}(\mathrm{base}, \mathrm{coat}, \mathtt{coat})                              \nonumber \\
 \mathrm{base}                     &=& \mathrm{\mathbf{mix}}(\mathrm{nonmetallic\; base}, \mathrm{metal}, \mathtt{metallic})             \nonumber \\
-\mathrm{nonmetallic\; base}       &=& \mathrm{\mathbf{mix}}(\mathrm{opaque\; base}, \mathrm{dielectric\; base}, \mathtt{transmission})  \nonumber \\
+\mathrm{dielectric\; base}        &=& \mathrm{\mathbf{mix}}(\mathrm{opaque\; base}, \mathrm{translucent\; base}, \mathtt{transmission}) \nonumber \\
 \mathrm{opaque\; base}            &=& \mathrm{\mathbf{mix}}(\mathrm{glossy\; diffuse}, \mathrm{subsurface}, \mathtt{subsurface})        \nonumber \\
 \end{eqnarray}
 
 
 Base Substrate
--------------------------------------
+============================================
 
-The base substrate of non-metallic bulk media is taken to be a mix of an opaque bulk and a translucent bulk, with different parametrizations.
+The base substrate of non-metallic bulk media is taken to be a mix of a "translucent" dielectric bulk and an "opaque" dielectric bulk.
+This is in order to mirror the usual workflow of artists where they are either modelling an opaque surface potentially with some specularity and dense subsurface scattering (such as rock, plastic, skin etc.), or a translucent material (such as glass, liquids, organic matter etc.) with some limited amount of volumetric absorption and scattering.
+
+These two use cases require different parametrizations to effectively control, so are convenient to split into separate slabs.
 
 \begin{equation}
-\mathrm{base\; substrate} = \mathrm{\mathbf{mix}}(\mathrm{opaque\; substrate}, \mathrm{translucent\; substrate}, \mathtt{transmission\_weight}) \ .
+\mathrm{base} = \mathrm{\mathbf{mix}}(\mathrm{opaque\; base}, \mathrm{translucent\; base}, \mathtt{transmission\_weight}) \ .
 \end{equation}
-
-**********************************************************************************************************
-*                                      1 - transmission_weight             transmission_weight           *
-*    +--------------------+        +--------------------------------+---------------------------------+  *
-*    |                    |        |░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|                                 |  *
-*    |   base substrate   |   ==   |░░░░░░░░opaque substrate░░░░░░░░|      translucent substrate      |  *
-*    |                    |        |░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|                                 |  *
-*    + - - - - - - - - - -+        +░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░+ - - - - - - - - - - - - - - - - +  *
-**********************************************************************************************************
-
-This is in order to mirror the usual workflow of artists where they are either modelling an opaque surface potentially with some specularity and subsurface scattering (such as rock, plastic, skin etc.), or a translucent one (such as glass, liquids, organic matter etc.).
 
 The `transmission_weight` mix weight selects between these models. Note that technically a mix weight between 0 and 1 produces a physically ambiguous state (since there are then superimposed translucent bulk media), so we expect that normally this weight acts as a boolean selector.
 
 The details of the opaque and transparent models follow.
 
-### Opaque substrate
+**********************************************************************************************************
+*                                      1 - transmission_weight             transmission_weight           *
+*    +--------------------+        +--------------------------------+---------------------------------+  *
+*    |                    |        |░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|                                 |  *
+*    |        base        |   ==   |░░░░░░░░opaque base░░░░░░░░░░░░░|      translucent base      |  *
+*    |                    |        |░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|                                 |  *
+*    + - - - - - - - - - -+        +░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░+ - - - - - - - - - - - - - - - - +  *
+**********************************************************************************************************
 
-!!! Tip
-    TODO: Finish combining the specular layer with the opaque substrate.
+Metal base
+----------------------------
 
-The opaque substrate is assumed to be a dense scattering medium. In the limit of extreme density, this tends to a typical "diffuse" surface model. It is practically convenient therefore to represent this as a mix of a slab with a volumetric subsurface, and a perfectly opaque diffuse BSDF. 
 
-The diffuse slab is simply a completely opaque diffuse surface, representing a semi-infinite bulk of extremely dense scattering material:
+Dielectric base
+----------------------------
 
-\begin{equation}
-\mathrm{diffuse\; base} = \mathrm{Slab}(f^t_\mathrm{diffuse}) \ .
-\end{equation}
+### Opaque base
 
-The BSDF $f^t_\mathrm{diffuse}$ is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the albedo of the lobe. A diffuse roughness parameter controls the shape of the lobe. The model is agnostic about the choice of diffuse BSDF model used, though typically it would be the Oren-Nayar microfacet model, where the roughness controls the roughness of the underlying microsurface of diffuse microfacets.
+The opaque base substrate is assumed to be a dielectric with dense volumetric absorption and scattering (whether physically due to the inherent molecular properties of the dielectric, or e.g a dispersion of embedded particles or flakes). 
+The dielectric surface provides the specular reflection, while the dielectric bulk medium under the surface generates absorption and scattering.
+
+In the limit of extreme density, this tends to a typical "diffuse" surface model. It is practically convenient therefore to represent this as a mix of a dielectric slab with a volumetric subsurface, and an idealized "glossy diffuse" BSDF. 
+
+\begin{eqnarray}
+\mathrm{opaque\; base}            &=& \mathrm{\mathbf{mix}}(\mathrm{glossy\; diffuse}, \mathrm{subsurface}, \mathtt{subsurface})        \nonumber \\
+\end{eqnarray}
+
+
+#### Glossy diffuse
+
+The glossy diffuse slab is assumed to be a dielectric (with a rough microfacet surface), embedding a semi-infinite bulk of extremely dense scattering material. In the limit of infinite density, this can be modelled by a classic Ashikhmin-Shirley type model of a diffuse lobe combined with a specular lobe [Ashikhmin2000].
+
+This reasonably effectively models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
+
+The albedo of the diffuse material is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the albedo of the diffuse lobe. A diffuse roughness parameter controls the shape of the lobe. The model is agnostic about the choice of diffuse BSDF lobe used, though typically it would be the Oren-Nayar microfacet model, where the roughness controls the roughness of the underlying microsurface of diffuse microfacets.
 
 Diffuse slab params     | Description
 ----------------------- | ------------
 **`base_weight`**       | scaling of albedo of BRDF $f^t_\mathrm{diffuse}$
 **`base_color`**        | albedo color of BRDF $f^t_\mathrm{diffuse}$
 **`base_roughness`**    | roughness of the NDF of BRDF $f^t_\mathrm{diffuse}$
+
+The specular lobe is controlled by the following parameters.
+
+Specular layer params      | Type  | Default | Description
+---------------------------|-------|---------|------------
+**`specular`**             | float | `1`     | multiplies the dielectric Fresnel factor
+**`specular_color`**       | color | `1,1,1` | tints the dielectric Fresnel factor
+**`specular_roughness`**   | float | `0.2`   | roughness of NDF of dielectric BSDF $f^t_\mathrm{gloss}$
+**`specular_IOR`**         | float | `1.5`   | index of refraction of the dielectric medium $V_\mathrm{gloss}$
+**`specular_level`**       | float | `1.0`   | modifies the refractive index of dielectric medium $V_\mathrm{gloss}$ indirectly by scaling the reflectivity at normal incidence
+**`specular_anisotropy`*** | float | `0`     | anisotropy of NDF of dielectric BSDF $f^t_\mathrm{gloss}$
+**`specular_rotation`***   | float | `0`     | orientation of anisotropy
+
+Note that:
+
+   - `specular_IOR` controls the index of refraction of the dielectric base, which in this case only affects the Fresnel factor of the reflection ()
+   - `specular_level` provides 
+   - The `specular` weight and `specular_color` parameters modulate the Fresnel factor of the dielectric reflection. Note that these are technically unphysical (as real dielectrics have a Fresnel factor dependent only on the index of refraction)
+   - The specular lobe shape is controlled by athe roughness properties of the surface, parametrized by 
+
+
+#### Subsurface
+
+
+
+### Translucent base
+
+
+
+Coat
+============================================
+
+Fuzz
+============================================
+
+
+
+
+
+
+
+
+
+
+### Opaque substrate
+
+
 
 
 Specular layer
@@ -402,7 +462,7 @@ The VDF $V_\mathrm{specular}$ is taken to consist of the same dielectric medium 
 To control the level of specularity, the specular layer is applied to the base substrate via a coverage operation, with the `specular` weight controlling the level of coverage:
 
 \begin{equation}
-\mathrm{specular\; opaque\; substrate} = \mathrm{\mathbf{cover}}(\mathrm{opaque\; substrate}, \mathrm{specular}, \mathtt{specular}) \ .
+\mathrm{specular\; opaque\; substrate} = \mathrm{\mathbf{layer}}(\mathrm{opaque\; substrate}, \mathrm{specular}, \mathtt{specular}) \ .
 \end{equation}
 
 *********************************************
@@ -430,15 +490,7 @@ To control the level of specularity, the specular layer is applied to the base s
 !!! Tip
     TODO: Do we really need a gloss layer to physically justify the behavior?
 
-Specular layer params      | Type  | Default | Description
----------------------------|-------|---------|------------
-**`specular`**             | float | `1`     | specular weight, controlling coverage of gloss layer
-**`specular_color`**       | color | `1,1,1` | colors specular reflection albedo
-**`specular_roughness`**   | float | `0.2`   | roughness of NDF of dielectric BSDF $f^t_\mathrm{gloss}$
-**`specular_IOR`**         | float | `1.5`   | refractive index of dielectric medium $V_\mathrm{gloss}$
-**`specular_scale`**       | float | `1.0`   | modifies the refractive index of dielectric medium $V_\mathrm{gloss}$ indirectly by scaling the reflectivity at normal incidence
-**`specular_anisotropy`*** | float | `0`     | anisotropy of NDF of dielectric BSDF $f^t_\mathrm{gloss}$
-**`specular_rotation`***   | float | `0`     | orientation of anisotropy
+
 
 ### Subsurface-scattering substrate
 
@@ -649,7 +701,7 @@ where the BSDF of the interfaces $f^t_\mathrm{coat}$, $f^b_\mathrm{coat}$ is tha
 The coat is applied on top of the base substrate, with a coverage weight (`coat`) as follows:
 
 \begin{equation}
-\mathrm{coated\; surface} = \mathrm{\mathbf{cover}}(\mathrm{base\; substrate}, \mathrm{coating}, \mathtt{coat}) \ .
+\mathrm{coated\; surface} = \mathrm{\mathbf{layer}}(\mathrm{base\; substrate}, \mathrm{coating}, \mathtt{coat}) \ .
 \end{equation}
 
 ***********************************************
@@ -718,7 +770,7 @@ The fuzz BRDF $f^t_\mathrm{fuzz}$, sometimes known as "sheen", is assumed to be 
 Conceptually the fibers will cover only some fraction of the surface and thus don't completely occlude the incident light. This is represented by a cover operation with the `fuzz` coverage weight:
 
 \begin{equation}
-\mathrm{fuzz\; layer} = \mathrm{\mathbf{cover}}(\mathrm{coated\; surface}, \mathrm{fuzz}, \mathtt{fuzz}) \ .
+\mathrm{fuzz\; layer} = \mathrm{\mathbf{layer}}(\mathrm{coated\; surface}, \mathrm{fuzz}, \mathtt{fuzz}) \ .
 \end{equation}
 
 Fuzz params           | Type  | Default | Description
@@ -726,9 +778,6 @@ Fuzz params           | Type  | Default | Description
 **`fuzz`***           | float | `0`     | coverage weight of $f^t_\mathrm{fuzz}$
 **`fuzz_color`***     | color | `1,1,1` | reflection albedo color of $f^t_\mathrm{fuzz}$
 **`fuzz_roughness`*** | float | `0.3`   | reflection roughness of $f^t_\mathrm{fuzz}$
-
-!!! TIP
-   Renamed "sheen" to "fuzz". Applied to a metal, the effect looks more like a layer of dust. Fuzz explicitly implies a fibrous material (whether it be a textile, or peach fuzz on skin, or dust consisting of hairs), whereas sheen basically just means shiny. (Note, Unreal engine Substrate also uses the term fuzz).
 
 !!! TIP
    TODO: Reference ASM sheen and Disney Animation sheen (LTE-fitted SGGX volumetric sheen with multiple scattering and perfect importance sampling)
@@ -788,10 +837,37 @@ OpenPBR Surface model - thin-walled case
 References
 ============================================
 
-!!! Tip
-    TODO: Suggest a discursive references section like in PBRT, where we say what useful thing each reference provides.
+[#Andersson2016]:  Zap Andersson. *Physical Material* (v1.01). Autodesk white paper (2016).
 
+[#Ashikhmin2000]: Michael Ashikhmin, Simon Premoze, and Peter Shirley. *A Microfacet-based BRDF Generator*. ACM Transactions on Graphics (2000).
 
+[#Belcour2017]: Laurent Belcour and Pascal Barla. *A Practical Extension to Microfacet Theory for the Modeling of Varying Iridescence*. ACM Transactions on Graphics (2017).
+
+[#Belcour2018]: Laurent Belcour. *Efficient Rendering of Layered Materials using an Atomic Decomposition with Statistical Operators*. ACM Transactions on Graphics (2018).
+
+[#Burley2012]: Brent Burley. *Physically-based Shading at Disney*. In ACM SIGGRAPH 2012 Courses: Practical Physically Based Shading in Film and Game Production (2016).
+
+[#McDermott2018]: Wes McDermott. *The PBR Guide*. Allegorithmic white paper (2018). https://www.allegorithmic.com/pbr-guide.
+
+[#Estevez2017]: Alejandro Conty Estevez and Christopher Kulla. *Production Friendly Microfacet Sheen BRDF*. Sony Pictures Imageworks technical report (2017).
+
+[#Georgiev2019]: Iliyan Georgiev, Jamie Portsmouth, Zap Andersson, Adrien Herubel, Alan King, Shinji Ogaki, and Frederic Servant. *Autodesk Standard Surface*. Autodesk white paper (2019).
+
+[#Gritz2010]: Larry Gritz, Clifford Stein, Chris Kulla, and Alejandro Conty. *Open Shading Language*. In ACM SIGGRAPH Talks (2010).
+
+[#Gulbrandsen2014]: Ole Gulbrandsen. *Artist Friendly Metallic Fresnel*. Journal of Computer Graphics Techniques (2014).
+
+[#Hery2017]: Christophe Hery, Ryusuke Villemin, Junyi Ling. *Pixar's Foundation for Materials*. Pixar technical report (2017).
+
+[#Jakob2014]: Wenzel Jakob, Eugene d'Eon, Otto Jakob, and Steve Marschner. *A Comprehensive Framework for Rendering Layered Materials*. ACM Transactions on Graphics (2014).
+
+[#Langlands2014]: Anders Langlands. *Physically Based Shader Design in Arnold*. In ACM SIGGRAPH Talks (2014).
+
+[#Kulla2017]: Christopher Kulla and Alejandro Conty Estevez. *Revisiting Physically Based Shading at Imageworks*. In ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2017).
+
+[#Zeltner2018]: Tizian Zeltner and Wenzel Jakob. *The Layer Laboratory: A Calculus for Additive and Subtractive Composition of Anisotropic Surface Reflectance*. ACM Transactions on Graphics (2018).
+
+    
 
 <!-- Markdeep: -->
 <style class="fallback">
