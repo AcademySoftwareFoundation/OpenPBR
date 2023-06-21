@@ -11,7 +11,7 @@ The contents of this repository are strictly confidential and should not be copi
 ### Resources
 
 * **[White paper](https://academysoftwarefoundation.github.io/OpenPBR/)** – typeset in [Markdeep](https://casual-effects.com/markdeep/)
-* **[Reference implementation](reference/standard_surface.osl)** – written in [OSL](https://github.com/imageworks/OpenShadingLanguage), work in progress
+* **[Reference implementation](reference/open_pbr_surface.mtlx)** – written in [MaterialX](https://materialx.org/), work in progress
 
 ### Discussion
 * **[GitHub issues](https://github.com/AcademySoftwareFoundation/OpenPBR/issues)**
