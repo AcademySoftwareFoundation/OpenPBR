@@ -362,12 +362,12 @@ hr.pagebreak
 .md div.imagecaption
 {
     display: inline-block;
-    margin: 7px 0 0 0;
+    margin: 7px 0 30 0;
 }
 
 .md img.markdeep
 {
-    margin-top: 25px;
+    margin-top: 0px;
 }
 
 .md .subtitle img.markdeep
@@ -378,13 +378,14 @@ hr.pagebreak
 .md .imagecaption b
 {
     font-weight: 700;
+    font-size: 90%;
     color: rgba(0,0,0,.85);
 }
 
 /* Hack to place a caption below a table of images */
 .shifted-caption
 {
-    margin-top: -30px;
+    margin-top: 0px;
     text-align: center;    
 }
 .shifted-caption .image
