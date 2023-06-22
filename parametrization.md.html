@@ -25,7 +25,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `base_weight`                         | `float`   | Weight                    | [0,1]                   | 1.0                              |            |           |
 | `base_color`                          | `color`   | Color                     | [0,1]                   | (0.8, 0.8, 0.8)                  |            |           |
 | `base_roughness`                      | `float`   | Roughness                 | [0,1]                   | 0.0                              |            |           |
-| `base_metallic`                       | `float`   | Metallic                  | [0,1]                   | 0.0                              |            |           |
+| `base_metalness`                      | `float`   | Metalness                 | [0,1]                   | 0.0                              |            |           |
 |                                       |           |                           |                         |                                  |            |           |
 | `specular_weight`                     | `float`   | Weight                    | [0,1]                   | 1.0                              |            |           |
 | `specular_color`                      | `color`   | Color                     | [0,1]                   | (1.0, 1.0, 1.0)                  |            |           |
@@ -39,7 +39,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `transmission_color`                  | `color`   | Color                     | [0,1]                   | (1.0, 1.0, 1.0)                  |            |           |
 | `transmission_depth`                  | `float`   | Depth                     | [0,$\infty$]            | 0.0                              | length     | ✅        |
 | `transmission_scatter`                | `color`   | Scatter                   | [0,1]                   | (0.0, 0.0, 0.0)                  |            |           |
-| `transmission_anisotropy`             | `float`   | Anisotropy                | [0,1]                   | 0.5                              |            |           |
+| `transmission_scatter_anisotropy`     | `float`   | Anisotropy                | [-1,1]                  | 0.0                              |            |           |
 | `transmission_dispersion_abbe_number` | `float`   | Abbe number               | [20,70]                 | 20.0                             |            | ✅        |
 | `transmission_dispersion_scale`       | `float`   | Dispersion scale          | [0,1]                   | 0.0                              |            |           |
 |                                       |           |                           |                         |                                  |            |           |
@@ -76,6 +76,22 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `geometry_tangent`                    | `vector`  | Tangent                   | N/A                     | unperturbed tangent              |            |           |
 | `geometry_coat_normal`                | `vector`  | Coat Normal               | N/A                     | unperturbed normal               |            |           |
 
+
+<!-- Markdeep: -->
+<style class="fallback">
+   body { visibility:hidden }
+</style>
+
+<script src="style/markdeep-1.04.min.js" charset="utf-8">
+window.markdeepOptions = {tocStyle: "long", smartQuotes=true}
+</script>
+
+<script>
+window.alreadyProcessedMarkdeep || (document.body.style.visibility="visible")
+</script>
+
+   
+
 <!---
    !!! WARNING
     TODO: Suggest to remove these new parameters from the table, until further consensus reached about whether to include them (now or later).
@@ -100,7 +116,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 `base_roughness` 
 : The diffuse reflection roughness.
 
-`base_metallic` 
+`base_metalness` 
 : Whether the surface behaves as a dielectric or a conductor (0 = dielectric, 1 = conductor). Only the dielectric portion of a surface may be translucent. Partial values may be used to denote microscale differentiation, anodization, or oxidation.
 
 `specular_weight` 
@@ -234,5 +250,3 @@ either dielectric or metallic specularity. (0 = no stretch, 1 = maximum stretch)
 : Normal to use for shading of the coat slab, behaving in the same way as the `geometry_normal`, it does affect it though. 
 
 -->
-
-<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://morgan3d.github.io/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
