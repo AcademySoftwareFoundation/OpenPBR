@@ -271,23 +271,23 @@ Using the operator formalism and parametrization described, we now specify the s
 
 We describe first the latter case of a bulk, where the material structure informally looks like the following diagram.
 
-******************************************************************************************************
-*                                                                                         ^ emission *
-*  - - - - - - - - +----------------------------------------------------------------------|-----+    *
-*  |               |                                    fuzz                              |     |    *
-*                  +----------------------------------------------------------------------|-----+    *
-*  |               |                                    coat                              |     |    *
-*                  +---------------------+---------------------+----------------+---------+-----+    *
-*  |               |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|    *
-*       ambient    |░░░░░░░░░░░░░░░░░░░░░+                     |                |░░░░░░░░░░░░░░░|    *
-*  |    medium     |░░░░░░░░metal░░░░░░░░|     translucent     |   subsurface   |░░░░glossy░░░░░|    *
-*                  |░░░░░░░░░░░░░░░░░░░░░|        base         |                |░░░░diffuse░░░░|    *
-*  |               |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|    *
-*                  |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|    *
-*  |               |░░░░░░░░░░░░░░░░░░░░░|                     |<--------- opaque base -------->|    *
-*                  |░░░░░░░░░░░░░░░░░░░░░|<----------------- dielectric base ------------------>|    *
-*  |               |<---------------------------------- base ---------------------------------->|    *
-******************************************************************************************************
+*************************************************************************************************************
+*                                                                                     ^ emission            *
+*  - - - - - - +----------------------------------------------------------------------|-----+               *
+*  |           |                                    fuzz                              |     |               *
+*              +----------------------------------------------------------------------|-----+               *
+*  |           |                                    coat                              |     |               *
+*              +---------------------+---------------------+----------------+---------+-----+ <-- thin-film *
+*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+*     ambient  |░░░░░░░░░░░░░░░░░░░░░+                     |                |░░░░░░░░░░░░░░░|               *
+*  |  medium   |░░░░░░░░metal░░░░░░░░|     translucent     |   subsurface   |░░░░glossy░░░░░|               *
+*              |░░░░░░░░░░░░░░░░░░░░░|        base         |                |░░░░diffuse░░░░|               *
+*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+*              |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |<--------- opaque base -------->|               *
+*              |░░░░░░░░░░░░░░░░░░░░░|<----------------- dielectric base ------------------>|               *
+*  |           |<---------------------------------- base ---------------------------------->|               *
+*************************************************************************************************************
 + - - - - - - - - - - -  +
 
 In summary, this consists of the following slabs:
@@ -299,7 +299,7 @@ In summary, this consists of the following slabs:
 \textrm{metal}                &=& \mathrm{Slab}(f^t_\mathrm{conductor})                                                                        \nonumber \\
 \textrm{translucent-base}     &=& \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{dielectric})                                         \nonumber \\
 \textrm{subsurface}           &=& \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{subsurface})                                         \nonumber \\
-\textrm{glossy-diffuse}       &=& \mathrm{Slab}(f^t_\mathrm{AS})                                                                               \nonumber \\
+\textrm{glossy-diffuse}       &=& \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{diffuse})                                            \nonumber \\
 \end{eqnarray}
 
 Which are composed to build the material structure, denoted $\textrm{PBR}$ below, as follows:
@@ -391,7 +391,7 @@ In order to support cases where a blend of subsurface and completely opaque diff
 *   + - - - - - - - - - - +        + - - - - - - - - - - -  + - - - - - - - - - - -  +  *
 *****************************************************************************************
 
-The dielectric base is assumed to be described by a rough dielectric microfacet model [Walter2007], controlled by parameters which parametrize the base dielectric surface and bulk properties. These parameters are termed "specular" since they control the primary specular reflection lobe, which is provided by the dielectric base.
+The dielectric base is assumed to be described by a rough GGX dielectric microfacet model [Walter2007], controlled by parameters which parametrize the base dielectric surface and bulk properties. These parameters are termed "specular" since they control the primary specular reflection lobe, which is provided by the dielectric base.
 
 - The **`specular`** weight and **`specular_color`** parameters modulate the Fresnel factor of the dielectric reflection. Note that these are technically unphysical if altered from the defaults (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice (for example, to simulate green or purple anti-reflective coatings on lenses).
 - The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`**.
@@ -414,13 +414,13 @@ specular params              | Type    |  Range  | Default          | Descriptio
 
 ### Glossy-diffuse
 
-The glossy-diffuse slab is assumed to be a dielectric (with a rough microfacet surface), embedding a semi-infinite bulk of extremely dense scattering material. In the limit of infinite density, this can be modelled by the classic Ashikhmin-Shirley type BSDF of a diffuse lobe summed with a "glossy" dielectric microfacet specular lobe, with factors designed ensure that the combination conserves energy [Ashikhmin2000]. This form of BSDF model is ubiquitous in computer graphics so we assume its implementation is standard. This reasonably effectively models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
-
-Hence we take this slab to have the form of an Ashikhmin-Shirley type BSDF $f^t_\mathrm{AS}$:
+The glossy-diffuse slab is assumed to be a dielectric with a rough GGX microfacet surface BSDF $f^t_\mathrm{dielectric}$ (whose "specular" parameters are described above), embedding a semi-infinite bulk of extremely dense scattering material $V^\infty_\mathrm{diffuse}$. 
 
 \begin{eqnarray}
-\textrm{glossy-diffuse} &=& \mathrm{Slab}(f^t_\mathrm{AS})   \nonumber \\
+\textrm{glossy-diffuse}       &=& \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{diffuse})    \nonumber \\
 \end{eqnarray}
+
+In the limit of infinite density, this slab can be modelled by the classic Ashikhmin-Shirley type BSDF of a diffuse lobe summed with a "glossy" dielectric microfacet specular lobe, with factors designed ensure that the combination conserves energy [Ashikhmin2000]. This form of BSDF model is ubiquitous in computer graphics so we assume its implementation is standard. This reasonably effectively models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
 
 The albedo of the diffuse lobe is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the total albedo. A **`base_roughness`** parameter controls the shape of the diffuse lobe (dialling from pure Lambertian to a more "dusty" look). The model is agnostic about the choice of diffuse BSDF lobe used, though typically it would be the Oren-Nayar microfacet model, where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. (How this base roughness arises from the physical model of a dielectric embedding a volumetric medium is left open to interpretation).
 
@@ -598,22 +598,22 @@ Fuzz
 The topmost scattering layer supports the appearance of textiles, "fuzzy" surfaces, or dusty surfaces, where the surface consists of opaque colored "fibers" oriented with axes primarily parallel to the surface normal, producing a specular highlight at grazing angles.
 
 \begin{equation}
-\mathrm{fuzz} = \mathrm{Slab}(f^t_\mathrm{fuzz}) \ .
+\textrm{fuzz} = \mathrm{Slab}(f^t_\mathrm{fuzz}, V_\mathrm{fuzz}, f^b_\mathrm{fuzz}) \ .
 \end{equation}
 
-Conceptually the fibers will cover only some fraction of the surface and thus don't completely occlude the incident light. This is represented by a cover operation with the `fuzz` coverage weight:
+Conceptually the fibers will cover only some fraction of the surface and thus don't completely occlude the incident light. This is represented by a cover operation with the $\mathtt{fuzz\_weight}$ coverage weight:
 
 \begin{equation}
 \mathrm{surface} = \mathrm{\mathbf{layer}}(\textrm{coated-base}, \mathrm{fuzz}, \mathtt{fuzz\_weight}) \ .
 \end{equation}
 
-The fuzz BRDF $f^t_\mathrm{fuzz}$, sometimes known as "sheen", is assumed to be an anisotropic microflake volume with a fiber-like distribution or a microfacet model with a fiber-like NDF. We assume that the microflake representation has these characteristics:
+The fuzz BRDF $f^t_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution (based for example on [#Kutz2021], [#Zeltner2022]). We assume that this representation has these basic characteristics:
 
-- has fixed unit thickness and density (which makes it more practical to do fitting of the multiple-scattering-BRDF to enable efficient evaluation and importance sampling)
-- has microflakes that are perfectly specular and opaque with a single-scattering albedo that produces the **`fuzz_color`** after multiple scattering (as a simplification, the albedo can be assumed to be white and the **`fuzz_color`** can be used to scale the final BRDF value)
+- has a fixed unit optical thickness (which makes it more practical to do fitting of the multiple-scattering-BRDF to enable efficient evaluation and importance sampling)
+- has microflake that are perfectly specular and opaque with a single-scattering albedo that produces the **`fuzz_color`** after multiple scattering
 - any light not reflected after multiple scattering is assumed to transmit to the lower layers (because the microflake volume has gray extinction, the transmitted light will not be tinted by the fuzz)
 
-
+One practical model is the approach of [Estevez2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the unreflected light is assumed to transmit through to the base layers. The form is this is the same as the approximate microflake model of [Kutz2021].
 
 fuzz params                  | Type         |  Range                 | Default      | Description
 -----------------------------|--------------|------------------------|--------------|-------------------------------------------------------------------
@@ -621,27 +621,23 @@ fuzz params                  | Type         |  Range                 | Default  
 **`fuzz_color`**             | `color`      | [0,1]                  | (1, 1, 1)    | reflection albedo color of $f^t_\mathrm{fuzz}$
 **`fuzz_roughness`**         | `float`      | [0,1]                  | 0.5          | reflection roughness of $f^t_\mathrm{fuzz}$
 
-!!! TIP
-   TODO: Reference ASM sheen and Disney Animation sheen (LTE-fitted SGGX volumetric sheen with multiple scattering and perfect importance sampling)
-
-!!! TIP
-   An ideal microflake sheen model might vary the amount of sheen by varying the product of the thickness and density of the volumetric layer. This would enable arbitrarily opaque sheen, however it would also complicate fitting and importance sampling, so we do not add the ability to modify these properties for now. We could add a new parameter later to control the product of the density and thickness. That parameter would probably not replace sheen amount parameter because its effects would be nonlinear.
-
-
 
 Emission
 ============================================
 
-It is assumed that everything below the coat emits with a directionally uniform (i.e. Lambertian) EDF. We put emission below the coating so that light emitted from the coat top surface will be tinted due to the absorption in the coat layer.
+It is assumed that everything below the coat emits with a directionally uniform (i.e. Lambertian) EDF. We put emission below the coating so that light emitted from the coat top surface will be tinted due to the absorption in the coat and fuzz layers.
 
 This allows for the convenient rendering of low-emission materials that are bounded by a reflective surface (e.g. glow sticks) without explicit modeling of the emitter and the bounding object.
 
-This EDF is parametrized only by its overall power.
+This EDF is parametrized only by its overall radiance in each channel.
 
-Emission params       | Description
-----------------------|------------
-**`emission_weight`** | emission color multiplier
-**`emission_color`**  | emission color
+!!! TIP
+   TODO: Is it actually a radiance? What can we say about the assumed units of this?
+
+emission params       | Type         |  Range                 | Default         | Description
+----------------------|--------------|------------------------|-----------------|-------------------------
+**`emission_weight`** | `float`      | [0,$\infty$]           | 0.0             | emission radiance
+**`emission_color`**  | `color`      | [0,1]                  | (1.0, 1.0, 1.0) | emission color multiplier
 
 
 Opacity / Transparency
@@ -655,14 +651,17 @@ That is:
 \begin{equation}
 \mathrm{standard\; surface} = \mathrm{\mathbf{mix}}(\mathrm{ambient\; medium}, \mathrm{coated\; surface}, \mathtt{geometry\_opacity})
 \end{equation}
-where `geometry_opacity` is then effectively a linear "alpha" blend. For convenience this mix weight may also be a color. Strictly speaking this is physically implausible for a non-thin-walled surface (unless the $\mathtt{opacity}$ is exactly 0 or 1 in all channels), but of course it can be useful in practice. 
+where `geometry_opacity` is then effectively a linear "alpha" blend.
+
+Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the thin-walled case this the opacity has the clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$).
 
 !!! ERROR
    Non-physical "useful hack": $0 < \mathtt{geometry\_opacity} < 1$ non-thin-walled case.
 
-Opacity params         | Description
----------------        |-------------
-**`geometry_opacity`** | the opacity of the surface
+
+opacity params              | Type      |  Range                 | Default      | Description
+----------------------------|-----------|------------------------|--------------|--------------------------------
+**`geometry_opacity`**      | `float`   |  [0,1]                 | 1.0          | the opacity of the surface
 
 
 
@@ -706,6 +705,8 @@ References
 
 [#Jakob2014]: Wenzel Jakob, Eugene d'Eon, Otto Jakob, and Steve Marschner. *A Comprehensive Framework for Rendering Layered Materials*, ACM Transactions on Graphics (2014).
 
+[#Kutz2021]: Peter Kutz, Miloš Hašan, Paul Edmondson. *Novel aspects of the Adobe Standard Material*, Adobe white paper (2021).
+
 [#Langlands2014]: Anders Langlands. *Physically Based Shader Design in Arnold*, ACM SIGGRAPH Talks (2014).
 
 [#Kulla2017]: Christopher Kulla and Alejandro Conty Estevez. *Revisiting Physically Based Shading at Imageworks*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2017).
@@ -713,6 +714,8 @@ References
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
 
 [#Zeltner2018]: Tizian Zeltner and Wenzel Jakob. *The Layer Laboratory: A Calculus for Additive and Subtractive Composition of Anisotropic Surface Reflectance*, ACM Transactions on Graphics (2018).
+
+[#Zeltner2022]: Tizian Zeltner, Brent Burley, and Matt Jen-Yuan Chiang. *Practical Multiple-Scattering Sheen Using Linearly Transformed Cosines*, ACM SIGGRAPH Talks (2022).
 
 <br>
 <br>
