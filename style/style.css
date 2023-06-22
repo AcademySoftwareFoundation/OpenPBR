@@ -290,7 +290,7 @@ contents, .md .tocHeader,
 
 .md a:link, .md a:visited
 {
-    color: #0085c7;
+    color: #000000;
 }
 
 /* For print, make links black */
