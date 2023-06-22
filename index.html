@@ -414,9 +414,9 @@ specular params              | Type    |  Range  | Default          | Descriptio
 !!! Tip
    TODO: Supply the formula for the `specular_level` IOR modulation
 
-![](images/Specular_Roughness_0o1_default.png width=99%) ![](images/Specular_Roughness_0o3.png width=99%) ![](images/Specular_Roughness_0o6.png width=99%)
+![](images/spec_ior1.jpg width=99%) ![](images/spec_ior2.jpg width=99%) ![](images/spec_ior3.jpg width=99%)
 <div class="shifted-caption">
-   ![Figure [specular]: Varying the **`specular_roughness`** from (left to right): 0.2 (default), 0.4, 0.6.](dummy)
+   ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.2, 1.5 (default)](dummy)
 </div>
 
 
@@ -554,11 +554,6 @@ As noted previously, this non-transmissive metallic base is blended as a statist
 \mathrm{base} &=& \mathrm{\mathbf{mix}}(\mathrm{dielectric\; base}, \mathrm{metal}, \mathtt{base\_metalness})    \nonumber \\
 \end{eqnarray}
 
-![](images/Metalness_0.png width=99%) ![](images/Metalness_0o5.png width=99%) ![](images/Metalness_1.png width=99%)
-<div class="shifted-caption">
-    ![Figure [metalness]: Varying metalness with values (from left to right) 0, 0.5, 1](dummy)
-</div>
-
 !!! Tip
    TODO: Reference the specific model, i.e. probably F82-tint. [#Hoffman2019]
 
@@ -606,9 +601,9 @@ coat params                  | Type       |  Range                 | Default    
 **`coat_affect_roughness`*** | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the roughness of layers below
 **`coat_affect_ior`***       | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the relative IOR of layers below
 
-![](images/coat1.jpg width=70%) ![](images/coat2.jpg width=70%) ![](images/coat3.jpg width=70%)
+![](images/Hulkbuster-Coat_0.png width=90% align=right) ![](images/Hulkbuster-Coat_0.5.png width=90% align=left) 
 <div class="shifted-caption">
-    ![Figure [coat]: Various effects that can be achieved by adding a coat. From left to right: flakes, raindrops, carbon fiber.](dummy)
+    ![Figure [coat]: Effect of adding a coat. Left: **`coat_weight`**=0. **`coat_weight`**=1](dummy)
 </div>
 
 
@@ -716,7 +711,7 @@ Thin-walled case
 !!! Tip
    TODO: Clarify the model structure in the thin-walled case. Is the structure asymmetric, e.g. only one side has the coat? Or is it mirrored, so both sides have the coat. If the latter, can the two coats differ in parameters? etc. This could be an implementation detail, but then it would be quite confusing.
 
-![](images/thin_walled1.jpg width=99%) ![](images/thin_walled2.jpg width=99%)
+![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
 <div class="shifted-caption">
       ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** (right).](dummy)
 </div>
