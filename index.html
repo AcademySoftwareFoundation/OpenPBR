@@ -3,9 +3,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 **OpenPBR Surface draft specification**
-Zap Andersson, Paul Edmondson, Julien Guertault, Adrien Herubel, Alan King, Peter Kutz, Andréa Machizaud, Jamie Portsmouth, Frédéric Servant.
- <br/>
- *Version 0.0, 2023-04-06. A joint work of Adobe and Autodesk*
+
+<center>Zap Andersson, Paul Edmondson, Julien Guertault, Adrien Herubel, Alan King, </center>
+<center>Peter Kutz, Andréa Machizaud, Jamie Portsmouth, Frédéric Servant.</center>
+
+<center>*Version 0.0, 2023-04-06. A joint work of Adobe and Autodesk*</center>
 
 This document is a draft specification of a surface shading model: the OpenPBR Surface model. Designed as a über-surface, it aims to be capable of accurately modeling the vast majority of CG materials used in practical visual effects and feature animation productions. The model has been developed as a synthesis of the Autodesk Standard Surface and the Adobe Standard Material models.
 
@@ -39,11 +41,6 @@ Two basic operations on these slabs — layering and mixing — then provide a l
 
 We now describe this formalism in more detail.
 
-!!! WARNING
-    The described formalism is essentially a transcription of our layer diagrams into a more explicit and detailed "calculus". It is very similar to what is described by MaterialX, so should be transcribable into that form, though for a first pass it seems reasonable to keep it self-contained.
-
-!!! Tip
-    TODO: If not already done, mention why the layer ordering is hard-coded.
 
 Slabs
 -------------------------------------
@@ -227,9 +224,6 @@ This physical picture of the mix operation becomes somewhat unrealistic in some 
 !!! Tip
     TODO: Do we need to suggest how the mix operation is implemented? It is probably obvious, e.g. at a macroscopic level amounts to blending BSDFs, or at a microscopic level corresponds to stochastically choosing/distributing microfacets.
 
-!!! TIP
-    Should maybe say something about what happens if the mix weight is a color. We do allow this (e.g. the `opacity` can be colored), but it seems physically very dubious (in the interpretation of mixing as due to random spatial variation) as then somehow the different color channels are seeing different spatial arrangements of patches.
-
 !!! Tip
     Describe how the material is supposed to behave with it consists of a mixture of components. For the individual components of the model, reasonable behavior could be determined from the physical description. However, things get murkier when you have a mixture of different components.
     For example, what does it mean to hit a surface from the inside if it is 1/4 diffuse, 1/4 metal, 1/4 transparent, and 1/4 subsurface?
@@ -260,8 +254,7 @@ Other assumptions
    - normal/displacement maps (what is our policy/recommendation)
    - policy about surface orientation in thin-film / non-thin-film cases
    - relationship to MaterialX (as our reference implementation will almost certainly be in that form)
-
-
+   - what is the default state of the OpenPBR surface, and why
 
 
 OpenPBR Surface model overview
