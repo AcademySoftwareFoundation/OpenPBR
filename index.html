@@ -17,9 +17,9 @@ Historical background and objectives
 
 Interchange of computer graphics scene assets between different facilities remains a significant problem today, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem, and is a topic of active scientific research. However, there is a strong need today for the industry to find a standardized material model that both covers most common use cases in day-to-day workflows and is easy to use.
 
-Over the years, certain de-facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX, Material Definition Language (MDL), and Open Shading Language (OSL) [Gritz2010], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users who should not be expected to build surface shaders from the ground up for day-to-day tasks. There is a need for a standard uber-shader parametrization with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials. In this proposal we aim to fill this gap; one of our reference implementations is written in OSL [Georgiev2019].
+Over the years, certain de-facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX, Material Definition Language (MDL), and Open Shading Language (OSL) [#Gritz2010], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users who should not be expected to build surface shaders from the ground up for day-to-day tasks. There is a need for a standard uber-shader parametrization with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials. In this proposal we aim to fill this gap; one of our reference implementations is written in OSL [#Georgiev2019].
 
-Our proposed model follows closely the Arnold 5 Standard Surface shader, which has strong spiritual predecessors in Anders Langlands' alSurface [Langlands2014] and Autodesk 3ds Max's Physical Material [Andersson2016]. The alSurface shader has served as a de-facto standard in the industry for a while but is no longer actively developed. 3ds Max's Physical Material in turn has been strongly inspired by Allegorithmic's PBR shading model [McDermott2018], Disney's Principled Shader [Burley2012], and general industry trends in several real-time 3D engines, and has been production proven with support by all major render engines for 3ds Max.
+Our proposed model follows closely the Arnold 5 Standard Surface shader, which has strong spiritual predecessors in Anders Langlands' alSurface [#Langlands2014] and Autodesk 3ds Max's Physical Material [#Andersson2016]. The alSurface shader has served as a de-facto standard in the industry for a while but is no longer actively developed. 3ds Max's Physical Material in turn has been strongly inspired by Allegorithmic's PBR shading model [#McDermott2018], Disney's Principled Shader [Burley2012], and general industry trends in several real-time 3D engines, and has been production proven with support by all major render engines for 3ds Max.
 
 In this proposal, rather than providing parameters for every conceivable case, we intentionally try to boil the set of parameters down to only those that are most useful in practice. We also fix the combination of primitive reflectance models to ensure that the users work within the bounds of what is physically plausible as much as possible. We aim for the overall behavior to be simple, logical, intuitive, and understandable, so that the model covers most day-to-day use cases. For the few it does not cover, one may need to use a renderer-specific shader, or build a bespoke shading network.
 
@@ -334,7 +334,7 @@ Metalness maps from applications like Substance Painter can be connected to this
 
 Rainbow-like iridescence effects which occur due to interference when a thin refractive film with thickness on the order of the light wavelength is placed on top of a material.
 There is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by its thickness and the film IOR.
-In practice, these effects are most easily just incorporated into the microfacet BSDFs of both the metal and dielectric base layers. The currently recommended thin-film model is that of Belcour and Barla [Belcour2017].
+In practice, these effects are most easily just incorporated into the microfacet BSDFs of both the metal and dielectric base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
 
 thin-film params             | Type    |  Range    | Default          | Description
 ---------------------------- | --------|-----------|------------------|----------------------------------------------
@@ -384,13 +384,12 @@ In order to support cases where a blend of subsurface and completely opaque diff
 *   + - - - - - - - - - - +        + - - - - - - - - - - -  + - - - - - - - - - - -  +  *
 *****************************************************************************************
 
-The dielectric base is assumed to be described by a rough GGX dielectric microfacet model [Walter2007], controlled by parameters which parametrize the base dielectric surface and bulk properties. These parameters are termed "specular" since they control the primary specular reflection lobe, which is provided by the dielectric base.
+The dielectric base is assumed to be described by a rough GGX dielectric microfacet model [#Walter2007], controlled by parameters which parametrize the base dielectric surface and bulk properties. These parameters are termed "specular" since they control the primary specular reflection lobe, which is provided by the dielectric base. (The coat provides a secondary specular lobe, see Coat section).
 
 - The **`specular`** weight and **`specular_color`** parameters modulate the Fresnel factor of the dielectric reflection. Note that these are technically unphysical if altered from the defaults (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice (for example, to simulate green or purple anti-reflective coatings on lenses).
 - The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`**.
 - **`specular_ior`** controls the index of refraction of the dielectric, which in this case only affects the Fresnel factor of the reflection
 - **`specular_ior_level`** provides a convenient [0,1] control for dialling the dielectric reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum, by modulating the IOR. 
-
 
 These parameters will be involved in both the BSDF $f^t_\mathrm{dielectric}$ of the translucent base and subsurface, and (partially) the glossy-diffuse BSDF $f^t_\mathrm{AS}$ of Ashikhmin-Shirley form.
 
@@ -413,7 +412,7 @@ The glossy-diffuse slab is assumed to be a dielectric with a rough GGX microface
 \textrm{glossy-diffuse}       &=& \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{diffuse})    \nonumber \\
 \end{eqnarray}
 
-In the limit of infinite density, this slab can be modelled by the classic Ashikhmin-Shirley type BSDF of a diffuse lobe summed with a "glossy" dielectric microfacet specular lobe, with factors designed ensure that the combination conserves energy [Ashikhmin2000]. This form of BSDF model is ubiquitous in computer graphics so we assume its implementation is standard. This reasonably effectively models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
+In the limit of infinite density, this slab can be modelled by the classic Ashikhmin-Shirley type BSDF of a diffuse lobe summed with a "glossy" dielectric microfacet specular lobe, with factors designed ensure that the combination conserves energy [#Ashikhmin2000], [#Kutz2021]. This form of BSDF model is ubiquitous in computer graphics so we assume its implementation is standard. This reasonably effectively models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
 
 The albedo of the diffuse lobe is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the total albedo. A **`base_roughness`** parameter controls the shape of the diffuse lobe (dialling from pure Lambertian to a more "dusty" look). The model is agnostic about the choice of diffuse BSDF lobe used, though typically it would be the Oren-Nayar microfacet model, where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. (How this base roughness arises from the physical model of a dielectric embedding a volumetric medium is left open to interpretation).
 
@@ -529,7 +528,7 @@ As noted previously, this non-transmissive metallic base is blended as a statist
 \end{eqnarray}
 
 !!! Tip
-   TODO: Reference the specific model, i.e. probably F82-tint. [Hoffman2019]
+   TODO: Reference the specific model, i.e. probably F82-tint. [#Hoffman2019]
 
 metal params               | Type       |  Range                  | Default             | Description
 ---------------------------|------------|-------------------------|---------------------|-------------------------------------------------------------------
@@ -606,7 +605,7 @@ The fuzz BRDF $f^t_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be de
 - has microflake that are perfectly specular and opaque with a single-scattering albedo that produces the **`fuzz_color`** after multiple scattering
 - any light not reflected after multiple scattering is assumed to transmit to the lower layers (because the microflake volume has gray extinction, the transmitted light will not be tinted by the fuzz)
 
-One practical model is the approach of [Estevez2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the unreflected light is assumed to transmit through to the base layers. The form is this is the same as the approximate microflake model of [Kutz2021].
+One practical model is the approach of [#Estevez2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the unreflected light is assumed to transmit through to the base layers. The form is this is the same as the approximate microflake model of [#Kutz2021].
 
 fuzz params                  | Type         |  Range                 | Default      | Description
 -----------------------------|--------------|------------------------|--------------|-------------------------------------------------------------------

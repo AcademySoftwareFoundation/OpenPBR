@@ -288,9 +288,9 @@ contents, .md .tocHeader,
     font-family: 'PT Serif';
 }
 
-.md a:link, .md a:visited
+.md a:link
 {
-    color: #000000;
+    color: #849ad5;
 }
 
 /* For print, make links black */
