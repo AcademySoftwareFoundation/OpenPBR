@@ -422,12 +422,15 @@ This Fresnel factor is then modulated by multiplying by twice the **`specular_io
 \begin{equation}
 \eta = \frac{1 + \mathrm{sgn}(\eta_0-1)\sqrt{2 s F_0}}{1 - \mathrm{sgn}(\eta_0-1)\sqrt{2 s F_0}} \ .
 \end{equation}
-
+Applying this IOR ratio at the dielectric interface then produces the desired reflectivity modulation.
 
 ![](images/spec_ior1.jpg width=95%) ![](images/spec_ior2.jpg width=95%) ![](images/spec_ior3.jpg width=95%)
 <div class="shifted-caption">
    ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.2, 1.5 (default)](dummy)
 </div>
+
+!!! Tip
+   TODO: Include some figure showing the effect of textured **`specular_ior_level`**, versus textured **`specular_weight`**
 
 
 ### Glossy-diffuse
