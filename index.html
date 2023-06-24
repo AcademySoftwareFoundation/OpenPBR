@@ -547,22 +547,38 @@ The characteristic appearance of metal, i.e. conductors, is another form of spec
 \mathrm{metal} = \mathrm{Slab}(f^t_\mathrm{conductor}) \ .
 \end{equation}
 
-Metallic reflection is modeled as a GGX microfacet conductor BRDF $f^t_\mathrm{conductor}$, whose Fresnel reflection curve is parametrized by the colors at normal and near-grazing incidence (**`base_color`** and **`specular_color`** respectively). This allows for achieving a desired look by directly specifying the (texturable) colors at normal and grazing incidence to simulate the dip in reflectivity observed in real metals, or just for artistic effect [Hoffman2019]. Note that these two color parameters are also used for the non-metallic (i.e. dielectric) specular and diffuse BRDFs, as discussed above.
+Metallic reflection is modeled as a GGX microfacet conductor BRDF $f^t_\mathrm{conductor}$, whose Fresnel reflection curve is parametrized by the colors at normal and near-grazing incidence (**`base_color`** and **`specular_color`** respectively, scaled by the corresponding weights). This allows for achieving a desired look by directly specifying the (texturable) colors at normal and grazing incidence to simulate the dip in reflectivity observed in real metals, or just for artistic effect [Hoffman2019]. Note that these two color parameters are also used for the non-metallic (i.e. dielectric) specular and diffuse BRDFs, as discussed above.
 
 As noted previously, this non-transmissive metallic base is blended as a statistical mixture with the dielectric base according to the **`base_metalness`** parameter:
 \begin{eqnarray}
 \mathrm{base} &=& \mathrm{\mathbf{mix}}(\mathrm{dielectric\; base}, \mathrm{metal}, \mathtt{base\_metalness})    \nonumber \\
 \end{eqnarray}
 
+The specific model we advocate for the metallic Fresnel effect is the "F82-tint" model of [#Kutz2021], based on previous work by [#Hoffman2019].
+This consists of a modified form of the standard Schlick approximation to the metallic Fresnel factor (where $\mathbf{F}_0$ is the RGB reflectivity at normal incidence i.e. **`base_weight`** * **`base_color`**, and $\mu$ is the cosine of the incident angle):
+\begin{equation}
+\mathbf{F}_{\mathrm{Schlick}}(\mu) = \mathbf{F}_0 + (1 - \mathbf{F}_0) (1 - \mu)^5 \ .
+\end{equation}
+To better approximate the actual Fresnel curve of metals, in the F82-tint model the Schlick approximation is augmented with a correction term:
+\begin{equation}
+\mathbf{F}_{82}(\mu) = \mathbf{F}_{\mathrm{Schlick}}(\mu) - \frac{\mu (1 - \mu)^6}{\bar{\mu}(1 - \bar{\mu})^6} \Bigl(\mathbf{F}_{\mathrm{Schlick}}(\bar{\mu}) - \mathbf{F}(\bar{\mu})\Bigr) \ .
+\end{equation}
+where $\bar{\mu} = \cos(82^\circ)$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at that "grazing edge" angle cosine, ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, i.e. 
+\begin{equation}
+\mathbf{F}(\bar{\mu}) = \mathtt{specular\_weight} * \mathtt{specular\_color} * \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
+\end{equation}
+This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of $\mathtt{specular\_weight}$ and $\mathtt{specular\_color}$. Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
+
 !!! Tip
-   TODO: Reference the specific model, i.e. probably F82-tint. [#Hoffman2019]
+   TODO: Though, should we say that the tint can be a soft-max at the upper bound, i.e. $[0,1)$ range, to support "exotic" metals?
+
 
 metal params               | Type       |  Range                  | Default             | Description
 ---------------------------|------------|-------------------------|---------------------|-------------------------------------------------------------------
 **`base_weight`**          | `float`    | [0,1]                   | 1.0                 | scalar multiplier to **`base_color`**
 **`base_color`**           | `color`    | [0,1]                   | (0.8, 0.8, 0.8)     | specifies color of Fresnel reflection albedo at normal incidence
 **`specular_weight`**      | `float`    | [0,1]                   | 1.0                 | scalar multiplier to **`specular_color`**
-**`specular_color`**       | `color`    | [0,1]                   | (1.0, 1.0, 1.0)     | specifies tint color og Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_color`**       | `color`    | [0,1]                   | (1.0, 1.0, 1.0)     | specifies tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
 **`specular_roughness`**   | `float`    | [0,1)                   | 0.3                 | roughness of conductor BRDF $f^t_\mathrm{conductor}$
 **`specular_anisotropy`**  | `float`    | [0,1]                   | 0.0                 | anisotropy of conductor BRDF $f^t_\mathrm{conductor}$
 **`specular_rotation`**    | `float`    | [0,1]                   | 0.0                 | orientation of roughness anisotropy
