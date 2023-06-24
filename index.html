@@ -567,7 +567,7 @@ where $\bar{\mu} = \cos(82^\circ)$, and $\mathbf{F}(\bar{\mu})$ is the desired m
 \begin{equation}
 \mathbf{F}(\bar{\mu}) = \mathtt{specular\_weight} * \mathtt{specular\_color} * \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
 \end{equation}
-This formulation has the useful property that it reduces to regular Schlick reflectivity at the default values of $\mathtt{specular\_weight}$ and $\mathtt{specular\_color}$. Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
+This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of $\mathtt{specular\_weight}$ and $\mathtt{specular\_color}$. Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
 !!! Tip
    TODO: Though, should we say that the tint can be a soft-max at the upper bound, i.e. $[0,1)$ range, to support "exotic" metals?
