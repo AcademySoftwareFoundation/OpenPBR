@@ -463,7 +463,7 @@ glossy-diffuse params        | Type    |  Range  | Default          | Descriptio
 
 For solid objects (for which thin_walled is false), subsurface scattering models the effect of light propagation and diffusion under the surface, where in general the exiting ray leaves at a different surface location than the incident ray.
 
-Physically, as for the slabs defined in the the Glossy-diffuse section and Translucent base section, this is a dielectric substrate with volumetric properties, thus represented by a dielectric surface BSDF with interior medium:
+Physically, as for the slabs defined in the Glossy-diffuse section and Translucent base section, this is a dielectric substrate with volumetric properties, thus represented by a dielectric surface BSDF with interior medium:
 
 \begin{equation}
 \mathrm{subsurface} = \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{subsurface})
