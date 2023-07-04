@@ -53,7 +53,7 @@ The most basic object is a "slab", which consists of a homogeneous dielectric or
 
 We do not dictate how the surfaces of the slab are described physically at the microscopic level, but at the level of the macroscopic slab description they are flat interfaces with a known BSDF. Ideally these BSDFs should be reciprocal and energy conserving, though a given implementation may want to relax these assumptions for efficiency or simplicity. 
 
-Each BSDF is a function of input and output directions as usual, but we will generally remain agnostic about the actual specific functional form and details of the BSDFs (or VDFs), leaving it for the implementation to make reasonable assumptions given a verbal description of the slab physical properties and the described parameters. We expect that the BSDF implementations will typically be microfacet (or "microflake") models, but we do not want to dictate specific implementations for the BSDFs since specific models may differ depending on the hardware constraints, and also tend to evolve over time. We hope the provided verbal description combined with the set of parameters is sufficient to make it reasonably unambiguous what a good implementation would look like.
+Each BSDF is a function of input and output directions $\omega_i$, $\omega_o$ as usual, but we will generally remain agnostic about the actual specific functional form and details of the BSDFs (or VDFs), leaving it for the implementation to make reasonable assumptions given a verbal description of the slab physical properties and the described parameters. We expect that the BSDF implementations will typically be microfacet (or "microflake") models, but we do not want to dictate specific implementations for the BSDFs since specific models may differ depending on the hardware constraints, and also tend to evolve over time. We hope the provided verbal description combined with the set of parameters is sufficient to make it reasonably unambiguous what a good implementation would look like.
 
 The ambient medium above and below the slab will depend on where it sits in the eventual layer structure, and it not specified by the slab itself.
 The ambient dielectric medium of the very top and bottom of the entire structure is also assumed to be given and unspecified by the model. Renderers which track the dielectric medium may wish to account for this ambient medium when computing the light transport.
@@ -69,7 +69,6 @@ Implementations may choose to compute light transport in this medium via e.g. a 
 It is understood that the medium $V$ specifies its own depth, which can also be unbounded denoting a semi-infinite "bulk" medium with no substrate (we denote such an unbounded semi-infinite volumetric medium as $V^\infty$). This is an abstraction of course, where we understand that such a semi-infinite medium actually just represents the bottom layer of the material structure and the medium will most likely terminate somewhere. Such a slab with a semi-infinite medium does not need to supply a base BSDF (it can be just omitted).
 
 We denote a general slab therefore as follows:
-
 \begin{equation}
 \quad S = \mathrm{Slab}(f^t, V, f^b)
 \end{equation}
@@ -135,23 +134,23 @@ We build a more complex material than a slab by "vertically" layering and "horiz
 Layering
 -------------------------------------
 
-The layer operation deposits a slab (or composite material) $S_\mathrm{top} = \mathrm{Slab}(f^t_\mathrm{top}, V_\mathrm{top}, f^b_\mathrm{top})$ on top of another substrate slab (or composite material) $S_\mathrm{sub} = \mathrm{Slab}(f^t_\mathrm{sub}, V_\mathrm{sub}, f^b_\mathrm{sub})$, conceptually bonding the base of $S_\mathrm{top}$'s dielectric medium to the surface of $S_\mathrm{sub}$ (i.e. the medium of $S_\mathrm{top}$ becomes the ambient medium above the microsurface of $S_\mathrm{sub}$).
+The layer operation deposits a coat slab (or composite material) $S_\mathrm{coat} = \mathrm{Slab}(f^t_\mathrm{coat}, V_\mathrm{coat}, f^b_\mathrm{coat})$ on top of another substrate slab (or composite material) $S_\mathrm{sub} = \mathrm{Slab}(f^t_\mathrm{sub}, V_\mathrm{sub}, f^b_\mathrm{sub})$, conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$ (i.e. the medium of $S_\mathrm{coat}$ becomes the ambient medium above the microsurface of $S_\mathrm{sub}$).
 
 The physical act of bringing the two independent slabs together and bonding them produces a new, "vertically" heterogeneous composite material denoted
 \begin{equation}
-\mathrm{layer}(S_\mathrm{top}, S_\mathrm{sub}) \ .
+\mathrm{layer}(S_\mathrm{coat}, S_\mathrm{sub}) \ .
 \end{equation}
 
 Diagrammatically, we represent the layering operation as putting the two slabs vertically adjacent, where one is to imagine the physical slabs of material being bonded at their top and bottom interfaces.
 
 ***********************************************************************************************
 *                                                                                             *
-*         +-----------------+ ft_top                                                          *
+*         +-----------------+ ft_coat                                                         *
 *         |                 |                                                                 *
-*   Stop  |      Vtop       |                                +-----------------+ ft_top       *
+*   Stop  |      Vcoat      |                                +-----------------+ ft_coat      *
 *         |                 |                                |                 |              *
-*         +-----------------+ fb_top                         |      Vtop       |              *
-*                  ^                    layer(Stop, Ssub)    |                 |              *
+*         +-----------------+ fb_coat                        |      Vcoat      |              *
+*                  ^                    layer(Scoat, Ssub)   |                 |              *
 *                  | bond                 ------------>      +-----------------+ f_interface  *
 *                  v                                         |                 |              *
 *         +-----------------+ ft_sub                         |      Vsub       |              *
@@ -162,13 +161,63 @@ Diagrammatically, we represent the layering operation as putting the two slabs v
 *                                                                                             *
 ***********************************************************************************************
 
-It is understood that the BSDF $f_\mathrm{interface}$ at the new internal interface formed from the joining of the top and bottom slabs is not necessarily the same as either $f^b_\mathrm{top}$ or $f^t_\mathrm{sub}$, but would be derivable by considering the physics and geometry of the bond. Physically this BSDF should be consistent with the adjacent media $V_\mathrm{top}$ and $V_\mathrm{sub}$.
+It is understood that the BSDF $f_\mathrm{interface}$ at the new internal interface formed from the joining of the coat and substrate slabs is not necessarily the same as either $f^b_\mathrm{coat}$ or $f^t_\mathrm{sub}$, but would be derivable by considering the physics and geometry of the bond. Physically this BSDF should be consistent with the adjacent media $V_\mathrm{coat}$ and $V_\mathrm{sub}$.
 
 We don't attempt to derive or enforce this physics, we just try to make it reasonably unambiguous how the BSDF of the internal interface should be implemented, given the known BSDFs and media of the component slabs being bonded in the layering, and the final suite of parameters which is supposed to describe the resultant interfaces. For example bringing two dielectric slabs together produces well-understood Fresnel effects at the interface according to the ratio of the IORs of the dielectric media, and similarly covering a metallic surface with a coat of dielectric will alter the BSDF of the metallic interface. 
 
-!!! TIP
-    Some words/equations will be needed about how we expect the layer operation to actually be implemented. One reasonable implementation (albeit non-reciprocal) is the Arnold approach of albedo scaling.
+The mapping from the physical layer structure into a form usable within a renderer depends on the level of approximation which is desired for the specific use-case.
+Typically the light transport properties will be represented by BSDFs representing the various lobes generated by the model, which we can roughly identify with the BSDFs of the top interfaces of each slab. Then the resultant BSDF of the layering operation can be approximated via various schemes which combine the BSDFs of the individual interfaces.
 
+For example given the general situation described above of a coat slab layered on a substrate slab, denoted $\mathrm{layer}(S_\mathrm{coat}, S_\mathrm{sub})$, this produces an internal interface with some derivable BSDF $f_\mathrm{sub}$ and dielectric top interface with BSDF $f_\mathrm{coat}$ sandwiching the coat medium $V_\mathrm{coat}$.
+
+********************************
+*  +-----------------+ f_coat  *
+*  |                 |         *
+*  |      Vcoat      |         *
+*  |                 |         *
+*  +-----------------+ f_sub   *
+*  |                 |         *
+********************************
+
+The simplest representation of this layer configuration would amount to some linear combination of the interface BSDFs $f_\mathrm{sub}$ and $f_\mathrm{coat}$.
+A common approximation is to use so-called "albedo scaling" where the total BSDF of this layered configuration is given by summing $f_\mathrm{coat}$ and $f_\mathrm{sub}$ with the substrate lobe weighted with a weight factor designed to ensure that the resulting BSDF is energy conserving:
+\begin{equation}
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + W(\omega_i, \omega_o) \,f_\mathrm{sub}(\omega_i, \omega_o)   \ .
+\end{equation}
+Energy conservation of a BSDF $f_X$ amounts to the requirement that the directional reflectance (or albedo) $E_X(\omega_o) \le 1$ for all output ray directions, where $E_X$ is defined as the integral of the BSDF $f_X$ over incident directions in the positive hemisphere $\mathcal{H}_+$ with projected solid angle measure:
+\begin{equation}
+E_X(\omega_o) \equiv \int_{\mathcal{H}_+} f_X(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i   \ .
+\end{equation}
+
+A simple, albeit non-reciprocal, form of albedo scaling is to take the substrate weight factor to be one minus the directional reflectance of the coat (intuitively meaning that the energy not reflected by the coat is assumed to transmit through to the substrate), i.e.:
+\begin{equation}
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  +  \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o)
+\end{equation}
+where the directional albedo integral $E_\mathrm{coat}(\omega_o)$ can be either precomputed and tabulated, or computed on-the-fly via Monte Carlo sampling of the BSDF.
+This form ensures that if the directional albedos of the coat and substrate BSDFs are "weakly" energy conserving (i.e. $E_\mathrm{coat}(\omega_o) \le 1$, $E_\mathrm{sub}(\omega_o) \le 1$), then the combined BSDF is also weakly energy conserving, since
+\begin{equation}
+E_\mathrm{layer}(\omega_o) \,=\, E_\mathrm{coat}(\omega_o)  +  \left(1 - E_\mathrm{coat}(\omega_o)\right) \,E_\mathrm{sub}(\omega_o) \;\; \le \, 1  \ .
+\end{equation}
+It also ensures that if the substrate BSDF perfectly preserves energy (i.e. $E_\mathrm{sub}(\omega_o) = 1$, also termed "strongly energy conserving"), then the layer BSDF does also, ensuring that the white furnace test would pass.
+
+A form of albedo-scaling which additionally satisfies reciprocity is
+\begin{equation}
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + C \left(1 - E_\mathrm{coat}(\omega_i)\right) \, \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o)
+\end{equation}
+where the normalization constant $C$ will involve an integral over the albedo times the substrate BSDF. Depending on the form of the substrate BSDF this may require more elaborate tabulation.
+
+Note though that this albedo-scaling approximation neglects effects which a fully accurate solution of the light transport would include:
+
+   - absorption and scattering in the volumetric medium of the coat, $V_\mathrm{coat}$
+   - that the final BSDF lobe shape will not in general be a simple linear combination of the interface BSDFs, due to contributions from multiple bounces back and forth between the interfaces, each contributing Fresnel and transmittance factors
+
+To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric transmittance $T$ through the coat in the incident and output directions could be approximately modelled as
+\begin{equation}
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + T(\omega_i)\,T(\omega_o) \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o)
+\end{equation}
+Similarly if the coat is rough this will effectively roughen the substrate BSDF lobe also, which can be accounted for approximately via various heuristics.
+
+In general we will not specify particular such approximations which we favour, and instead aim to make it as clear as possible what the underlying basic physical structure is and leave it to each implementation to decide how best to approximate this for its particular use case.
 
 !!! WARNING
     In practice the model may introduce certain ad-hoc internal rules in order to make the light transport more practical to compute. For example, roughness scaling.
@@ -224,6 +273,8 @@ For convenience this may also be written more concisely as an weighted layer ope
 *******************************************
 
 This physical picture of the mix operation becomes somewhat unrealistic in some cases where the bottom-most bulk materials being blended are not obviously consistent (e.g. blending dielectric and metallic bulks), but in such cases it is understood that the implementation should do the best it can to make sense of the physics (e.g. the metal bulk could be considered to actually be surface metallic flakes on top of a single consistent dielectric). 
+
+The implementation of the mix operation in a renderer depends on how the material model is approximated. Typically the model will be reduced to an effective BSDF per slab being mixed, in which case the mix will be implemented simply as a linear blend of those BSDFs. Though in some cases it may be more convenient to implement the mixture as a microfacet model where the selection of the mix component happens during the statistical sampling of the microfacets.
 
 !!! Tip
     TODO: Do we need to suggest how the mix operation is implemented? It is probably obvious, e.g. at a macroscopic level amounts to blending BSDFs, or at a microscopic level corresponds to stochastically choosing/distributing microfacets.
