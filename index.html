@@ -180,14 +180,13 @@ For example given the general situation described above of a coat slab layered o
 ********************************
 
 The simplest representation of this layer configuration would amount to some linear combination of the interface BSDFs $f_\mathrm{sub}$ and $f_\mathrm{coat}$.
-A common approximation is to use so-called "albedo scaling" where the total BSDF of this layered configuration is given by summing $f_\mathrm{coat}$ and $f_\mathrm{sub}$ with the substrate lobe weighted with a weight factor designed to ensure that the resulting BSDF is energy conserving:
+A common approximation is to use so-called "albedo scaling" where the total BSDF of this layered configuration is given by summing $f_\mathrm{coat}$ and $f_\mathrm{sub}$ with the substrate lobe weighted with a factor designed to ensure that the resulting BSDF is energy conserving:
 \begin{equation}
 f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + W(\omega_i, \omega_o) \,f_\mathrm{sub}(\omega_i, \omega_o)   \ .
 \end{equation}
-Energy conservation of a BSDF $f_X$ amounts to the requirement that the directional reflectance (or albedo) $E_X(\omega_o) \le 1$ for all output ray directions, where $E_X$ is defined as the integral of the BSDF $f_X$ over incident directions in the positive hemisphere $\mathcal{H}_+$ with projected solid angle measure:
-\begin{equation}
-E_X(\omega_o) \equiv \int_{\mathcal{H}_+} f_X(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i   \ .
-\end{equation}
+Energy conservation of a BSDF $f_X$ amounts to the requirement that the directional reflectance (or albedo) $E_X(\omega_o) \le 1$ for all output ray directions (where $E_X$ is defined as the integral of the BSDF $f_X$ over incident directions in the positive hemisphere $\mathcal{H}_+$ with projected solid angle measure:
+$E_X(\omega_o) \equiv \int_{\mathcal{H}_+} f_X(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i$).
+
 
 A simple, albeit non-reciprocal, form of albedo scaling is to take the substrate weight factor to be one minus the directional reflectance of the coat (intuitively meaning that the energy not reflected by the coat is assumed to transmit through to the substrate), i.e.:
 \begin{equation}
@@ -206,11 +205,7 @@ f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + C 
 \end{equation}
 where the normalization constant $C$ will involve an integral over the albedo times the substrate BSDF. Depending on the form of the substrate BSDF this may require more elaborate tabulation.
 
-Note though that this albedo-scaling approximation neglects effects which a fully accurate solution of the light transport would include:
-
-   - absorption and scattering in the volumetric medium of the coat, $V_\mathrm{coat}$
-   - that the final BSDF lobe shape will not in general be a simple linear combination of the interface BSDFs, due to contributions from multiple bounces back and forth between the interfaces, each contributing Fresnel and transmittance factors
-
+Note though that this albedo-scaling approximation does not correctly take into account the effect of multiple light bounces back and forth between the interfaces, or absorption and scattering in the volumetric medium of the coat $V_\mathrm{coat}$. In general the resulting BSDF lobe shape will not be a simple linear combination of the interface BSDFs.
 To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric transmittance $T$ through the coat in the incident and output directions could be approximately modelled as
 \begin{equation}
 f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + T(\omega_i)\,T(\omega_o) \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o) \ .
