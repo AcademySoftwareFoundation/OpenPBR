@@ -411,17 +411,17 @@ This Fresnel factor is then modulated by multiplying by twice the **`specular_io
 \begin{equation}
 \eta = \frac{1 + \mathrm{sgn}(\eta_0-1)\sqrt{2 s F_0}}{1 - \mathrm{sgn}(\eta_0-1)\sqrt{2 s F_0}} \ .
 \end{equation}
-Applying this IOR ratio at the dielectric interface then produces the desired reflectivity modulation.
+Note there is a constraint $s < 1/(2F_0)$ since the scaled reflection coefficient cannot exceed $1$. So the range of $s$ needs to be clamped: $s \in [0, \mathrm{min}(1, 1/(2F_0)]$. Applying this IOR ratio at the dielectric interface then produces the desired reflectivity modulation.
 
-specular params              | Type    |  Range  | Default          | Description
------------------------------| --------|---------|------------------|---------------------------------------------------------------
-**`specular_weight`**        | `float` | [0,1]   | `1`              | multiplies the dielectric Fresnel factor
-**`specular_color`**         | `color` | [0,1]   | `(1,1,1)`        | tints the dielectric Fresnel factor
-**`specular_roughness`**     | `float` | [0,1)   | `0.2`            | roughness of the dielectric microfacet surface
-**`specular_ior`**           | `float` | [1,3)   | `1.5`            | index of refraction of the dielectric
-**`specular_ior_level`**     | `float` | [0,1]   | `0.5`            | modulates the dielectric reflectivity at normal incidence between zero and double the original
-**`specular_anisotropy`***   | `float` | [0,1]   | `0`              | anisotropy of NDF of dielectric BSDF $f^t_\mathrm{dielectric}$
-**`specular_rotation`***     | `float` | [0,1]   | `0`              | orientation of roughness anisotropy
+specular params              | Type     |  Range  | Default          | Description
+-----------------------------| ---------|---------|------------------|---------------------------------------------------------------
+**`specular_weight`**        | `float`  | [0,1]   | `1`              | multiplies the dielectric Fresnel factor
+**`specular_color`**         | `color3` | [0,1]   | `(1,1,1)`        | tints the dielectric Fresnel factor
+**`specular_roughness`**     | `float`  | [0,1)   | `0.2`            | roughness of the dielectric microfacet surface
+**`specular_ior`**           | `float`  | [1,3)   | `1.5`            | index of refraction of the dielectric
+**`specular_ior_level`**     | `float`  | [0,1]   | `0.5`            | modulates the dielectric reflectivity at normal incidence between zero and double the original
+**`specular_anisotropy`***   | `float`  | [0,1]   | `0`              | anisotropy of NDF of dielectric BSDF $f^t_\mathrm{dielectric}$
+**`specular_rotation`***     | `float`  | [0,1]   | `0`              | orientation of roughness anisotropy
 
 
 
@@ -446,11 +446,11 @@ In the limit of infinite density, this slab can be modelled by the classic Ashik
 
 The albedo of the diffuse lobe is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the total albedo. A **`base_roughness`** parameter controls the shape of the diffuse lobe (dialling from pure Lambertian to a more "dusty" look). The model is agnostic about the choice of diffuse BSDF lobe used, though typically it would be the Oren-Nayar microfacet model, where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. (How this base roughness arises from the physical model of a dielectric embedding a volumetric medium is left open to interpretation).
 
-glossy-diffuse params        | Type    |  Range  | Default          | Description
----------------------------- | --------|---------|------------------|---------------------------------------------------------------
-**`base_weight`**            | `float` | [0,1]   | `1`              | scales albedo of diffuse lobe
-**`base_color`**             | `color` | [0,1]   | `(0.8,0.8,0.8)`  | scales albedo color of diffuse lobe
-**`base_roughness`**         | `float` | [0,1)   | `0`              | roughness of the diffuse lobe
+glossy-diffuse params        | Type     |  Range  | Default          | Description
+---------------------------- | ---------|---------|------------------|---------------------------------------------------------------
+**`base_weight`**            | `float`  | [0,1]   | `1`              | scales albedo of diffuse lobe
+**`base_color`**             | `color3` | [0,1]   | `(0.8,0.8,0.8)`  | scales albedo color of diffuse lobe
+**`base_roughness`**         | `float`  | [0,1)   | `0`              | roughness of the diffuse lobe
 
 !!! Tip
    TODO: Supply the formula for the `specular_level` IOR modulation in an Appendix
@@ -461,40 +461,60 @@ glossy-diffuse params        | Type    |  Range  | Default          | Descriptio
 
 ### Subsurface
 
-For cases where the base substrate allows significant subsurface scattering, we define a separate dielectric slab with a volumetric interior:
+For solid objects (for which thin_walled is false), subsurface scattering models the effect of light propagation and diffusion under the surface, where in general the exiting ray leaves at a different surface location than the incident ray.
+
+Physically, as for the slabs defined in the Glossy-diffuse section and Translucent base section, this is a dielectric substrate with volumetric properties, thus represented by a dielectric surface BSDF with interior medium:
 
 \begin{equation}
 \mathrm{subsurface} = \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{subsurface})
 \end{equation}
 
-For solid objects (for which thin_walled is false), subsurface scattering models the effect of light propagation and diffusion under the surface, where in general the exiting ray leaves at a different surface location than the incident ray. 
-The subsurface medium $V^\infty_\mathrm{subsurface}$ is a general absorbing/scattering medium within the dielectric, parametrized according to:
+In this case the subsurface medium $V^\infty_\mathrm{subsurface}$ is given a parametrization which is particularly convenient for controlling the effect of dense subsurface scattering:
 
-   - the desired size of the "blur" on the surface / the average distance that light travels along the surface, per-channel, i.e. **`subsurface_radius`** multiplied by **`subsurface_scale`**
-   - the observed reflection albedo taking into account all orders of multiple scattering, i.e. **`subsurface_color`**
-   - the medium's phase function, parametrized by **`subsurface_anisotropy`**
-
-To the minimize the entanglement and side effects of these parameters, they should each affect only the corresponding aspect of the subsurface scattering, e.g. the color should not affect the size of the blur and the anisotropy should not affect the size of the blur or the color. This can be achieved, for example, by using empirically-derived mappings and similarity theory.
+   - **`subsurface_scale`** * **`subsurface_radius`**: the desired size of the "blur" on the surface per RGB channel, i.e. roughly the average distance that light travels _along the surface_ per-channel, $\mathbf{r}$, also termed the _diffusion radius_.
+   - **`subsurface_color`**: the observed RGB reflection albedo color taking into account all orders of multiple scattering, $\mathbf{A}$, also termed the _multi-scatter albedo_.
+   - **`subsurface_anisotropy`**: the medium's phase function, parametrized by the (scalar) anisotropy $g$.
 
 !!! Tip
-   TODO: Write down the details of the suggested mapping formulas in an Appendix.
+    TODO: Technically the anisotropy could be different in each channel, but we don't support this. Rationalize this?
 
-subsurface params              | Type     |  Range                  | Default            | Description
--------------------------------|----------|-------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------
-**`subsurface_weight`**        | `float`  | [0,1]                   | 0                  | mix weight of subsurface and glossy-diffuse slab
-**`subsurface_color`**         | `color`  | [0,1]                   | (1,1,1)            | subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
-**`subsurface_radius`**        | `float`  | [0,$\infty$]            | 1                  | subsurface radii, i.e. average distance light travels along the surface per color channel
-**`subsurface_radius_scale`**  | `vector` | [0,1]                   | (1,1,1)            | scalar scale for **`subsurface_radius`**
-**`subsurface_anisotropy`**    | `float`  | [0,1]                   | 0.5                | anisotropy of the $V^\infty_\mathrm{subsurface}$ medium phase function
+To minimize the entanglement and side effects of these parameters, they should each affect only the corresponding aspect of the subsurface scattering, e.g. the color should not affect the size of the blur and the anisotropy should not affect the size of the blur or the color.
+
+This can be achieved, for example, by using empirically-derived mappings and similarity theory. We detail here a suggested mapping which achieves these requirements and reproduces the specified RGB diffusion profile size (width on the surface) $\mathbf{r}$ and RGB multi-scatter albedo $\mathbf{A}$.
+
+[#Burley2018] derived (via fitting Monte Carlo simulations) an approximate relationship between the specified surface diffusion profile width $\mathbf{r}$ and multi-scatter albedo $\mathbf{A}$, and the physical extinction coefficient $\boldsymbol{\mu}_t$ which generates that profile width: $\boldsymbol{\mu}_t = 1/(S(\mathbf{A})\mathbf{r})$, where the scale-factor $S(\mathbf{A})$ is given by:
+\begin{equation}
+S(\mathbf{A}) = 4.012 - 15.21 \mathbf{A} + 32.34 \mathbf{A}^2 - 34.68 \mathbf{A}^3 + 13.91 \mathbf{A}^4 \ .
+\end{equation}
+Similarly the RGB single scattering albedo $\boldsymbol{\alpha}$ is approximately given by
+\begin{equation}
+\boldsymbol{\alpha}(\mathbf{A}) = 1 - e^{-11.43 \mathbf{A} + 15.38 \mathbf{A}^2 - 13.91 \mathbf{A}^3} \ .
+\end{equation}
+The physical RGB scattering coefficient is then given by $\boldsymbol{\mu}_s = \boldsymbol{\alpha}\,\boldsymbol{\mu}_t$.
+
+This relationship was derived (via fitting) in the isotropic $g=0$ case. To account for anisotropy, "similarity theory" [#d'Eon2021] says that a medium with anisotropy $g$ will have approximately similar light transport to an isotropic medium provided that the scattering coefficient is remapped to $\bar{\boldsymbol{\mu}}_s = \boldsymbol{\mu}_s / (1 - g)$, while keeping the absorption coefficient the same. Applying this, the net result is that the remapped single-scattering albedo $\bar{\boldsymbol{\alpha}}$ is given by
+\begin{equation}
+\bar{\boldsymbol{\alpha}} = \frac{\boldsymbol{\alpha}} {1  - g (1 - \boldsymbol{\alpha})} \ ,
+\end{equation}
+and remapped extinction coefficient $\bar{\boldsymbol{\mu}}_t$ by
+\begin{equation}
+\bar{\boldsymbol{\mu}}_t = \frac{1  - g (1 - \boldsymbol{\alpha})}{1 - g} \boldsymbol{\mu}_t \ .
+\end{equation}
+Note that due to the singularity at $g=1$, in practice the anisotropy needs to be limited to be not too close to 1.
+
+
+subsurface params              | Type      |  Range                  | Default            | Description
+-------------------------------|-----------|-------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------
+**`subsurface_weight`**        | `float`   | [0,1]                   | 0                  | mix weight of subsurface and glossy-diffuse slab
+**`subsurface_color`**         | `color3`  | [0,1]                   | (1,1,1)            | subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
+**`subsurface_radius`**        | `float`   | [0,$\infty$]            | 1                  | subsurface radii, i.e. average distance light travels along the surface per color channel
+**`subsurface_radius_scale`**  | `vector3` | [0,1]                   | (1,1,1)            | scalar scale for **`subsurface_radius`**
+**`subsurface_anisotropy`**    | `float`   | [0,1]                   | 0.5                | anisotropy of the $V^\infty_\mathrm{subsurface}$ medium phase function
 
 ![](images/subsurface1.jpg width=99%) ![](images/subsurface2.jpg width=99%) ![](images/subsurface3.jpg width=99%)
 <div class="shifted-caption">
     ![Figure [subsurface]: The effect of varying the subsurface scattering radius (**`subsurface_radius`**).](dummy)
 </div>
-
-
-!!! Tip
-   TODO: Expand on this giving details of how we expect the implementation to remap the parameters to the underlying volumetric parameters, e.g. using the Hyperion mapping for scale and color and similarity theory for adjusting the scattering coefficient to compensate for anisotropic scattering
 
 !!! Tip
    TODO: Give example renders of how the blend of diffuse/SSS is important for skin rendering (as in Adobe model docs)
@@ -520,9 +540,9 @@ Note that the index of refraction of the medium $V^\infty_\mathrm{dielectric}$ i
 translucent base params                      | Type       |  Range                  | Default            | Description
 ---------------------------------------------|------------|-------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------
 **`transmission_weight`**                    | `float`    | [0,1]                   | 0                  | mix weight between translucent and opaque base
-**`transmission_color`**                     | `color`    | [0,1]                   | (1,1,1)            | transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
+**`transmission_color`**                     | `color3`   | [0,1]                   | (1,1,1)            | transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
 **`transmission_depth`**                     | `float`    | [0,$\infty$]            | 0                  | distance travelled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
-**`transmission_scatter`**                   | `color`    | [0,1]                   | (0,0,0)            | scattering albedo of the interior medium
+**`transmission_scatter`**                   | `color3`   | [0,1]                   | (0,0,0)            | scattering albedo of the interior medium
 **`transmission_scatter_anisotropy`**        | `float`    | [0,1]                   | 0.0                | anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
 **`transmission_dispersion_abbe_number`**    | `float`    | [20,70]                 | 20.0               | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in `[0,1]`
 **`transmission_dispersion_scale`**          | `float`    | [0,1]                   | 0.0                | linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
@@ -590,9 +610,9 @@ This formulation has the useful property that it reduces to the regular Schlick 
 metal params               | Type       |  Range                  | Default             | Description
 ---------------------------|------------|-------------------------|---------------------|-------------------------------------------------------------------
 **`base_weight`**          | `float`    | [0,1]                   | 1.0                 | scalar multiplier to **`base_color`**
-**`base_color`**           | `color`    | [0,1]                   | (0.8, 0.8, 0.8)     | specifies color of Fresnel reflection albedo at normal incidence
+**`base_color`**           | `color3`   | [0,1]                   | (0.8, 0.8, 0.8)     | specifies color of Fresnel reflection albedo at normal incidence
 **`specular_weight`**      | `float`    | [0,1]                   | 1.0                 | scalar multiplier to **`specular_color`**
-**`specular_color`**       | `color`    | [0,1]                   | (1.0, 1.0, 1.0)     | specifies tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_color`**       | `color3`   | [0,1]                   | (1.0, 1.0, 1.0)     | specifies tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
 **`specular_roughness`**   | `float`    | [0,1)                   | 0.3                 | roughness of conductor BRDF $f^t_\mathrm{conductor}$
 **`specular_anisotropy`**  | `float`    | [0,1]                   | 0.0                 | anisotropy of conductor BRDF $f^t_\mathrm{conductor}$
 **`specular_rotation`**    | `float`    | [0,1]                   | 0.0                 | orientation of roughness anisotropy
@@ -621,7 +641,7 @@ The coat is applied on top of the base substrate, with a coverage weight $\matht
 coat params                  | Type       |  Range                 | Default      | Description
 -----------------------------|------------|------------------------|--------------|-------------------------------------------------------------------
 **`coat_weight`**            | `float`   | [0,1]                   | 0.0          | coverage weight of coat layer
-**`coat_color`**             | `color`   | [0,1]                   | (1, 1, 1)    | controls the overall color due to absorption of $V_\mathrm{coat}$
+**`coat_color`**             | `color3`  | [0,1]                   | (1, 1, 1)    | controls the overall color due to absorption of $V_\mathrm{coat}$
 **`coat_roughness`**         | `float`   | [0,1)                   | 0.3          | roughness of NDF of coat BSDF $f^t_\mathrm{coat}$
 **`coat_anisotropy`***       | `float`   | [0,1]                   | 0.0          | anisotropy of NDF of coat BSDF $f^t_\mathrm{coat}$
 **`coat_rotation`***         | `float`   | [0,1]                   | 0.0          | orientation of anisotropy
@@ -676,7 +696,7 @@ One practical model is the approach of [#Estevez2017] where the layer is treated
 fuzz params                  | Type         |  Range                 | Default      | Description
 -----------------------------|--------------|------------------------|--------------|-------------------------------------------------------------------
 **`fuzz_weight`**            | `float`      | [0,1]                  | 0            | coverage weight of $f^t_\mathrm{fuzz}$
-**`fuzz_color`**             | `color`      | [0,1]                  | (1, 1, 1)    | reflection albedo color of $f^t_\mathrm{fuzz}$
+**`fuzz_color`**             | `color3`     | [0,1]                  | (1, 1, 1)    | reflection albedo color of $f^t_\mathrm{fuzz}$
 **`fuzz_roughness`**         | `float`      | [0,1]                  | 0.5          | reflection roughness of $f^t_\mathrm{fuzz}$
 
 ![](images/fuzz1.jpg width=99%) ![](images/fuzz2.jpg width=99%) ![](images/fuzz3.jpg width=99%)
@@ -700,7 +720,7 @@ This EDF is parametrized only by its overall radiance in each channel.
 emission params       | Type         |  Range                 | Default         | Description
 ----------------------|--------------|------------------------|-----------------|-------------------------
 **`emission_weight`** | `float`      | [0,$\infty$]           | 0.0             | emission radiance
-**`emission_color`**  | `color`      | [0,1]                  | (1.0, 1.0, 1.0) | emission color multiplier
+**`emission_color`**  | `color3`     | [0,1]                  | (1.0, 1.0, 1.0) | emission color multiplier
 
 ![Figure [emission]: Texture map representing hot lava connected to **`emission_color`**.](images/emission.jpg width=40%)
 
@@ -747,7 +767,6 @@ Thin-walled case
 </div>
 
 
-
 (insert parametrization.md.html here)
 
 
@@ -779,6 +798,10 @@ References
 [#Belcour2018]: Laurent Belcour. *Efficient Rendering of Layered Materials using an Atomic Decomposition with Statistical Operators*, ACM Transactions on Graphics (2018).
 
 [#Burley2012]: Brent Burley. *Physically-based Shading at Disney*, ACM SIGGRAPH Courses: Practical Physically Based Shading in Film and Game Production (2012).
+
+[#Burley2018]: Brent Burley et al. *The Design and Evolution of Disney’s Hyperion Renderer*,  ACM TOG (2018)
+
+[#d'Eon2021]: Eugene d’Eon. *A Hitchhiker’s guide to multiple scattering: Exact Analytic, Monte Carlo and Approximate Solutions in Transport Theory*, (2022)
 
 [#McDermott2018]: Wes McDermott. *The PBR Guide*, Allegorithmic white paper (2018). https://www.allegorithmic.com/pbr-guide.
 
