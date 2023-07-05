@@ -197,7 +197,7 @@ contents, .md .tocHeader,
 .md div.title
 {
     color: rgba(0,0,0,.7);
-    margin: 0.4em 0 0px 0;
+    margin: 0.4em 0 -20px 0;
     padding: 0;
     font-size: 230%;
     font-weight: 700;
