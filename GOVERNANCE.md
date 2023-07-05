@@ -14,7 +14,7 @@ broader project charter, TSC responsibilities include, but are not limited to:
   matters relating to OpenPBR that affect multiple projects.
 - Maintainance and administration of the OpenPBR GitHub repository.
 - Coordinating technical direction of the project.
-- Coordinatng marketing, events, and communications regarding OpenPBR.
+- Coordinating marketing, events, and communications regarding OpenPBR.
 
 Within the TSC there are two key subgroups: **Voting Members**, who take on
 formal responsibiities for maintaining the OpenPBR project and vote when
