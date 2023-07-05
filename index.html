@@ -610,8 +610,8 @@ We next apply a dielectric coating, with an embedded purely absorbing medium $V_
 \end{equation}
 where the BSDF of the interfaces is that of a GGX microfacet dielectric.
 
-!!! TIP
-   TODO: How does the specified coat_color map to the internal medium of $V_\mathrm{coat}$? Presumably all that is required is that the transmittance at normal incidence is the given coat color.
+The absorption of the medium $V_\mathrm{coat}$ is parametrized by the observed tint color of the underlying base at normal incidence, **`coat_color`**. In the full light transport this observed color includes contributions due to the multiple bounces back and forth inside the coat layer, so some calculation would be need to map the final observed tint color to the absorption coefficient which achieves this. We leave it up to the implementation to decide what level of approximation to use for this.
+The observed tint color should also vary at different incidence angles due to the change in path length in the medium.
 
 The coat is applied on top of the base substrate, with a coverage weight $\mathtt{coat\_weight}$ as follows:
 \begin{equation}
