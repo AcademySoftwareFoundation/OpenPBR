@@ -461,23 +461,47 @@ glossy-diffuse params        | Type     |  Range  | Default          | Descripti
 
 ### Subsurface
 
-For cases where the base substrate allows significant subsurface scattering, we define a separate dielectric slab with a volumetric interior:
+For solid objects (for which thin_walled is false), subsurface scattering models the effect of light propagation and diffusion under the surface, where in general the exiting ray leaves at a different surface location than the incident ray.
+
+Physically, as for the slabs defined in the Glossy-diffuse section and Translucent base section, this is a dielectric substrate with volumetric properties, thus represented by a dielectric surface BSDF with interior medium:
 
 \begin{equation}
 \mathrm{subsurface} = \mathrm{Slab}(f^t_\mathrm{dielectric}, V^\infty_\mathrm{subsurface})
 \end{equation}
 
-For solid objects (for which thin_walled is false), subsurface scattering models the effect of light propagation and diffusion under the surface, where in general the exiting ray leaves at a different surface location than the incident ray. 
-The subsurface medium $V^\infty_\mathrm{subsurface}$ is a general absorbing/scattering medium within the dielectric, parametrized according to:
+In this case the subsurface medium $V^\infty_\mathrm{subsurface}$ is given a parametrization which is particularly convenient for controlling the effect of dense subsurface scattering:
 
-   - the desired size of the "blur" on the surface / the average distance that light travels along the surface, per-channel, i.e. **`subsurface_radius`** multiplied by **`subsurface_scale`**
-   - the observed reflection albedo taking into account all orders of multiple scattering, i.e. **`subsurface_color`**
-   - the medium's phase function, parametrized by **`subsurface_anisotropy`**
-
-To the minimize the entanglement and side effects of these parameters, they should each affect only the corresponding aspect of the subsurface scattering, e.g. the color should not affect the size of the blur and the anisotropy should not affect the size of the blur or the color. This can be achieved, for example, by using empirically-derived mappings and similarity theory.
+   - **`subsurface_scale`** * **`subsurface_radius`**: the desired size of the "blur" on the surface per RGB channel, i.e. roughly the average distance that light travels _along the surface_ per-channel, $\mathbf{r}$, also termed the _diffusion radius_.
+   - **`subsurface_color`**: the observed RGB reflection albedo color taking into account all orders of multiple scattering, $\mathbf{A}$, also termed the _multi-scatter albedo_.
+   - **`subsurface_anisotropy`**: the medium's phase function, parametrized by the (scalar) anisotropy $g$.
 
 !!! Tip
-   TODO: Write down the details of the suggested mapping formulas in an Appendix.
+    TODO: Technically the anisotropy could be different in each channel, but we don't support this. Rationalize this?
+
+To minimize the entanglement and side effects of these parameters, they should each affect only the corresponding aspect of the subsurface scattering, e.g. the color should not affect the size of the blur and the anisotropy should not affect the size of the blur or the color.
+
+This can be achieved, for example, by using empirically-derived mappings and similarity theory. We detail here a suggested mapping which achieves these requirements and reproduces the specified RGB diffusion profile size (width on the surface) $\mathbf{r}$ and RGB multi-scatter albedo $\mathbf{A}$.
+
+[#Burley2018] derived (via fitting Monte Carlo simulations) an approximate relationship between the specified surface diffusion profile width $\mathbf{r}$ and multi-scatter albedo $\mathbf{A}$, and the physical extinction coefficient $\boldsymbol{\mu}_t$ which generates that profile width: $\boldsymbol{\mu}_t = 1/(S(\mathbf{A})\mathbf{r})$, where the scale-factor $S(\mathbf{A})$ is given by:
+\begin{equation}
+S(\mathbf{A}) = 4.012 - 15.21 \mathbf{A} + 32.34 \mathbf{A}^2 - 34.68 \mathbf{A}^3 + 13.91 \mathbf{A}^4 \ .
+\end{equation}
+Similarly the RGB single scattering albedo $\boldsymbol{\alpha}$ is approximately given by
+\begin{equation}
+\boldsymbol{\alpha}(\mathbf{A}) = 1 - e^{-11.43 \mathbf{A} + 15.38 \mathbf{A}^2 - 13.91 \mathbf{A}^3} \ .
+\end{equation}
+The physical RGB scattering coefficient is then given by $\boldsymbol{\mu}_s = \boldsymbol{\alpha}\,\boldsymbol{\mu}_t$.
+
+This relationship was derived (via fitting) in the isotropic $g=0$ case. To account for anisotropy, "similarity theory" [#d'Eon2021] says that a medium with anisotropy $g$ will have approximately similar light transport to an isotropic medium provided that the scattering coefficient is remapped to $\bar{\boldsymbol{\mu}}_s = \boldsymbol{\mu}_s / (1 - g)$, while keeping the absorption coefficient the same. Applying this, the net result is that the remapped single-scattering albedo $\bar{\boldsymbol{\alpha}}$ is given by
+\begin{equation}
+\bar{\boldsymbol{\alpha}} = \frac{\boldsymbol{\alpha}} {1  - g (1 - \boldsymbol{\alpha})} \ ,
+\end{equation}
+and remapped extinction coefficient $\bar{\boldsymbol{\mu}}_t$ by
+\begin{equation}
+\bar{\boldsymbol{\mu}}_t = \frac{1  - g (1 - \boldsymbol{\alpha})}{1 - g} \boldsymbol{\mu}_t \ .
+\end{equation}
+Note that due to the singularity at $g=1$, in practice the anisotropy needs to be limited to be not too close to 1.
+
 
 subsurface params              | Type      |  Range                  | Default            | Description
 -------------------------------|-----------|-------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------
@@ -491,10 +515,6 @@ subsurface params              | Type      |  Range                  | Default  
 <div class="shifted-caption">
     ![Figure [subsurface]: The effect of varying the subsurface scattering radius (**`subsurface_radius`**).](dummy)
 </div>
-
-
-!!! Tip
-   TODO: Expand on this giving details of how we expect the implementation to remap the parameters to the underlying volumetric parameters, e.g. using the Hyperion mapping for scale and color and similarity theory for adjusting the scattering coefficient to compensate for anisotropic scattering
 
 !!! Tip
    TODO: Give example renders of how the blend of diffuse/SSS is important for skin rendering (as in Adobe model docs)
@@ -747,7 +767,6 @@ Thin-walled case
 </div>
 
 
-
 (insert parametrization.md.html here)
 
 
@@ -779,6 +798,10 @@ References
 [#Belcour2018]: Laurent Belcour. *Efficient Rendering of Layered Materials using an Atomic Decomposition with Statistical Operators*, ACM Transactions on Graphics (2018).
 
 [#Burley2012]: Brent Burley. *Physically-based Shading at Disney*, ACM SIGGRAPH Courses: Practical Physically Based Shading in Film and Game Production (2012).
+
+[#Burley2018]: Brent Burley et al. *The Design and Evolution of Disney’s Hyperion Renderer*,  ACM TOG (2018)
+
+[#d'Eon2021]: Eugene d’Eon. *A Hitchhiker’s guide to multiple scattering: Exact Analytic, Monte Carlo and Approximate Solutions in Transport Theory*, (2022)
 
 [#McDermott2018]: Wes McDermott. *The PBR Guide*, Allegorithmic white paper (2018). https://www.allegorithmic.com/pbr-guide.
 
