@@ -265,6 +265,8 @@ We assume that each slab has emission distribution functions (EDFs) that come al
 
 As for the BSDFs, we remain agnostic about the specific functional form of the EDFs, giving enough information from a verbal description combined with parameters to make the implementation reasonably unambiguous.
 
+Emissive properties are expressed in photometric units, since reference values are widely available. For the sake of simplicity, conversion to radiometric units is assumed to be a linear transform, with a 100% light efficiency, but implementations may wish to account for a given luminous efficacy.
+
 
 Other assumptions
 -------------------------------------
@@ -742,19 +744,16 @@ fuzz params                  | Type         |  Range                 | Default  
 Emission
 ============================================
 
-It is assumed that everything below the coat emits with a directionally uniform (i.e. Lambertian) EDF. We put emission below the coating so that light emitted from the coat top surface will be tinted due to the absorption in the coat and fuzz layers.
+It is assumed that everything below the coat may emit light, with a directionally uniform (i.e. Lambertian) EDF.
 
-This allows for the convenient rendering of low-emission materials that are bounded by a reflective surface (e.g. glow sticks) without explicit modeling of the emitter and the bounding object.
+We put emission below the coating so that emitted light will be tinted due to the absorption in the coat and fuzz layers. This allows for the convenient rendering of low-emission materials that are bounded by a reflective surface (e.g. glow sticks, LEDs, display screens, etc.) without explicit modeling of the emitter and the bounding object.
 
-This EDF is parametrized only by its overall radiance in each channel.
+The intensity of the EDF is controlled by a luminance and a color multiplier. The luminance parameter controls the luminance a white emissive layer would have in the absence of coat and fuzz. The color acts as a multiplier, thus the resulting luminance may be less than the input parameter, or even zero if the color multiplier is set to black. Moreover, the material luminance may be further reduced in the presence of coat or fuzz.
 
-!!! TIP
-   TODO: Is it actually a radiance? What can we say about the assumed units of this?
-
-emission params       | Type         |  Range                 | Default         | Description
-----------------------|--------------|------------------------|-----------------|-------------------------
-**`emission_weight`** | `float`      | [0,$\infty$]           | 0.0             | emission radiance
-**`emission_color`**  | `color3`     | [0,1]                  | (1.0, 1.0, 1.0) | emission color multiplier
+emission params          | Type         |  Range                 | Default         | Description
+-------------------------|--------------|------------------------|-----------------|-------------------------
+**`emission_luminance`** | `float`      | [0,$\infty$]           | 0.0             | emission luminance, in cd/m^2 (aka. nits)
+**`emission_color`**     | `color3`     | [0,1]                  | (1.0, 1.0, 1.0) | emission color multiplier
 
 ![Figure [emission]: Texture map representing hot lava connected to **`emission_color`**.](images/emission.jpg width=40%)
 
