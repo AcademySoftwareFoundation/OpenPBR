@@ -29,7 +29,7 @@ In outline this consists of:
    - The dielectric base represents either the bulk of highly translucent media (e.g. glass, crystals, and liquids), the subsurface of highly scattering media (e.g. marble, plastic, skin, vegetation), or the surface of effectively opaque "diffuse" media (e.g. dirt, dense rock, concrete), where these three components are statistically mixed.
    - The base dielectric (or metal) interface produces the primary specular reflection lobe.
    - This base is optionally coated with a layer of dielectric, which may have an absorbing medium. The dielectric interface of this coat layer provides a secondary specular lobe.
-   - The surface is finished with an optional layer of "fuzz", which is a coat of micro-fibres representing e.g fine hair (peach fuzz), textile strands or dust.
+   - The surface is finished with an optional layer of "fuzz", which is a coat of micro-fibers representing e.g. fine hair (peach fuzz), textile strands or dust.
 
    ![Figure [diagram_model]: Schematic illustration of the idealized material model that our shader emulates. Horizontal stacking of components represents statistical mixture and vertical stacking represents layering.](images/model_schematic.svg width="100%")
 
@@ -191,7 +191,7 @@ f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + T(
 \end{equation}
 Similarly if the coat is rough this will effectively roughen the substrate BSDF lobe also, which can be accounted for approximately via various heuristics.
 
-In general we will not specify particular such approximations which we favour, and instead aim to make it as clear as possible what the underlying basic physical structure is and leave it to each implementation to decide how best to approximate this for its particular use case.
+In general we will not specify particular such approximations which we favor, and instead aim to make it as clear as possible what the underlying basic physical structure is and leave it to each implementation to decide how best to approximate this for its particular use case.
 
 
 Mixing
@@ -261,7 +261,7 @@ The implementation of the mix operation in a renderer depends on how the materia
 Emission model
 -------------------------------------
 
-We assume that each slab has emission distribution functions (EDFs) that come along with the surface BSDFs, though these correspond by default to no emission at all. The EDF of the top/bottom surfaces specifies the emitted radiance from the slab into the positive/negative hemispheres. We will generally assume in this model that the emission is uniformly distributed in all directions into the hemisphere. The emission from the structure as a whole is then physically determined (in principle) by the propagation of this emitted light from the emitting slabs through their neighbours into the ambient space. 
+We assume that each slab has emission distribution functions (EDFs) that come along with the surface BSDFs, though these correspond by default to no emission at all. The EDF of the top/bottom surfaces specifies the emitted radiance from the slab into the positive/negative hemispheres. We will generally assume in this model that the emission is uniformly distributed in all directions into the hemisphere. The emission from the structure as a whole is then physically determined (in principle) by the propagation of this emitted light from the emitting slabs through their neighbors into the ambient space. 
 
 As for the BSDFs, we remain agnostic about the specific functional form of the EDFs, giving enough information from a verbal description combined with parameters to make the implementation reasonably unambiguous.
 
