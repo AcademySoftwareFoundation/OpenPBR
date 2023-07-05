@@ -411,7 +411,7 @@ This Fresnel factor is then modulated by multiplying by twice the **`specular_io
 \begin{equation}
 \eta = \frac{1 + \mathrm{sgn}(\eta_0-1)\sqrt{2 s F_0}}{1 - \mathrm{sgn}(\eta_0-1)\sqrt{2 s F_0}} \ .
 \end{equation}
-Applying this IOR ratio at the dielectric interface then produces the desired reflectivity modulation.
+Note there is a constraint $s < 1/(2F_0)$ since the scaled reflection coefficient cannot exceed $1$. So the range of $s$ needs to be clamped: $s \in [0, \mathrm{min}(1, 1/(2F_0)]$. Applying this IOR ratio at the dielectric interface then produces the desired reflectivity modulation.
 
 specular params              | Type     |  Range  | Default          | Description
 -----------------------------| ---------|---------|------------------|---------------------------------------------------------------
