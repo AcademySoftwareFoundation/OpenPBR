@@ -107,7 +107,7 @@ S_\mathrm{bulk} = \mathrm{Slab}(f, V^\infty) \ .
 For completeness, the absence of a slab (i.e. no surface or underlying medium), which corresponds just to the ambient medium, is denoted $\mathrm{Slab}(\emptyset)$.
 
 A slab does not itself specify anything about other slabs in relation to itself (e.g. its substrate slab or overlying slab).
-The ambient medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top and bottom of the entire structure is also assumed to be given and unspecified by the model. Renderers which track the dielectric medium may wish to account for this ambient medium when computing the light transport.
+The adjacent medium above and below the slab will depend on where that slab sits in the eventual layer structure. The ambient dielectric medium of the very top and bottom of the entire structure is also assumed to be given and unspecified by the model. Renderers which track the dielectric medium may wish to account for this ambient medium when computing the light transport (e.g. vacuum, air or underwater).
 
 We build a more complex composite material by "vertically" layering and "horizontally" mixing slabs, as described below.
 
@@ -115,7 +115,7 @@ We build a more complex composite material by "vertically" layering and "horizon
 Layering
 -------------------------------------
 
-The layer operation deposits a coat slab (or composite material) $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab (or composite material) $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$, conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$ (i.e. $V_\mathrm{coat}$ becomes the ambient medium above the microsurface of $S_\mathrm{sub}$).
+The layer operation deposits a coat slab (or composite material) $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab (or composite material) $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$, conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$ (i.e. $V_\mathrm{coat}$ becomes the adjacent medium above the microsurface of $S_\mathrm{sub}$).
 
 The physical act of bringing the two independent slabs together and bonding them produces a new, "vertically" heterogeneous composite material denoted
 \begin{equation}
