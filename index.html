@@ -660,7 +660,12 @@ The coat is applied on top of the base substrate, with a coverage weight $\matht
 
 The absorption of the medium $V_\mathrm{coat}$ is parametrized by the observed tint color of the underlying base at normal incidence, **`coat_color`**. In the full light transport this observed color includes contributions due to multiple bounces back and forth inside the coat layer, so a calculation would be needed to map the final observed tint color to the absorption coefficient which achieves this. We leave it up to the implementation to decide what level of approximation to use for this (in the simplest approximation, the **`coat_color`** can just be treated as a transmittance $T$ which is multiplied into the substrate lobes). The observed tint color should vary away from **`coat_color`** as the incidence angle changes, due to the change in path length in the medium.
 
-A fraction of the light will undergo internal reflection from the coat interface and go back down to the substrate to reflect again multiple times. As a result the coat will also darken and saturate the color of the underlying base. The presence of a rough coat will also obviously impact the apparent roughness of the BSDF lobes of the underlying base. In a full light transport simulation these effects would occur automatically, but in an approximate model they may need to be accounted for by hand.
+A number of other physical effects will occur due to the presence of the coat:
+      - A fraction of the light reflected from the base substrate will undergo internal reflection from the coat interface and go back down to the substrate to reflect again, potentially multiple times. As a result the coat will darken and saturate the color of the underlying base. 
+      - The presence of a rough coat will increase the apparent roughness of the BSDF lobes of the underlying base.
+      - The IOR of the coat medium $V_\mathrm{coat}$ will alter the Fresnel factor of the underlying metal or dielectric.
+
+In a full light transport simulation these effects would occur automatically, but in an approximate model they may need to be accounted for by hand.
 
 <!-- Markdeep:
 For example, the Autodesk Standard Surface model modulates the **`base_color`** and **`subsurface_color`**, and the roughnesses of the metal and dielectric BSDFs, according to the
