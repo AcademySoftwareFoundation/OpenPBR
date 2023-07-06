@@ -820,6 +820,12 @@ In this case, the base slabs are interpreted as infinitesimally thin sheets, thu
    - As noted above, **`geometry_opacity`** makes physical sense as a float value in the thin-walled case (unlike the bulk case), controlling the presence weight of the thin wall.
 
 
+   ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
+   <div class="shifted-caption">
+         ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** (right).](dummy)
+   </div>
+   
+
 There are a number of reasonable options for how to interpret the layer structure of the thin-walled mode for light transport purposes:
 
    - **Asymmetric**:  The thin wall is oriented according to the local shading normal, so when viewed from below the incident ray encounters the base slab first (Figure [asymmetric-thin-wall]). The appearance of the surface will then be somewhat different when viewed from below instead of above, as then the coat and fuzz layers are not directly visible but occluded by the base.
@@ -895,14 +901,6 @@ There are a number of reasonable options for how to interpret the layer structur
   <div class="shifted-caption">
      ![Figure [double-sided-thin-wall]: Double-sided interpretation of the thin-walled mode.](dummy)
  </div>
-
-
-![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
-<div class="shifted-caption">
-      ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** (right).](dummy)
-</div>
-
-
 
 
 
