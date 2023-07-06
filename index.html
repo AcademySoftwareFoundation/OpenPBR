@@ -815,7 +815,7 @@ In this case, the base slabs are interpreted as infinitesimally thin sheets, thu
       f^T_\mathrm{diffuse} &=& \frac{1}{2} S (1 + g)\, f_- \ .
       \end{eqnarray}
       This form ensures total energy conservation, i.e. $E_R[f^R_\mathrm{diffuse}] + E_T[f^T_\mathrm{diffuse}] = S \le 1$.
-      The diffuse tranmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this).
+      The diffuse tranmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this).
 
    - As noted above, **`geometry_opacity`** makes physical sense as a float value in the thin-walled case (unlike the bulk case), controlling the presence weight of the thin wall.
 
