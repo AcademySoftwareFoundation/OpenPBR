@@ -189,6 +189,13 @@ contents, .md .tocHeader,
 }
 
 
+.md .longTOC a.level3, .md .mediumTOC a.level3, .md .shortTOC a.level3
+{
+    color: rgba(0, 0, 0, 0.9); 
+    font-weight: 300;
+    line-height: 150%;
+}
+
 /******************************************************************************/
 /* Titles and headings
 /******************************************************************************/
