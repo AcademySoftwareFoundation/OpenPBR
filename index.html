@@ -811,8 +811,8 @@ In this case, the base slabs are interpreted as infinitesimally thin sheets, thu
 
    - The $\textrm{subsurface}$ slab is considered to degenerate into a thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$), which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_anisotropy}$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
       \begin{eqnarray}
-      f^R_\mathrm{diffuse} &=& \frac{S}{2} (1 - g) f_+ \ , \nonumber \\
-      f^T_\mathrm{diffuse} &=& \frac{S}{2} (1 + g) f_- \ .
+      f^R_\mathrm{diffuse} &=& \frac{1}{2} S (1 - g)\, f_+ \ , \nonumber \\
+      f^T_\mathrm{diffuse} &=& \frac{1}{2} S (1 + g)\, f_- \ .
       \end{eqnarray}
       This form ensures total energy conservation, i.e. $E_R[f^R_\mathrm{diffuse}] + E_T[f^T_\mathrm{diffuse}] = S \le 1$.
       The diffuse tranmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this).
