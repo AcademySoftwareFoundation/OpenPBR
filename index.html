@@ -107,7 +107,7 @@ S_\mathrm{bulk} = \mathrm{Slab}(f, V^\infty) \ .
 For completeness, the absence of a slab (i.e. no surface or underlying medium), which corresponds just to the ambient medium, is denoted $\mathrm{Slab}(\emptyset)$.
 
 A slab does not itself specify anything about other slabs in relation to itself (e.g. its substrate slab or overlying slab).
-The ambient medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top and bottom of the entire structure is also assumed to be given and unspecified by the model. If the renderer keeps track of the dielectric medium (via a scheme such as "nested dielectrics" [Budge2015]) then this ambient medium is a general dielectric, whose IOR we denote **`ambient_ior`** (or if dielectric medium tracking is not done, this can be assumed to be 1).
+The ambient medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top and bottom of the entire structure is also assumed to be given and unspecified by the model. If the renderer keeps track of the dielectric medium in which the surface is embedded such as water or ice (via a scheme such as "nested dielectrics" [#Budge2002]) then the ambient medium is a general dielectric whose IOR we denote **`ambient_ior`**, or if dielectric medium tracking is not done then **`ambient_ior`** can be assumed to be 1 corresponding to air or vacuum.
 
 We build a more complex composite material by "vertically" layering and "horizontally" mixing slabs, as described below.
 
@@ -245,16 +245,6 @@ This physical picture of the mix operation becomes somewhat unrealistic in some 
 
 The implementation of the mix operation in a renderer depends on how the material model is approximated. Typically the model will be reduced to an effective BSDF per slab being mixed, in which case the mix will be implemented simply as a linear blend of those BSDFs. Though in some cases it may be more convenient to implement the mixture as a microfacet model where the selection of the mix component happens during the statistical sampling of the microfacets.
 
-!!! Tip
-    TODO: Do we need to suggest how the mix operation is implemented? It is probably obvious, e.g. at a macroscopic level amounts to blending BSDFs, or at a microscopic level corresponds to stochastically choosing/distributing microfacets.
-
-!!! Tip
-    Describe how the material is supposed to behave with it consists of a mixture of components. For the individual components of the model, reasonable behavior could be determined from the physical description. However, things get murkier when you have a mixture of different components.
-    For example, what does it mean to hit a surface from the inside if it is 1/4 diffuse, 1/4 metal, 1/4 transparent, and 1/4 subsurface?
-    In ASM, we made diffuse and metal reflect normally from the inside for a few reasons:
-    1. If light got inside a diffuse or metallic object in the first place, then that means the metal and diffuse components probably represent thin coatings on a translucent object (like foil or a sticker).
-    2. A user can model a thin surface (like some foil or a leaf or a ground plane) and get good results without enabling the thin-wall feature. (In an earlier version of ASM, users were confused to see total internal reflection on the back of a plane.)
-
 
 Emission model
 -------------------------------------
@@ -279,6 +269,14 @@ Other assumptions
    - policy about surface orientation in thin-wall / non-thin-wall cases
    - relationship to MaterialX (as our reference implementation will almost certainly be in that form)
    - what is the default state of the OpenPBR surface, and why
+
+
+!!! Tip
+   Describe how the material is supposed to behave with it consists of a mixture of components. For the individual components of the model, reasonable behavior could be determined from the physical description. However, things get murkier when you have a mixture of different components.
+   For example, what does it mean to hit a surface from the inside if it is 1/4 diffuse, 1/4 metal, 1/4 transparent, and 1/4 subsurface?
+   In ASM, we made diffuse and metal reflect normally from the inside for a few reasons:
+   1. If light got inside a diffuse or metallic object in the first place, then that means the metal and diffuse components probably represent thin coatings on a translucent object (like foil or a sticker).
+   2. A user can model a thin surface (like some foil or a leaf or a ground plane) and get good results without enabling the thin-wall feature. (In an earlier version of ASM, users were confused to see total internal reflection on the back of a plane.)
 
 
 OpenPBR Surface model overview
@@ -842,6 +840,8 @@ References
 [#Belcour2017]: Laurent Belcour and Pascal Barla. *A Practical Extension to Microfacet Theory for the Modeling of Varying Iridescence*, ACM Transactions on Graphics (2017).
 
 [#Belcour2018]: Laurent Belcour. *Efficient Rendering of Layered Materials using an Atomic Decomposition with Statistical Operators*, ACM Transactions on Graphics (2018).
+
+[#Budge2002]: Brian Budge. *Simple Nested Dielectrics in Ray Traced Images*, Journal of Graphics Tools (2002).
 
 [#Burley2012]: Brent Burley. *Physically-based Shading at Disney*, ACM SIGGRAPH Courses: Practical Physically Based Shading in Film and Game Production (2012).
 
