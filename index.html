@@ -101,7 +101,7 @@ S_\mathrm{bulk} = \mathrm{Slab}(f, V^\infty) \ .
 *  |                 |     *
 *  |       V∞        |     *
 *  |                 |     *
-*  + - - - - - - - - +     *
+*  +- - - - - - - - -+     *
 ****************************
 
 For completeness, the absence of a slab (i.e. no surface or underlying medium), which corresponds just to the ambient medium, is denoted $\mathrm{Slab}(\emptyset)$.
@@ -290,27 +290,29 @@ Using the operator formalism and parametrization described, we now specify the s
 
 We describe first the latter case of a bulk, where the material structure informally looks informally like the following diagram:
 
-*************************************************************************************************************
-*                                                                                     ^ emission            *
-*  +-----------+----------------------------------------------------------------------|-----+               *
-*  |           |                                    fuzz                              |     |               *
-*  |           +----------------------------------------------------------------------|-----+               *
-*  |           |                                    coat                              |     |               *
-*  |           +---------------------+---------------------+----------------+---------+-----+ <-- thin-film *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-*  |  ambient  |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-*  |  medium   |░░░░░░░ metal ░░░░░░░|     translucent     |   subsurface   |░░░ glossy  ░░░|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|        base         |                |░░░ diffuse ░░░|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                                |               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |<--------- opaque base -------->|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                                                      |               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|<----------------- dielectric base ------------------>|               *
-*  |           |                                                                            |               *
-*  +-----------+<---------------------------------- base ---------------------------------->|               *
-*************************************************************************************************************
+************************************************************************************************************
+*                                                                         emission                         *
+*                                                                             ^                            *
+* +-----------+---------------------------------------------------------------|------------+               *
+* |           |                                    fuzz                       |            |               *
+* |           +---------------------------------------------------------------|------------+               *
+* |           |                                    coat                       |            |               *
+* |           +---------------------+---------------------+----------------+--+------------+ <-- thin-film *
+* |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |  ambient  |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |  medium   |░░░░░░░ metal ░░░░░░░|     translucent     |   subsurface   |░░░ glossy  ░░░|               *
+* |           |░░░░░░░░░░░░░░░░░░░░░|        base         |                |░░░ diffuse ░░░|               *
+* |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* +-----------+ - - - - - - - - - - +- - - - - - - - - - -+ - - - - - - - -+ - - - - - - - +               *
+*                                                                                                          *
+*                                                          <--------- opaque base -------->                *
+*                                                                                                          *
+*                                    <------------------ dielectric base ----------------->                *
+*                                                                                                          *
+*              <---------------------------------- base ---------------------------------->                *
+************************************************************************************************************
 
 To summarize the formal structure, this consists of the following slabs:
 
@@ -345,14 +347,15 @@ The bulk at the bottom of the material structure, termed the base substrate, con
 \begin{eqnarray}
 \mathrm{base} &=& \mathrm{\mathbf{mix}}(\textrm{dielectric-base}, \mathrm{metal}, \mathtt{base\_metalness})       \nonumber \\
 \end{eqnarray}
-*******************************************************************************************************************
-*                                                     base_metalness       1 - base_metalness                     *
-* +-------------------------------------+        +----------------------+----------------------+ <---- thin-film  *
-* |                                     |        |░░░░░░░░░░░░░░░░░░░░░░|                      |                  *
-* |               base                  |   ==   |░░░░░░░ metal ░░░░░░░░|   dielectric-base    |                  *
-* |                                     |        |░░░░░░░░░░░░░░░░░░░░░░|                      |                  *
-* + - - - - - - - - - - - - - - - - - - +        + - - - - - - - - - - -+ - - - - - - - - - - -+                  *
-*******************************************************************************************************************
+
+********************************************************************************************************************
+*                                                    base_metalness         1 - base_metalness                     *
+* +-----------------------------------+        +------------------------+------------------------+ <---- thin-film *
+* |                                   |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |                 *
+* |                base               |   ==   |░░░░░░░░░ metal ░░░░░░░░|    dielectric-base     |                 *
+* |                                   |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |                 *
+* +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+                 *
+********************************************************************************************************************
 
 The **`base_metalness`** parameter controls the fraction of surface which is metal, where values between 0 and 1 can be used to texture surfaces like rusted iron, where different areas of the surface can have more reflective clean metal and more diffuse rust.
 Metalness maps from applications like Substance Painter can be connected to this parameter.
@@ -386,14 +389,15 @@ However we distinguish between a separate "translucent" dielectric bulk and "opa
 \begin{equation}
 \textrm{dielectric-base} = \mathrm{\mathbf{mix}}(\textrm{opaque-base}, \textrm{translucent-base}, \mathtt{transmission\_weight}) \ .
 \end{equation}
-*****************************************************************************************
-*                                   1 - transmission_weight     transmission_weight     *
-*   +---------------------+        +------------------------+------------------------+  *
-*   |                     |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |  *
-*   |   dielectric-base   |   ==   |░░░░░ opaque-base ░░░░░░|    translucent-base    |  *
-*   |                     |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |  *
-*   + - - - - - - - - - - +        + - - - - - - - - - - - -+  - - - - - - - - - - - +  *
-*****************************************************************************************
+
+****************************************************************************************************
+*                                               1 - transmission_weight     transmission_weight    *
+* +-----------------------------------+        +------------------------+------------------------+ *
+* |                                   |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        | *
+* |           dielectric-base         |   ==   |░░░░░ opaque-base ░░░░░░|    translucent-base    | *
+* |                                   |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        | *
+* +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
+****************************************************************************************************
 
 This mirrors the usual workflow of artists where they are either modelling an opaque surface potentially with some specularity and dense subsurface scattering (such as rock, plastic, skin etc.), or a translucent material (such as glass, liquids, organic matter etc.) with some limited amount of volumetric absorption and scattering. These use cases require different parametrizations to effectively control, so are convenient to split into separate slabs. The translucent case is described in the Translucent base section, while the opaque base is further broken down below.
 
@@ -406,14 +410,15 @@ In some cases a blend of subsurface and completely opaque glossy-diffuse scatter
 \begin{eqnarray}
 \textrm{opaque-base}  &=& \mathrm{\mathbf{mix}}(\textrm{glossy-diffuse}, \mathrm{subsurface}, \mathtt{subsurface\_weight})        \nonumber \\
 \end{eqnarray}
-*****************************************************************************************
-*                                    1 - subsurface_weight      subsurface_weight       *
-*   +---------------------+        +------------------------+------------------------+  *
-*   |░░░░░░░░░░░░░░░░░░░░░|        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |  *
-*   |░░░░ opaque-base ░░░░|   ==   |░░░░ glossy-diffuse ░░░░|       subsurface       |  *
-*   |░░░░░░░░░░░░░░░░░░░░░|        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |  *
-*   + - - - - - - - - - - +        + - - - - - - - - - - -  + - - - - - - - - - - -  +  *
-*****************************************************************************************
+
+****************************************************************************************************
+*                                                1 - subsurface_weight      subsurface_weight      *
+* +-----------------------------------+        +------------------------+------------------------+ *
+* |░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|        |░░░░░░░░░░░░░░░░░░░░░░░░|                        | *
+* |░░░░░░░░░░░ opaque-base ░░░░░░░░░░░|   ==   |░░░░ glossy-diffuse ░░░░|       subsurface       | *
+* |░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|        |░░░░░░░░░░░░░░░░░░░░░░░░|                        | *
+* +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
+****************************************************************************************************
 
 The two models for the opaque base are described in the Glossy-diffuse section and the Subsurface section.
 
@@ -657,15 +662,16 @@ The coat is applied on top of the base substrate, with a coverage weight $\matht
 \begin{equation}
 \textrm{coated-base} = \mathrm{\mathbf{layer}}(\textrm{base}, \textrm{coat},   \mathtt{coat\_weight}) \ .
 \end{equation}
-***************************************************
-* +---------------------------------------------+ *
-* |                    coat                     | *
-* +---------------------------------------------+ *
-* |                    base                     | *
-* +---------------------------------------------+ *
-***************************************************
 
-coat params                  | Type       |  Range                 | Default      | Description
+*******************************************************
+* +-------------------------------------------------+ *
+* |                      coat                       | *
+* +-------------------------------------------------+ *
+* |                      base                       | *
+* +-------------------------------------------------+ *
+*******************************************************
+
+Coat params                  | Type       |  Range                 | Default      | Description
 -----------------------------|------------|------------------------|--------------|-------------------------------------------------------------------
 **`coat_weight`**            | `float`   | [0,1]                   | 0.0          | coverage weight of coat layer
 **`coat_color`**             | `color3`  | [0,1]                   | (1, 1, 1)    | controls the overall color due to absorption of $V_\mathrm{coat}$
@@ -711,13 +717,14 @@ Conceptually the fibers will cover only some fraction of the surface and thus do
 \begin{equation}
 \mathrm{surface} = \mathrm{\mathbf{layer}}(\textrm{coated-base}, \mathrm{fuzz}, \mathtt{fuzz\_weight}) \ .
 \end{equation}
-***************************************************
-* +---------------------------------------------+ *
-* |                    fuzz                     | *
-* +---------------------------------------------+ *
-* |                 coated-base                 | *
-* +---------------------------------------------+ *
-***************************************************
+
+*******************************************************
+* +-------------------------------------------------+ *
+* |                      fuzz                       | *
+* +-------------------------------------------------+ *
+* |                   coated-base                   | *
+* +-------------------------------------------------+ *
+*******************************************************
 
 The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution (based for example on [#Kutz2021], [#Zeltner2022]). We assume that this representation has these basic characteristics:
 
@@ -772,14 +779,14 @@ That is:
 \end{equation}
 where **`geometry_opacity`** is then effectively a linear "alpha" blend.
 
-*****************************************************************************************
-*                                     1 - geometry_opacity       geometry_opacity       *
-*   +---------------------+        +------------------------+------------------------+  *
-*   |                     |        |                        |                        |  *
-*   |         PBR         |   ==   |     ambient medium     |         surface        |  *
-*   |                     |        |                        |                        |  *
-*   + - - - - - - - - - - +        + - - - - - - - - - - -  + - - - - - - - - - - -  +  *
-*****************************************************************************************
+****************************************************************************************************
+*                                                 1 - geometry_opacity       geometry_opacity      *
+* +-----------------------------------+        +------------------------+------------------------+ *
+* |                                   |        |                        |                        | *
+* |                PBR                |   ==   |     ambient medium     |         surface        | *
+* |                                   |        |                        |                        | *
+* +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
+****************************************************************************************************
 
 Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the thin-walled case this the opacity has the clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$).
 
