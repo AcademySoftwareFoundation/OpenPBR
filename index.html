@@ -21,15 +21,20 @@ Over the years, certain de facto standard appearance definition frameworks have 
 
 Our proposed model follows closely the Autodesk Standard Surface shader [#Georgiev2019], which has strong spiritual predecessors in Anders Langlands' alSurface [#Langlands2014] and Autodesk 3ds Max's Physical Material [#Andersson2016]. It also incorporates many elements of the Adobe Standard Material [#Kutz2021], based heavily on Allegorithmic's PBR shading model [#McDermott2018]. 3ds Max's Physical Material in turn has been strongly inspired by Allegorithmic's model, Disney's Principled Shader [Burley2012], and general industry trends in several real-time 3D engines, and has been production proven with support by all major render engines for 3ds Max.
 
-In this proposal, rather than providing parameters for every conceivable case, we intentionally try to boil the set of parameters down to only those that are most useful in practice. We also fix the combination of primitive reflectance models to ensure that the users work within the bounds of what is physically plausible as much as possible. We aim for the overall behavior to be simple, logical, intuitive, and understandable, so that the model covers most day-to-day use cases. For the few it does not cover, one may need to use a renderer-specific shader, or build a bespoke shading network. We thus adopt a material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]).
+In this proposal, rather than providing parameters for every conceivable case, we intentionally try to boil the set of parameters down to only those that are most useful in practice. We also fix the combination of primitive reflectance models to ensure that the users work within the bounds of what is physically plausible as much as possible. We aim for the overall behavior to be simple, logical, intuitive, and understandable, so that the model covers most day-to-day use cases. For the few it does not cover, one may need to use a renderer-specific shader, or build a bespoke shading network.
 
-In outline this consists of:
+We thus adopt a material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]). With each component of the structure, we also define a set of parameters with names, valid ranges and default values, and describe how the component should be affected by the parameters.
 
-   - A base substrate which consists of a mixture of metal or dielectric.
-   - The dielectric base represents either the bulk of highly translucent media (e.g. glass, crystals, and liquids), the subsurface of highly scattering media (e.g. marble, plastic, skin, vegetation), or the surface of effectively opaque "diffuse" media (e.g. dirt, dense rock, concrete), where these three components are statistically mixed.
-   - The base dielectric (or metal) interface produces the primary specular reflection lobe.
-   - This base is optionally coated with a layer of dielectric, which may have an absorbing medium. The dielectric interface of this coat layer provides a secondary specular lobe.
-   - The surface is finished with an optional layer of "fuzz", which is a coat of micro-fibers representing e.g. fine hair (peach fuzz), textile strands or dust.
+In outline the structure consists of:
+   - A base substrate made of a mixture of metal or dielectric.
+     The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe.
+     - The dielectric base represents either of three components, that can be statistically mixed:
+       1. The bulk of highly translucent media (e.g. glass, crystals, liquids, etc.),
+       2. The subsurface of highly scattering media (e.g. marble, plastic, skin, vegetation, etc.), or
+       3. The surface of effectively opaque "diffuse" media (e.g. dirt, dense rock, concrete, etc.),
+   - An optional layer of dielectric, which may have an absorbing medium, acting as a coating on top of the base substrate.
+     The dielectric interface of this coat layer provides a secondary specular lobe.
+   - An optional layer of "fuzz", representing the reflection from micro-fibers (e.g. fine hair, peach fuzz, textile strands, dust, etc.) on top of everything else.
 
    ![Figure [diagram_model]: Schematic illustration of the idealized material model that our shader emulates. Horizontal stacking of components represents statistical mixture and vertical stacking represents layering.](images/model_schematic.svg width="100%")
 
