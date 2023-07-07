@@ -472,8 +472,8 @@ specular params              | Type     |  Range  | Default          | Descripti
 **`specular_roughness`**     | `float`  | [0,1)   | `0.2`            | roughness of the dielectric microfacet surface
 **`specular_ior`**           | `float`  | [1,3)   | `1.5`            | index of refraction of the dielectric
 **`specular_ior_level`**     | `float`  | [0,1]   | `0.5`            | modulates the dielectric reflectivity at normal incidence between zero and double the original
-**`specular_anisotropy`***   | `float`  | [0,1]   | `0`              | anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_rotation`***     | `float`  | [0,1]   | `0`              | orientation of roughness anisotropy
+**`specular_anisotropy`**    | `float`  | [0,1]   | `0`              | anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_rotation`**      | `float`  | [0,1]   | `0`              | orientation of roughness anisotropy
 
 ![](images/spec_ior1.jpg width=95%) ![](images/spec_ior2.jpg width=95%) ![](images/spec_ior3.jpg width=95%)
 <div class="shifted-caption">
@@ -740,8 +740,8 @@ Coat params                  | Type       |  Range                 | Default    
 **`coat_ior_level`**         | `float`   | [0,1]                   | 0.5          | modulates the coat reflectivity at normal incidence between zero and double the original
 
 <!-- Markdeep:
-**`coat_affect_color`**      | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the brightness and saturation of layers below
-**`coat_affect_roughness`**  | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the roughness of layers below
+**`coat_affect_color`***     | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the brightness and saturation of layers below
+**`coat_affect_roughness`*** | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the roughness of layers below
 **`coat_affect_ior`***       | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the relative IOR of layers below
  -->
 
