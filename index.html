@@ -353,11 +353,7 @@ The bulk at the bottom of the material structure, termed the base substrate, con
 The **`base_metalness`** parameter controls the fraction of surface which is metal, where values between 0 and 1 can be used to texture surfaces like rusted iron, where different areas of the surface can have more reflective clean metal and more diffuse rust.
 Metalness maps from applications like Substance Painter can be connected to this parameter.
 
-!!! Tip
-   TODO: Say something about how to interpret this if the metal is mixed with a transparent base. Then it may be best to treat the metal as flakes on top of an underlying dielectric, rather than a bulk?
-
-Rainbow-like iridescence effects which occur due to interference when a thin refractive film with thickness on the order of the light wavelength is placed on top of a material.
-There is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by its thickness and the film IOR.
+Rainbow-like iridescence effects which occur due to interference when a thin refractive film with thickness on the order of the light wavelength is placed on top of a material. There is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by its thickness and the film IOR.
 In practice, these effects are most easily incorporated directly into the microfacet BSDFs of both the metal and dielectric base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
 
 thin-film params             | Type    |  Range    | Default          | Description
