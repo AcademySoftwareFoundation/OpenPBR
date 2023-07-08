@@ -169,7 +169,7 @@ $E_X(\omega_o) \equiv \int_{\mathcal{H}_+} f_X(\omega_i, \omega_o) \,\mathrm{d}\
 
 A simple, albeit non-reciprocal, form of albedo scaling is to take the substrate weight factor to be one minus the directional reflectance of the coat (intuitively meaning that the energy not reflected by the coat is assumed to transmit through to the substrate), i.e.:
 \begin{equation}
-f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  +  \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o)
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o) + \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o)
 \end{equation}
 where the directional albedo integral $E_\mathrm{coat}(\omega_o)$ can be either precomputed and tabulated, or computed on-the-fly via [Monte Carlo](https://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions#Application:EstimatingReflectance) sampling of the BSDF.
 This form ensures that if the directional albedos of the coat and substrate BSDFs are "weakly" energy conserving (i.e. $E_\mathrm{coat}(\omega_o) \le 1$, $E_\mathrm{sub}(\omega_o) \le 1$), then the combined BSDF is also weakly energy conserving, since
@@ -185,11 +185,11 @@ f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + C 
 where to ensure the energy conservation the normalization constant $C$ involves an integral over the albedo times the substrate BSDF. Depending on the form of the substrate BSDF this may require more elaborate tabulation.
 
 Note though that this albedo-scaling approximation does not correctly take into account the effect of multiple light bounces back and forth between the interfaces, or absorption and scattering in the volumetric medium of the coat $V_\mathrm{coat}$. In general the resulting BSDF lobe shape will not be a simple linear combination of the interface BSDFs.
-To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric transmittance $T$ through the coat in the incident and output directions could be approximately modelled as
-\begin{equation}
-f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + T(\omega_i)\,T(\omega_o) \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o) \ .
+To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric transmittance through the coat in the incident and output directions could be approximately modelled as
+\begin{equation} \label{general-albedo-scaling}
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  +  T_\mathrm{coat}(\omega_i, \omega_o) \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o) \ .
 \end{equation}
-Similarly if the coat is rough this will effectively roughen the substrate BSDF lobe also, which can be accounted for approximately via various heuristics.
+where $T_\mathrm{coat}(\omega_i, \omega_o)$ accounts for the total volumetric absorption of the coat along the input and output rays. Similarly if the coat is rough this will effectively roughen the substrate BSDF lobe also, which can be accounted for approximately via various heuristics.
 
 In general we will not specify particular such approximations which we favor, and instead aim to make it as clear as possible what the underlying basic physical structure is and leave it to each implementation to decide how best to approximate this for its particular use case.
 
@@ -249,11 +249,23 @@ The implementation of the mix operation in a renderer depends on how the materia
 f_\mathrm{mix} = (1 - w_1) f_0 + w_1 f_1 \ .
 \end{equation}
 
-In the case of the weighted layer operation, if the BSDFs of the substrate and coat are $f_\mathrm{sub}$, $f_\mathrm{coat}$, then $\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat})$ maps to
+In the case of the weighted layer operation, if the BSDFs of the substrate is $f_\mathrm{sub}$ then $\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat})$ maps to
 \begin{equation}
-f_\mathrm{layer} = (1 - w_\mathrm{coat}) f_\mathrm{sub} + w_\mathrm{coat} f_\mathrm{layer}
+f_\mathrm{weighted-layer} = (1 - w_\mathrm{coat}) f_\mathrm{sub} + w_\mathrm{coat} f_\mathrm{layer}
 \end{equation}
 where $f_\mathrm{layer}$ is the BSDF corresponding to $\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat})$.
+If we use the non-reciprocal albedo scaling approach described in the Layering section (equation [general-albedo-scaling]), then $f_\mathrm{layer}$ can be expressed as
+\begin{equation}
+f_\mathrm{layer} = f_\mathrm{coat} +  T_\mathrm{coat} \left(1 - E_\mathrm{coat}\right) \,f_\mathrm{sub}
+\end{equation}
+where $f_\mathrm{coat}$ is the BSDF of the coat. Thus combining these,
+\begin{equation}
+f_\mathrm{weighted-layer} = w_\mathrm{coat} f_\mathrm{coat} +  \mathrm{lerp}\left(1,  T_\mathrm{coat} (1 - E_\mathrm{coat}),  w_\mathrm{coat}\right) f_\mathrm{sub} \ ,
+\end{equation}
+which, for example, is the formula used in the Autodesk Standard Surface [#Georgiev2019] coat layer.
+
+In this fashion the abstract mix and layer operations can be mapped to a more concrete representation in terms of a weighted sum of BSDF lobes, and associated volumetric media. In practice we will defer to the MaterialX implementation of the OpenPBR Surface model to define exactly how this mapping is done.
+
 
 
 Emission model
