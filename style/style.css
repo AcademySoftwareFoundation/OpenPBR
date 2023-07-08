@@ -1,83 +1,11 @@
 /******************************************************************************/
-/* Fonts
-/******************************************************************************/
-
-@font-face {
-  font-family: 'Artifakt Legend';
-  font-style: normal;
-  font-weight: 700;
-  src: url('fonts/Artifakt/Artifakt Legend Bold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Artifakt Element';
-  font-style: normal;
-  font-weight: 400;
-  src: url('fonts/Artifakt/Artifakt Element Regular.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Artifakt Element';
-  font-style: normal;
-  font-weight: 500;
-  src: url('fonts/Artifakt/Artifakt Element Medium.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Artifakt Element';
-  font-style: normal;
-  font-weight: 700;
-  src: url('fonts/Artifakt/Artifakt Element Bold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto Mono';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto Mono'), local('RobotoMono-Regular'), url('fonts/RobotoMono/RobotoMono-Regular.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; /* Latin */
-}
-
-@font-face {
-  font-family: 'Roboto Mono';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Roboto Mono Bold'), local('RobotoMono-Bold'), url('fonts/RobotoMono/RobotoMono-Bold.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; /* Latin */
-}
-
-@font-face {
-  font-family: 'PT Serif';
-  font-style: italic;
-  font-weight: 400;
-  src: local('PT Serif Italic'), local('PTSerif-Italic'), url('fonts/PTSerif/PTSerif-Italic.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; /* Latin */
-}
-
-@font-face {
-  font-family: 'PT Serif';
-  font-style: normal;
-  font-weight: 400;
-  src: local('PT Serif'), local('PTSerif-Regular'), url('fonts/PTSerif/PTSerif-Regular.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; /* Latin */
-}
-
-@font-face {
-  font-family: 'PT Serif';
-  font-style: normal;
-  font-weight: 700;
-  src: local('PT Serif Bold'), local('PTSerif-Bold'), url('fonts/PTSerif/PTSerif-Bold.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; /* Latin */
-}
-
-/******************************************************************************/
 /* Document body
 /******************************************************************************/
 
 body
 {
     max-width: 900px;
-    font-family: 'PT Serif', serif;
+    font-family: 'Georgia', serif;
     padding: 70px 10px 0px 10px;
     min-width: 260px;
     font-size: 16px;
@@ -110,14 +38,14 @@ body
         font-size: 98%;
         line-height: 120%;
         border: 0;
-        font-family: 'Artifakt Element', sans-serif;
+        font-family: 'Verdana', sans-serif;
         border-top: 1px solid rgba(0,0,0,.1);
         border-bottom: 1px solid rgba(0,0,0,.1);
     }
 
     .md .longTOC a, .md .mediumTOC a, .md .shortTOC a
     {
-        font-family: 'Artifakt Element', sans-serif;
+        font-family: 'Verdana', sans-serif;
     }
 }
 
@@ -132,7 +60,7 @@ body
 
 .md div.title
 {
-    font-family: 'Artifakt Legend', sans-serif;
+    font-family: 'Verdana', sans-serif;
     font-weight: 700;
     border: 0;
 }
@@ -141,7 +69,7 @@ contents, .md .tocHeader,
 .md h1, .md h2, .md h3, .md h4, .md h5, .md h6,
 .md .nonumberh1, .md .nonumberh2, .md .nonumberh3, .md .nonumberh4, .md .nonumberh5, .md .nonumberh6
 {
-    font-family: 'Artifakt Element', sans-serif;
+    font-family: 'Verdana', sans-serif;
     font-weight: 500;
 }
 
@@ -188,6 +116,13 @@ contents, .md .tocHeader,
     line-height: 150%;
 }
 
+
+.md .longTOC a.level3, .md .mediumTOC a.level3, .md .shortTOC a.level3
+{
+    color: rgba(0, 0, 0, 0.9); 
+    font-weight: 300;
+    line-height: 150%;
+}
 
 /******************************************************************************/
 /* Titles and headings
@@ -257,7 +192,7 @@ contents, .md .tocHeader,
     color: white;
     font-size: 110%;
     font-weight: 700;
-    font-family: 'Artifakt Element', sans-serif;
+    font-family: 'Verdana', sans-serif;
     padding: 7px 7px 10px 7px;
 }
 
@@ -285,7 +220,7 @@ contents, .md .tocHeader,
 
 .md a
 {
-    font-family: 'PT Serif';
+    font-family: 'Georgia';
 }
 
 .md a:link
@@ -311,7 +246,7 @@ contents, .md .tocHeader,
 {
     padding: 0;
     border: none;
-    font-family: 'Roboto Mono', monospace;
+    font-family: 'Lucida', monospace;
     font-size: 92%;
 }
 .md pre.listing
