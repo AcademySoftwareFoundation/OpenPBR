@@ -4,7 +4,7 @@
     <img src="images/title.jpg" width="70%" title="OpenPBR logo (placeholder)"/>
 </p>
 
-A white paper specifying a über surface shader that aims to provide a material representation capable of accurately modeling the vast majority of materials used in practical visual effects and feature animation productions. The white paper is versioned and will be updated as the specification evolves.
+A white paper specifying an über surface shader that aims to provide a material representation capable of accurately modeling the vast majority of materials used in practical visual effects and feature animation productions. The white paper is versioned and will be updated as the specification evolves.
 
 The contents of this repository are strictly confidential and should not be copied, distributed or reproduced in whole or in part, nor passed to any third party outside of the approved contributors.
 

@@ -11,16 +11,12 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 - **Label**: a suggested, non-unique UI name, where parameter grouping for UI purposes can be inferred based on the common identifer prefix.
 - **Type**: one of `float`, `boolean`, `color3`, `vector3`. A `color3` value is associated with a color space ([`acescg`](https://docs.acescentral.com/specifications/acescg/) bydefault), while a `vector3` value is a raw 3-component vector.
 - **Range**: the allowed value range for scalar parameters (per-channel for color and vector parameters).
-  - Brackets indicate a range the value must be within.
-  - Parenthesis indicate the range the value is expected to be within to remain physically plausible, but going beyond may still be possible.
-  - Braces indicate a discrete set of possible values.
+  - Square brackets `[]` indicate a range the value must be within.
+  - Round brackets `()` indicate the range the value is expected to be within to remain physically plausible, but going beyond may still be possible.
+  - Curly brackets `{}` indicate a discrete set of possible values.
 - **Default**: the suggested default value.
 - **Unit**: where relevant, otherwise assumed to be dimensionless. Note that lengths can be assumed to be in the world space units of the scene.
 - **Uniform**: whether a parameter is expected to be uniform (i.e. constant) or varying over the surface
-
-!!! TIP
-    TODO: Do we allow soft-max and soft-min in some cases?
-
 
 | Identifier                            | Label               | Type      | Range           | Default                          | Unit       | Uniform   |
 |---------------------------------------|---------------------|-----------|:---------------:|:--------------------------------:|------------|:---------:|
