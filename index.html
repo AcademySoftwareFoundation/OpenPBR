@@ -115,11 +115,11 @@ We build a more complex composite material by "vertically" layering and "horizon
 Layering
 -------------------------------------
 
-The layer operation deposits a slab $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$ (or composite material), conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$, so that $V_\mathrm{coat}$ becomes the adjacent medium above the microsurface of $S_\mathrm{sub}$. 
+The layer operation generates a composite material by depositing a slab $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$ (or composite material), conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$, so that $V_\mathrm{coat}$ becomes the adjacent medium above the microsurface of $S_\mathrm{sub}$. 
 
-The physical act of bringing the two independent slabs together and bonding them produces a new, "vertically" heterogeneous composite material denoted
+The physical act of bringing the two independent slabs $S_\mathrm{sub}$ and $S_\mathrm{coat}$ together and bonding them produces a new, "vertically" heterogeneous composite material $L$ denoted
 \begin{equation}
-\mathrm{layer}(S_\mathrm{sub}, S_\mathrm{coat}) \ .
+L = \mathrm{layer}(S_\mathrm{sub}, S_\mathrm{coat}) \ .
 \end{equation}
 
 Diagrammatically, we represent the layering operation as putting the two slabs vertically adjacent, where one is to imagine the physical slabs of material being bonded at their top and bottom interfaces.
@@ -199,12 +199,11 @@ Mixing
 
 The mix operation linearly blends two materials at the microsurface level. The physical picture is that the microsurface consists of randomly distributed patches of each material in proportion to the blend weight, which thus exhibits heterogeneity in the "horizontal" direction. Many real-world objects are made of several different materials, e.g. metal and plastic, and it is convenient to model the appearance of such objects by texturing the type of each material on their surfaces. While the material transitions are typically abrupt, the ability to continuously mix materials is useful for artistic purposes as well as for anti-aliasing.
 
-The mix operation is denoted:
-
+The mix operation of two slabs $S_0$ and $S_1$ with weight $w_1$, generating a new “horizontally” heterogeneous composite material $M$, is denoted:
 \begin{equation}
 M = \mathrm{\mathbf{mix}}(S_0, S_1, w_1)
 \end{equation}
-where $M \rightarrow S_0$ as $w_1 \rightarrow 0$, and $M \rightarrow S_1$ as $w_1 \rightarrow 1$.
+where the $M \rightarrow S_0$ as $w_1 \rightarrow 0$, and $M \rightarrow S_1$ as $w_1 \rightarrow 1$.
 
 Diagrammatically, we represent the mix as putting the two slabs horizontally adjacent, where the intention is that one should imagine the physical slabs lying adjacent at the same surface level, though randomly distributed in microscopic patches with relative area in proportion to the given mix weight.
 
@@ -245,7 +244,16 @@ For convenience this may also be written more concisely as an weighted layer ope
 
 This physical picture of the mix operation becomes somewhat unrealistic in some cases where the bottom-most bulk materials being blended are not obviously consistent (e.g. blending dielectric and metallic bulks), but in such cases it is understood that the implementation should do the best it can to make sense of the physics (e.g. the metal bulk could be considered to actually be surface metallic flakes on top of a single consistent dielectric). 
 
-The implementation of the mix operation in a renderer depends on how the material model is approximated. Typically the model will be reduced to an effective BSDF per slab being mixed, in which case the mix will be implemented simply as a linear blend of those BSDFs. Though in some cases it may be more convenient to implement the mixture as a microfacet model where the selection of the mix component happens during the statistical sampling of the microfacets.
+The implementation of the mix operation in a renderer depends on how the material model is approximated. Typically the model will be reduced to an effective BSDF per slab being mixed, in which case the mix can be implemented simply as a linear blend of those BSDFs, i.e. if slabs $S_0$, $S_1$ have BSDFs $f_0$, $f_1$ respectively, then the BSDF of $\mathrm{\mathbf{mix}}(S_0, S_1, w_1)$ can be mapped to a BSDF for the
+\begin{equation}
+f_\mathrm{mix} = (1 - w_1) f_0 + w_1 f_1 \ .
+\end{equation}
+
+In the case of the weighted layer operation, if the BSDFs of the substrate and coat are $f_\mathrm{sub}$, $f_\mathrm{coat}$, then $\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat})$ maps to
+\begin{equation}
+f_\mathrm{layer} = (1 - w_\mathrm{coat}) f_\mathrm{sub} + w_\mathrm{coat} f_\mathrm{layer}
+\end{equation}
+where $f_\mathrm{layer}$ is the BSDF corresponding to $\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat})$.
 
 
 Emission model
@@ -297,12 +305,12 @@ We describe first the latter case of a bulk, where the material structure inform
 * |           |                                    coat                       |            |               *
 * |           +---------------------+---------------------+----------------+--+------------+ <-- thin-film *
 * |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-* |  ambient  |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-* |  medium   |░░░░░░░ metal ░░░░░░░|     translucent     |   subsurface   |░░░ glossy  ░░░|               *
+* |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |           |░░░░░░░ metal ░░░░░░░|     translucent     |   subsurface   |░░░ glossy  ░░░|               *
 * |           |░░░░░░░░░░░░░░░░░░░░░|        base         |                |░░░ diffuse ░░░|               *
 * |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-* |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-* |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |  ambient  |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |  medium   |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
 * +-----------+ - - - - - - - - - - +- - - - - - - - - - -+ - - - - - - - -+ - - - - - - - +               *
 *                                                                                                          *
 *                                                          <--------- opaque base -------->                *
@@ -475,6 +483,8 @@ glossy-diffuse params        | Type     |  Range  | Default          | Descripti
 !!! Tip
    TODO: Explain why default `base_color` is (0.8,0.8,0.8)
 
+   !!! Tip
+   TODO: An image showing a pure glossy-diffuse slab! (with textured color and roughness)
 
 ### Subsurface
 
@@ -568,6 +578,8 @@ translucent base params                      | Type       |  Range              
     ![Figure [transmission]: The effect of **`transmission_scatter_anisotropy`**. From left to right: -0.5, 0.0, 0.5.](dummy)
 </div>
 
+!!! WARNING
+   TODO: The above image is not correct anymore, if we use the proposed mapping..  Anisotropy will **not** change the apparent translucency depth.
 
 !!! WARNING
    TODO: Consider restoring non-physical "useful hack" **`​transmission_extra_roughness`**, i.e. additional (positive or negative) roughness on top of **`specular_roughness`**
@@ -846,7 +858,7 @@ We hope this proposal serves as a useful basis for an industry standard surface 
 Acknowledgements
 ================================================================================
 
-The authors would like to thank Jonathan Stone, Guido Quaroni, Miloš Hašan, Iliyan Georgiev, Henrik Edstrom, Nikie Monteleone, and Niklas Harrysson for their useful input and feedback.
+The authors would like to thank Jonathan Stone, Guido Quaroni, Miloš Hašan, Iliyan Georgiev, Michael Nickelsky, Henrik Edstrom, Niklas Harrysson, Nikie Monteleone and Lee Griggs for their useful input and feedback.
 
 
 
