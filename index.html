@@ -107,9 +107,9 @@ S_\mathrm{bulk} = \mathrm{Slab}(f, V^\infty) \ .
 For completeness, the absence of a slab (i.e. no surface or underlying medium), which corresponds just to the ambient medium, is denoted $\mathrm{Slab}(\emptyset)$.
 
 A slab does not itself specify anything about other slabs in relation to itself (e.g. its substrate slab or overlying slab).
-The adjacent medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top and bottom of the entire structure is also assumed to be given and unspecified by the model. If the renderer keeps track of the dielectric medium in which the surface is embedded (via a scheme such as "nested dielectrics" [#Budge2002]) which may be the interior of some dielectric object in the scene such as water or ice, then the ambient medium is a general dielectric whose IOR we denote **`ambient_ior`**, or if dielectric medium tracking is not done then **`ambient_ior`** can be assumed to be 1 corresponding to air or vacuum.
+The adjacent medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top and bottom of the entire structure is also assumed to be given and unspecified by the model. If the renderer keeps track of the dielectric medium in which the surface is embedded (via a scheme such as "nested dielectrics" [#Budge2002]) which may be the interior dielectric bulk of some transparent object in the scene such as a piece of glass or body of water, then the ambient medium is a general dielectric whose IOR we denote **`ambient_ior`**, or if dielectric medium tracking is not done then **`ambient_ior`** can be assumed to be 1 corresponding to air or vacuum.
 
-We build a more complex composite material by "vertically" layering and "horizontally" mixing slabs, as described below.
+Given constituent slabs, we then build a more complex composite material by "vertically" layering and "horizontally" mixing slabs, as described below.
 
 
 Layering
