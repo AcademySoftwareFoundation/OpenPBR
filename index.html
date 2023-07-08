@@ -41,9 +41,9 @@ We want this material model to be useful to a wide range of renderers, from offl
 
 When a particular rendering model is widely adopted we may mention it, and when an accurate solution can be prohibitively costly we may also suggest alternative approximations. But in the end, it is up to the developer to choose the appropriate implementation for their use case, based on their practical constraints and the level of visual quality they are aiming for.
 
-Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that e.g. a given renderer may not support subsurface scattering, or that anisotropic coating may be to expensive for VR. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't (e.g. a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect).
+Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that e.g. a given renderer may not support subsurface scattering, or that anisotropic coating may be too expensive for VR. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't (e.g. a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect).
 
-In both cases, the important consideration is that the implementation respects the intent of the material. To that end, we do our best effort to describe as unambiguously as possible the material model, its physical layout, and the behavior of the parameters that control its properties.
+In both cases, the important consideration is that the implementation respects the intent of the material. To that end, we make our best effort to describe as unambiguously as possible the material model, its physical layout, and the behavior of the parameters that control its properties.
 
 !!! Tip
     TODO: The question of a reference renderer is still pending. It is quite possible that the MaterialX implementation may become the reference one.
