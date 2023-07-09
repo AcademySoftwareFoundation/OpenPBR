@@ -449,7 +449,7 @@ Both the opaque and translucent dielectric base share the same dielectric interf
 
  - The **`specular_ior`** parameter controls the index of refraction of the dielectric, which in this case only affects the Fresnel factor. The **`specular_ior_level`** parameter additionally provides a convenient [0,1] control for dialing the dielectric reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum, by modulating the IOR.  This is useful for texturing the specular reflectivity in a more physically correct way than via the **`specular_weight`** (for example low **`specular_weight`** suppresses the entire specular lobe at all viewing angles, while low **`specular_ior`** still retains the Fresnel highlights at grazing angles). 
 
-The formula for the IOR modulation is as follows. Given the existing **`specular_ior`**, the ratio $\eta_0$ of this to the IOR of the surrounding medium is computed (which should take into account the presence of the coat, as discussed in the Coat section).
+The formula for the IOR modulation is as follows. Given the existing **`specular_ior`**, the ratio $\eta_0$ of this to the IOR of the surrounding medium is computed (which should take into account the presence of the coat, according to equation [effective_coat_ior] in the Coat section).
 Given this ratio, the dielectric Fresnel reflection factor at normal incidence is given by
 \begin{equation}
 F_0 = \frac{|1 - \eta_0|^2}{(1 + \eta_0)^2} \ .
@@ -459,6 +459,7 @@ This Fresnel factor is then modulated by multiplying by twice the **`specular_io
 \eta = \frac{1 + \mathrm{sgn}(\eta_0-1)\sqrt{2 s F_0}}{1 - \mathrm{sgn}(\eta_0-1)\sqrt{2 s F_0}} \ .
 \end{equation}
 Note there is a constraint $s < 1/(2F_0)$ since the scaled reflection coefficient cannot exceed $1$. So the range of $s$ needs to be clamped: $s \in [0, \mathrm{min}(1, 1/(2F_0)]$. Applying this modulated IOR ratio in the dielectric Fresnel factor then produces the desired reflectivity modulation.
+
 
 specular params              | Type     |  Range  | Default          | Description
 -----------------------------| ---------|---------|------------------|---------------------------------------------------------------
@@ -478,16 +479,19 @@ specular params              | Type     |  Range  | Default          | Descripti
 !!! Tip
    TODO: Include some figure showing the effect of textured **`specular_ior_level`**, versus textured **`specular_weight`**
 
+!!! Tip
+   TODO: Mention microfacet multiple scattering energy compensation for dielectrics?
+
 
 ### Glossy-diffuse
 
-The glossy-diffuse slab is assumed to be a dielectric with a rough GGX microfacet surface BSDF $f_\mathrm{dielectric}$ (whose "specular" parameters are described above), embedding a semi-infinite bulk of extremely dense scattering material $V^\infty_\mathrm{diffuse}$.
+The glossy-diffuse slab is a dielectric with rough GGX microfacet surface BSDF $f_\mathrm{dielectric}$ (whose "specular" parameters are described in the Dielectric base section), embedding a semi-infinite bulk of extremely dense scattering material $V^\infty_\mathrm{diffuse}$.
 
 \begin{eqnarray}
-\textrm{glossy-diffuse}       &=& \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{diffuse})    \nonumber \\
+\textrm{glossy-diffuse}       &=& \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{diffuse})    \ .
 \end{eqnarray}
 
-In the limit of infinite density, this slab can be modelled by the classic Ashikhmin-Shirley type BSDF of a diffuse lobe summed with a "glossy" dielectric microfacet specular lobe, with factors designed ensure that the combination conserves energy [#Ashikhmin2000], [#Kutz2021]. This form of BSDF model is ubiquitous in computer graphics so we assume its implementation is standard. This reasonably effectively models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
+In the limit of infinite density, this slab can be modelled by the classic Ashikhmin-Shirley type BSDF of a diffuse lobe summed with a "glossy" dielectric microfacet specular lobe, with factors designed to ensure that the combination conserves energy [#Ashikhmin2000], [#Kelemen2001], [#Kutz2021], [#Pharr2023]. This form of BSDF model is ubiquitous in computer graphics so we assume its implementation is standard. This reasonably effectively models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
 
 The albedo of the diffuse lobe is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the total albedo. A **`base_roughness`** parameter controls the shape of the diffuse lobe (dialing from pure Lambertian to a more "dusty" look). The model is agnostic about the choice of diffuse BSDF lobe used, though typically it would be the Oren-Nayar microfacet model, where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. (How this base roughness arises from the physical model of a dielectric embedding a volumetric medium is left open to interpretation).
 
@@ -500,27 +504,24 @@ glossy-diffuse params        | Type     |  Range  | Default          | Descripti
 !!! Tip
    TODO: Explain why default `base_color` is (0.8,0.8,0.8)
 
-   !!! Tip
-   TODO: An image showing a pure glossy-diffuse slab! (with textured color and roughness)
+!!! Tip
+   TODO: An image showing some use-cases for a pure glossy-diffuse slab (with textured color and roughness), e.g. plastic, rock, concrete, rubber
 
 ### Subsurface
 
-For solid objects (for which thin_walled is false), subsurface scattering models the effect of light propagation and diffusion under the surface, where in general the exiting ray leaves at a different surface location than the incident ray.
-
-Physically, as for the slabs defined in the Glossy-diffuse section and Translucent base section, this is a dielectric substrate with volumetric properties, thus represented by a dielectric surface BSDF with interior medium:
+For solid objects (for which thin_walled is false), subsurface scattering models the effect of light propagation and diffusion under the surface, where in general the exiting ray leaves at a different surface location than the incident ray. Physically, as for the slabs defined in the Glossy-diffuse section and Translucent base section, this is a dielectric substrate with homogeneous volumetric properties, thus represented by a slab with dielectric surface BSDF $f_\mathrm{dielectric}$ (whose parameters were detailed in the Dielectric base section) with interior medium $V^\infty_\mathrm{subsurface}$:
 
 \begin{equation}
-\mathrm{subsurface} = \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{subsurface})
+\mathrm{subsurface} = \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{subsurface}) \ .
 \end{equation}
 
-In this case the subsurface medium $V^\infty_\mathrm{subsurface}$ is given a parametrization which is particularly convenient for controlling the effect of dense subsurface scattering:
+In this case the subsurface medium $V^\infty_\mathrm{subsurface}$ is given a parametrization which is particularly convenient for controlling the volumetric effect of dense subsurface scattering:
 
    - **`subsurface_scale`** * **`subsurface_radius`**: the desired size of the "blur" on the surface per RGB channel, i.e. roughly the average distance that light travels _along the surface_ per-channel, $\mathbf{r}$, also termed the _diffusion radius_.
    - **`subsurface_color`**: the observed RGB reflection albedo color taking into account all orders of multiple scattering, $\mathbf{A}$, also termed the _multi-scatter albedo_.
    - **`subsurface_anisotropy`**: the medium's phase function, parametrized by the (scalar) anisotropy $g$.
 
-!!! Tip
-    TODO: Technically the anisotropy could be different in each channel, but we don't support this. Rationalize this?
+These parameters collectively determine the underlying volumetric parameters (extinction $\boldsymbol{\mu}_t$, single-scattering albedo $\boldsymbol{\alpha}$, and phase function anisotropy $g$).
 
 To minimize the entanglement and side effects of these parameters, they should each affect only the corresponding aspect of the subsurface scattering, e.g. the color should not affect the size of the blur and the anisotropy should not affect the size of the blur or the color. This can be achieved, for example, by using empirically-derived mappings and similarity theory. We detail here a suggested mapping which achieves these requirements and reproduces the specified RGB diffusion profile size (width on the surface) $\mathbf{r}$ and RGB multi-scatter albedo $\mathbf{A}$.
 
@@ -528,7 +529,7 @@ To minimize the entanglement and side effects of these parameters, they should e
 \begin{equation}
 S(\mathbf{A}) = 4.012 - 15.21 \mathbf{A} + 32.34 \mathbf{A}^2 - 34.68 \mathbf{A}^3 + 13.91 \mathbf{A}^4 \ .
 \end{equation}
-Similarly the RGB single scattering albedo $\boldsymbol{\alpha}$ is approximately given by
+Similarly the RGB single-scattering albedo $\boldsymbol{\alpha}$ is approximately given by
 \begin{equation}
 \boldsymbol{\alpha}(\mathbf{A}) = 1 - e^{-11.43 \mathbf{A} + 15.38 \mathbf{A}^2 - 13.91 \mathbf{A}^3} \ .
 \end{equation}
@@ -562,41 +563,90 @@ subsurface params              | Type      |  Range                  | Default  
 !!! Tip
    TODO: Give example renders of how the blend of diffuse/SSS is important for skin rendering (as in Adobe model docs)
 
+!!! Tip
+   TODO: Technically the anisotropy could be different in each channel, but we don't support this. Rationalize this?
+
 
 ### Translucent base
 
-For cases where the substrate medium is translucent, i.e. transmits a significant quantity of light, we provide a separate parametrization of the underlying medium more appropriate for this use case than the subsurface model
-(where the **`transmission_weight`** mix weight selects this model rather than the opaque mix of glossy-diffuse and subsurface). This is a more traditional volumetric parametrization specifying the properties of a homogeneous medium interior to the object, with or without absorption and scattering. 
-The BSDF of the top interface $f_\mathrm{dielectric}$ is assumed to be that of a dielectric with volumetric medium $V^\infty_\mathrm{dielectric}$.
+For cases where the substrate medium is translucent, i.e. transmits and refracts a significant quantity of light, we provide a separate parametrization of the underlying medium more appropriate for this use case than the subsurface model, where the **`transmission_weight`** mix weight selects this model rather than the opaque mix of glossy-diffuse and subsurface. This is a more traditional volumetric parametrization specifying the properties of a homogeneous medium interior to the object, with or without absorption and scattering, which is useful for modeling materials ranging from clear or colored absorbing-only glass and liquids to translucent materials with visually significant scattering such as honey, fruit juice, murky water, opalescent glass, or milky glass.
 
+As for the dielectric slabs defined in the Glossy-diffuse section and Subsurface section, the BSDF of the top interface $f_\mathrm{dielectric}$ is a
+rough GGX microfacet surface BSDF $f_\mathrm{dielectric}$ whose "specular" parameters are described in the Dielectric base section.
+The bulk of the dielectric, $V^\infty_\mathrm{dielectric}$ is a volumetric medium supporting absorption and scattering. Its index of refraction is specified by **`specular_ior`** (as for the entire dielectric base).
 \begin{equation}
 \textrm{translucent-base} = \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{dielectric})  \nonumber \\
 \end{equation}
 
-This is useful for modeling a range of materials, ranging from clear or colored (absorbing-only) glass and liquids to materials with visually significant scattering such as honey, a deep body of water, opalescent glass, or milky glass. The **`transmission_color`** and **`transmission_depth`** parameter pair is a commonly used artist-friendly way to set the medium extinction coefficient, while **`transmission_scatter`** directly sets the medium scattering coefficient. When **`transmission_depth`** is zero, the interior medium is absent, and **`transmission_color`** is used to (non-physically) tint the refraction Fresnel factor multiplicatively by a constant amount (ignoring the dielectric energy balance). When **`transmission_depth`** is positive, the tinting is governed physically by the interior medium according to Beer's law.
+The volumetric properties of $V^\infty_\mathrm{dielectric}$ are specified as follows.
+The RGB **`transmission_color`** $\mathbf{T}$ and scalar **`transmission_depth`** $\lambda$ parameter pair is a commonly used artist-friendly way to set the volumetric medium extinction coefficient $\boldsymbol{\mu}_t$ (such that the Beer's law extinction produces the specified transmission color at the specified depth):
+\begin{equation}
+\boldsymbol{\mu}_t = - \frac{\ln \mathbf{T}} {\lambda} \ .
+\end{equation}
+However when **`transmission_depth`** $\lambda$ is zero, it is assumed that the interior medium is absent ($\boldsymbol{\mu}_t=0$) and **`transmission_color`** is used instead to non-physically tint the dielectric refraction Fresnel factor multiplicatively by a constant amount (ignoring the dielectric energy balance).
 
-Note that the index of refraction of the medium $V^\infty_\mathrm{dielectric}$ is specified by **`specular_ior`**.
+The **`transmission_scatter`** parameter $\mathbf{S}$ directly sets the medium scattering coefficient $\boldsymbol{\mu}_s$ (as a multiple of the inverse **`transmission_depth`**):
+\begin{equation}
+\boldsymbol{\mu}_s = \frac{\mathbf{S}} {\lambda} \ .
+\end{equation}
+The **`transmission_scatter`** color controls the observed color of the single-scattered light. (Note that in the case **`transmission_depth`** $\lambda$ is zero, however, the scattering coefficient is ignored). The absorption coefficient $\boldsymbol{\mu}_a$ is then computed as
+\begin{equation}
+\boldsymbol{\mu}_a = \boldsymbol{\mu}_t - \boldsymbol{\mu}_s \ .
+\end{equation}
+If any component of $\boldsymbol{\mu}_a$ is negative, then $\boldsymbol{\mu}_a$ is shifted by enough gray to make all the components positive, i.e. (in an obvious notation):
+\begin{eqnarray}
+&& \mathrm{if \;\; min(\boldsymbol{\mu}_a)} < 0 \nonumber \\
+&& \quad\quad \boldsymbol{\mu}_a \rightarrow \boldsymbol{\mu}_a - \mathrm{min}(\boldsymbol{\mu}_a) \ .
+\end{eqnarray}
+After this shifting, the final extinction coefficient is given by the new $\boldsymbol{\mu}_a + \boldsymbol{\mu}_s$.
+This formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light. Finally the medium phase function anisotropy $g$ is given by **`transmission_scatter_anisotropy`**.
 
-!!! Tip
-    TODO: Mention microfacet multiple scattering energy compensation for dielectrics?
-
-translucent base params                      | Type       |  Range                  | Default            | Description
----------------------------------------------|------------|-------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------
-**`transmission_weight`**                    | `float`    | [0,1]                   | 0                  | mix weight between translucent and opaque base
-**`transmission_color`**                     | `color3`   | [0,1]                   | (1,1,1)            | transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
-**`transmission_depth`**                     | `float`    | [0,$\infty$]            | 0                  | distance travelled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
-**`transmission_scatter`**                   | `color3`   | [0,1]                   | (0,0,0)            | scattering albedo of the interior medium
-**`transmission_scatter_anisotropy`**        | `float`    | [0,1]                   | 0.0                | anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
-**`transmission_dispersion_abbe_number`**    | `float`    | [20,70]                 | 20.0               | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in `[0,1]`
-**`transmission_dispersion_scale`**          | `float`    | [0,1]                   | 0.0                | linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
 
 ![](images/transmission1.jpg width=99%) ![](images/transmission2.jpg width=99%) ![](images/transmission3.jpg width=99%)
 <div class="shifted-caption">
     ![Figure [transmission]: The effect of **`transmission_scatter_anisotropy`**. From left to right: -0.5, 0.0, 0.5.](dummy)
 </div>
 
-!!! WARNING
-   TODO: The above image is not correct anymore, if we use the proposed mapping..  Anisotropy will **not** change the apparent translucency depth.
+The phenomenon known as _optical dispersion_ (i.e. variation of the IOR with wavelength) produces familiar rainbow-like colors when light refracts through dielectrics such as water, glass and diamond. The **`transmission_dispersion_abbe_number`** and **`transmission_dispersion_scale`** parameters control this effect. Control over dispersion is grouped with the transmission parameters since this effect is only significant in highly transparent refractive media.
+
+Dispersion is parametrized by the _Abbe number_ $V_d$, which is the ratio between differences of refractive indices at short, medium, and long wavelengths as follows:
+\begin{equation}
+V_d = \frac{n_{\mathrm{medium}} - 1}{n_{\mathrm{short}} - n_{\mathrm{long}}} \ ,
+\end{equation}
+where in the standard definition $n_{\mathrm{short}} = n_C$, $n_{\mathrm{medium}} = n_d$ and $n_{\mathrm{long}} = n_F$ are the IORs of the material at the wavelengths of the Fraunhofer C, d, and F spectral lines (at $\lambda_C$=486.1 nm, $\lambda_d$=587.56 nm, and $\lambda_F$=656.3 nm respectively). The amount of dispersion (i.e. angular separation of colors) is roughly proportional to the reciprocal of the Abbe number. The IOR at any wavelength can be determined from the Cauchy empirical formula:
+\begin{equation}
+n(\lambda) = B + \frac{C}{\lambda^2} \ .
+\end{equation}
+It follows that if the Abbe number $V_d$, and IOR $n(\lambda_d)$ is given, the coefficients in the Cauchy formula are given by
+\begin{eqnarray}
+C &=& \frac{n(\lambda_d) - 1}{V_d} \; \frac{(\lambda_F \lambda_C)^2}{\lambda^2_C - \lambda^2_F} \ , \nonumber \\
+B &=& n(\lambda_d) - \frac{C}{\lambda^2_d} \ .
+\end{eqnarray}
+We assume that **`specular_ior`** (including any modulation via **`specular_ior_level`** as in equation [modulated_ior]) defines $n(\lambda_d)$.
+Thus the IOR $n$ at any wavelength $\lambda$ is determined, given $V_d$. A renderer can use this known $n(\lambda)$ function to model the effect of dispersion, for example by stochastically choosing a wavelength sample and tracing the refracted ray direction according to the corresponding IOR.
+
+However the Abbe number itself is not very intuitive to work with, as the dispersion effect increases as the Abbe number decreases (zero dispersion occurs at infinite Abbe number). We therefore prefer to use a more artist-friendly parametrization, where the Abbe number is specified by
+\begin{equation}
+V_d = \frac{\mathtt{transmission\_dispersion\_abbe\_number}} {\mathtt{transmission\_dispersion\_scale}} \ .
+\end{equation}
+At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 10. The default 10 was chosen since real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87, while water and diamond both have an Abbe number of about 55-56 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the **`transmission_dispersion_abbe_number`** can be changed.
+
+!!! Tip
+   TODO: An image showing dispersion off, low, high.
+
+
+translucent base params                      | Type       |  Range                  | Default            | Description
+---------------------------------------------|------------|-------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------
+**`transmission_weight`**                    | `float`    | [0,1]                   | 0                  | mix weight between translucent and opaque base
+**`transmission_color`**                     | `color3`   | [0,1]                   | (1,1,1)            | transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
+**`transmission_depth`**                     | `float`    | [0,$\infty$]            | 1                  | distance travelled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
+**`transmission_scatter`**                   | `color3`   | [0,1]                   | (0,0,0)            | scattering albedo of the interior medium
+**`transmission_scatter_anisotropy`**        | `float`    | [0,1]                   | 0.0                | anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
+**`transmission_dispersion_abbe_number`**    | `float`    | [10,70]                 | 10.0               | Abbe number $V_d$ of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in `[0,1]`
+**`transmission_dispersion_scale`**          | `float`    | [0,1]                   | 0.0                | linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
+
+
+<!--
 
 !!! WARNING
    TODO: Consider restoring non-physical "useful hack" **`​transmission_extra_roughness`**, i.e. additional (positive or negative) roughness on top of **`specular_roughness`**
@@ -610,17 +660,13 @@ translucent base params                      | Type       |  Range              
 !!! WARNING
    TODO: If **`​transmission_extra_roughness`** is restored, should it also apply to the interface of the subsurface-scattering substrate?
 
-!!! Tip
-   TODO: If desired, the **`transmission_abbe_number`** parameter could be hard-coded to 20 and removed. In that case dispersion would be controlled solely by `transmission_dispersion_scale`.
-
-!!! Tip
-   TODO: Group dispersion parameters with regular specular parameters, not volume parameters. Dispersion occurs at the surface and affects reflection in addition to refraction. Some implementations might choose to neglect dispersion's effect on reflection, but if specular reflection and transmission are implemented as a single BSDF (as they are in ASM) it's actually easier to make it apply to both refraction and reflection.
+-->
 
 
 Metallic base
 -------------------------------------
 
-The characteristic appearance of metal, i.e. conductors, is another form of specularity which needs to be modelled, distinct from dielectrics. This is provided by a bulk slab which consists of an opaque microfacet conductor surface:
+The characteristic appearance of metal, i.e. conductors, is another form of specularity which needs to be modelled, distinct from dielectrics. Dispersion is provided by a bulk slab which consists of an opaque microfacet conductor surface:
 
 \begin{equation}
 \mathrm{metal} = \mathrm{Slab}(f_\mathrm{conductor}) \ .
@@ -642,28 +688,28 @@ To better approximate the actual Fresnel curve of metals, in the F82-tint model 
 \begin{equation}
 \mathbf{F}_{82}(\mu) = \mathbf{F}_{\mathrm{Schlick}}(\mu) - \frac{\mu (1 - \mu)^6}{\bar{\mu}(1 - \bar{\mu})^6} \Bigl(\mathbf{F}_{\mathrm{Schlick}}(\bar{\mu}) - \mathbf{F}(\bar{\mu})\Bigr) \ .
 \end{equation}
-where $\bar{\mu} = \cos(82^\circ)$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at that "grazing edge" angle cosine, ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, i.e. 
+where $\bar{\mu} = \cos(82^\circ)$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at that "grazing edge" angle cosine (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, i.e.
 \begin{equation}
 \mathbf{F}(\bar{\mu}) = \mathtt{specular\_weight} * \mathtt{specular\_color} * \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
 \end{equation}
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of $\mathtt{specular\_weight}$ and $\mathtt{specular\_color}$. Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
-!!! Tip
-   TODO: Though, should we say that the tint can be a soft-max at the upper bound, i.e. $[0,1)$ range, to support "exotic" metals?
-
-
 metal params               | Type       |  Range                  | Default             | Description
 ---------------------------|------------|-------------------------|---------------------|-------------------------------------------------------------------
 **`base_weight`**          | `float`    | [0,1]                   | 1.0                 | scalar multiplier to **`base_color`**
-**`base_color`**           | `color3`   | [0,1]                   | (0.8, 0.8, 0.8)     | specifies color of Fresnel reflection albedo at normal incidence
+**`base_color`**           | `color3`   | [0,1]                   | (0.8, 0.8, 0.8)     | specifies color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
 **`specular_weight`**      | `float`    | [0,1]                   | 1.0                 | scalar multiplier to **`specular_color`**
-**`specular_color`**       | `color3`   | [0,1]                   | (1.0, 1.0, 1.0)     | specifies tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_color`**       | `color3`   | [0,1]                   | (1.0, 1.0, 1.0)     | specifies tint color of Fresnel reflection albedo at near-grazing incidence
 **`specular_roughness`**   | `float`    | [0,1)                   | 0.3                 | roughness of conductor BRDF $f_\mathrm{conductor}$
 **`specular_anisotropy`**  | `float`    | [0,1]                   | 0.0                 | anisotropy of conductor BRDF $f_\mathrm{conductor}$
 **`specular_rotation`**    | `float`    | [0,1]                   | 0.0                 | orientation of roughness anisotropy
 
 
 ![Figure [metal]: Metals produced (in **`base_metalness`=1** mode) by setting the **`base_color`** and **`specular_color`** parameters. From left to right: aluminium, copper, gold.](images/metals.jpg)
+
+!!! Tip
+   TODO: Though, should we say that the tint can be a soft-max at the upper bound, i.e. $[0,1)$ range, to support "exotic" metals?
+
 
 
 Coat
@@ -702,7 +748,7 @@ In a full light transport simulation these effects would occur automatically, bu
 
 In the case of the effect of the coat IOR, if there is a fractional coat weight then the surrounding IOR of the base dielectric or metal varies statistically across the surface, depending on whether the coat is locally present (the fuzz layer can be assumed to have the ambient IOR).
 A reasonable approximation of this is to take the surrounding effective coat IOR to be a linear blend between the ambient and coat IORs:
-\begin{equation}
+\begin{equation} \label{effective_coat_ior}
 n_\mathrm{coat} = \mathrm{lerp}(\mathtt{ambient\_ior}, \mathtt{coat\_ior}, \mathtt{coat\_weight}) \ .
 \end{equation}
 The ratio $\eta_0 =  n_\mathrm{coat} / \mathtt{specular\_ior}$ then determines the specular Fresnel factor, as in equation [modulated_ior].
@@ -843,7 +889,7 @@ where **`geometry_opacity`** is then effectively a linear "alpha" blend.
 * +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
 ****************************************************************************************************
 
-Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the thin-walled case this the opacity has the clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$).
+Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) this the opacity has the clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$).
 
 !!! ERROR
    Non-physical "useful hack": $0 < \mathtt{geometry\_opacity} < 1$ non-thin-walled case.
@@ -906,9 +952,9 @@ References
 
 [#Burley2012]: Brent Burley. *Physically-based Shading at Disney*, ACM SIGGRAPH Courses: Practical Physically Based Shading in Film and Game Production (2012).
 
-[#Burley2018]: Brent Burley et al. *The Design and Evolution of Disney’s Hyperion Renderer*,  ACM TOG (2018)
+[#Burley2018]: Brent Burley, David Adler, Matt Jen-Yuan Chiang, Hank Driskill, Ralf Habel, Patrick Kelly, Peter Kutz, Yining Karl Li, Daniel Teece. *The Design and Evolution of Disney’s Hyperion Renderer*, ACM TOG (2018).
 
-[#d'Eon2021]: Eugene d’Eon. *A Hitchhiker’s guide to multiple scattering: Exact Analytic, Monte Carlo and Approximate Solutions in Transport Theory*, (2022)
+[#d'Eon2021]: Eugene d’Eon. *A Hitchhiker’s guide to multiple scattering: Exact Analytic, Monte Carlo and Approximate Solutions in Transport Theory* (2022).
 
 [#Estevez2017]: Alejandro Conty Estevez and Christopher Kulla *Production Friendly Microfacet Sheen BRDF*, Sony Pictures Imageworks technical report (2017).
 
@@ -922,6 +968,8 @@ References
 
 [#Jakob2014]: Wenzel Jakob, Eugene d'Eon, Otto Jakob, and Steve Marschner. *A Comprehensive Framework for Rendering Layered Materials*, ACM Transactions on Graphics (2014).
 
+[#Kelemen2001]: Csaba Kelemen and Laszlo Szirmay-Kalos. *A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling*, Eurographics (2001).
+
 [#Kulla2017]: Christopher Kulla and Alejandro Conty Estevez. *Revisiting Physically Based Shading at Imageworks*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2017).
 
 [#Kutz2021]: Peter Kutz, Miloš Hašan, Paul Edmondson. *Novel aspects of the Adobe Standard Material*, Adobe white paper (2021).
@@ -930,13 +978,18 @@ References
 
 [#Langlands2014]: Anders Langlands. *Physically Based Shader Design in Arnold*, ACM SIGGRAPH Talks (2014).
 
-[#McDermott2018]: Wes McDermott. *The PBR Guide*, Allegorithmic white paper (2018). https://www.allegorithmic.com/pbr-guide.
+[#McDermott2018]: Wes McDermott. *The PBR Guide*, Allegorithmic white paper (2018).
+<!-- dead link:  https://www.allegorithmic.com/pbr-guide -->
+
+[#Polyanskiy2023]: Mikhail N. Polyanskiy. *Refractive Index Database* https://refractiveindex.info/ (2023).
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
 
 [#Zeltner2018]: Tizian Zeltner and Wenzel Jakob. *The Layer Laboratory: A Calculus for Additive and Subtractive Composition of Anisotropic Surface Reflectance*, ACM Transactions on Graphics (2018).
 
 [#Zeltner2022]: Tizian Zeltner, Brent Burley, and Matt Jen-Yuan Chiang. *Practical Multiple-Scattering Sheen Using Linearly Transformed Cosines*, ACM SIGGRAPH Talks (2022).
+
+[#Pharr2023]: Matt Pharr, Wenzel Jakob and Greg Humphreys. *Physically Based Rendering (4th edition)* (2023).
 
 <br>
 <br>
