@@ -516,7 +516,7 @@ Glossy-diffuse params | Label     | Type     | Range        | Default         | 
 ----------------------|-----------|----------|:------------:|:---------------:|----------------------------------------------
 **`base_weight`**     | Weight    | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to **`base_color`**
 **`base_color`**      | Color     | `color3` | $ [0, 1)^3 $ | (0.8, 0.8, 0.8) | Reflection albedo color of $f_\mathrm{dielectric}$
-**`base_roughness`**  | Roughness | `float`  | $ [0, 1)   $ | 0.0             | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`base_roughness`**  | Roughness | `float`  | $ [0, 1)   $ | 0.0             | Roughness of the diffuse lobe
 
 !!! Tip
    TODO: Explain why default `base_color` is (0.8,0.8,0.8)
