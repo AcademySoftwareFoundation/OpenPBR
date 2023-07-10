@@ -456,7 +456,7 @@ F_s = \frac{|1 - \eta_s|^2}{(1 + \eta_s)^2} \ .
 \end{equation}
 This Fresnel factor is then modulated by multiplying by twice the **`specular_ior_level`** denoted $\xi_s$. Thus solving for the new IOR ratio $\eta^\prime_s$ after the modulation:
 \begin{equation} \label{modulated_ior}
-\eta^\prime_s = \frac{1 + \mathrm{sgn}(\eta_s-1)\sqrt{2 \xi_s F_s}} {1 - \mathrm{sgn}(\eta_s-1)\sqrt{2 \xi_s F_s}} \ .
+\eta^\prime_s = \frac{1 + \mathrm{sgn}(\eta_s-1)\sqrt{2\,\xi_s F_s}} {1 - \mathrm{sgn}(\eta_s-1)\sqrt{2\, \xi_s F_s}} \ .
 \end{equation}
 Note there is a constraint $\xi_s < 1/(2 F_s)$ since the scaled reflection coefficient cannot exceed $1$. So the range of $\xi_s$ needs to be clamped: $\xi_s \in [0, \mathrm{min}(1, 1/(2 F_s)]$. Applying this modulated IOR ratio $\eta^\prime_s$ in the dielectric Fresnel factor then produces the desired reflectivity modulation at any incident angle.
 
@@ -710,6 +710,9 @@ metal params               | Type       |  Range                  | Default     
 !!! Tip
    TODO: Though, should we say that the tint can be a soft-max at the upper bound, i.e. $[0,1)$ range, to support "exotic" metals?
 
+!!! Tip
+   TODO: The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately.
+
 
 
 Coat
@@ -753,7 +756,7 @@ F_c = \frac{|1 - \eta_c|^2}{(1 + \eta_c)^2} \ .
 where $\eta_c = \mathtt{coat\_ior} / \mathtt{ambient\_ior}$.
 The factor $F_c$ is then modulated by multiplying by twice the **`coat_ior_level`** denoted $\xi_c$, giving the new IOR ratio $\eta^\prime_c$ after the modulation:
 \begin{equation}  \label{modulated_coat_ior}
-\eta^\prime_c = \frac{1 + \mathrm{sgn}(\eta_c-1)\sqrt{2 \xi_c F_c}}{1 - \mathrm{sgn}(\eta_c-1)\sqrt{2 \xi_c F_c}} \ ,
+\eta^\prime_c = \frac{1 + \mathrm{sgn}(\eta_c-1)\sqrt{2\, \xi_c F_c}}{1 - \mathrm{sgn}(\eta_c-1)\sqrt{2\, \xi_c F_c}} \ ,
 \end{equation}
 where the range of $\xi_c$ is clamped according to $\xi_c \in [0, \mathrm{min}(1, 1/(2 F_c)]$. Inserting this modulated IOR ratio $\eta^\prime_c$ in the coat Fresnel factor then produces the desired reflectivity modulation.
 
