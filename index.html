@@ -672,7 +672,9 @@ The characteristic appearance of metal, i.e. conductors, is another form of spec
 \mathrm{metal} = \mathrm{Slab}(f_\mathrm{conductor}) \ .
 \end{equation}
 
-Metallic reflection is modeled as a GGX microfacet conductor BRDF $f_\mathrm{conductor}$, whose Fresnel reflection curve is parametrized by the colors at normal and near-grazing incidence (**`base_color`** and **`specular_color`** respectively, scaled by the corresponding weights). This allows for achieving a desired look by directly specifying the (texturable) colors at normal and grazing incidence to simulate the dip in reflectivity observed in real metals, or just for artistic effect [Hoffman2019]. Note that these two color parameters are also used for the non-metallic (i.e. dielectric) specular and diffuse BRDFs, as discussed above.
+Metallic reflection is modeled as a GGX microfacet conductor BRDF $f_\mathrm{conductor}$, whose NDF is parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`** (overloading the same parameters used for the dielectric BSDF $f_\mathrm{dielectric}$).
+
+The conductor Fresnel reflection curve is parametrized by the colors at normal and near-grazing incidence (**`base_color`** and **`specular_color`** respectively, scaled by the corresponding weights). This allows for achieving a desired look by directly specifying the (texturable) colors at normal and grazing incidence to simulate the dip in reflectivity observed in real metals, or just for artistic effect [Hoffman2019]. Note that these two color parameters are also used for the non-metallic (i.e. dielectric) specular and diffuse BRDFs, as discussed above.
 
 As noted previously, this non-transmissive metallic base is blended as a statistical mixture with the dielectric base according to the **`base_metalness`** parameter:
 \begin{eqnarray}
