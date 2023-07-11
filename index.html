@@ -538,7 +538,7 @@ In this case the subsurface medium $V^\infty_\mathrm{subsurface}$ is given a par
 
    - **`subsurface_scale`** * **`subsurface_radius`**: the desired size of the "blur" on the surface per RGB channel, i.e. roughly the average distance that light travels _along the surface_ per-channel, $\mathbf{r}$, also termed the _diffusion radius_.
    - **`subsurface_color`**: the observed RGB reflection albedo color taking into account all orders of multiple scattering, $\mathbf{A}$, also termed the _multi-scatter albedo_.
-   - **`subsurface_anisotropy`**: the medium's phase function, parametrized by the (scalar) anisotropy $g$.
+   - **`subsurface_anisotropy`**: the medium's phase function, parametrized by the (scalar) anisotropy $g \in [-1,1]$.
 
 !!! Tip
     TODO: Technically the anisotropy could be different in each channel, but we don't support this. Rationalize this?
@@ -567,13 +567,14 @@ Note that due to the singularity at $g=1$, in practice the anisotropy needs to b
 
 Implementations may choose to compute light transport in the subsurface medium either via a fast approximate BSSRDF model (using e.g. the dipole approximation), or more accurately via volumetric path tracing.
 
+
 Subsurface params             | Label        | Type      | Range           | Default         | Description
 ------------------------------|--------------|-----------|:---------------:|:---------------:|----------------------------------------------
 **`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]      $ | 0.0             | Mix weight between subsurface and diffuse slabs
 **`subsurface_color`**        | Color        | `color3`  | $ [0, 1)^3    $ | (1.0, 1.0, 1.0) | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
 **`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty] $ | 1.0             | Subsurface radii, i.e. average distance light travels along the surface per color channel
 **`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3    $ | (1.0, 1.0, 1.0) | Scalar scale for **`subsurface_radius`**
-**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [0, 1]      $ | 0.5             | Anisotropy of the $V^\infty_\mathrm{subsurface}$ medium phase function
+**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1,1]      $ | 0.5             | Anisotropy of the $V^\infty_\mathrm{subsurface}$ medium phase function
 
 ![](images/subsurface1.jpg width=99%) ![](images/subsurface2.jpg width=99%) ![](images/subsurface3.jpg width=99%)
 <div class="shifted-caption">
@@ -880,13 +881,112 @@ Opacity params         | Label   | Type    | Range      | Default  | Description
 Thin-walled case
 ============================================
 
-!!! Tip
-   TODO: Clarify the model structure in the thin-walled case. Is the structure asymmetric, e.g. only one side has the coat? Or is it mirrored, so both sides have the coat. If the latter, can the two coats differ in parameters? etc. This could be an implementation detail, but then it would be quite confusing.
+If the **`geometry_thin_walled`** Boolean is enabled, then the surface is assumed to be in a "thin-walled" mode. This has essentially the same structure as the bulk case, but the slabs at the base are assumed to be thin enough that, macroscopically, the material can be treated as a 2d sheet with no interior.
 
-![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
-<div class="shifted-caption">
-      ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** (right).](dummy)
-</div>
+In this case, the base slabs are interpreted as infinitesimally thin sheets, thus their behavour is assumed to change as follows:
+
+   - The $\textrm{metal}$ and $\textrm{glossy-diffuse}$ slabs remain but are considered double-sided, with the top BSDF mirrored to the bottom (and a totally opaque, albeit infinitesimally thin, interior)
+
+   - The $\textrm{translucent-base}$ slab can be considered an infinitesimally thin sheet of dielectric, with the BSDF $f_\mathrm{dielectric}$ on both sides. The specular reflection and transmission is retained, but no refraction occurs. There is no interior volume, but the reflection and transmission colors may be non-physically tinted via **`specular_color`**, and **`transmission_color`**.
+
+   - The $\textrm{subsurface}$ slab is considered to degenerate into a thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$), which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_anisotropy} \in [-1,1]$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
+      \begin{eqnarray}
+      f^R_\mathrm{diffuse} &=& \frac{1}{2} S (1 - g)\, f_+ \ , \nonumber \\
+      f^T_\mathrm{diffuse} &=& \frac{1}{2} S (1 + g)\, f_- \ .
+      \end{eqnarray}
+      This form ensures total energy conservation, i.e. the sum of the reflection and transmission albedos is less than 1:
+      \begin{equation}
+         E_R[f^R_\mathrm{diffuse}] + E_T[f^T_\mathrm{diffuse}] = S \le 1 \ .
+      \end{equation}
+      At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission.
+      The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this).
+
+   - As noted above, **`geometry_opacity`** makes physical sense as a float value in the thin-walled case (unlike the bulk case), controlling the presence weight of the thin wall.
+
+
+   ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
+   <div class="shifted-caption">
+         ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** (right).](dummy)
+   </div>
+   
+
+There are a number of reasonable options for how to interpret the layer structure of the thin-walled mode for light transport purposes:
+
+   - **Asymmetric**:  The thin wall is oriented according to the local shading normal, so when viewed from below the incident ray encounters the base slab first (Figure [asymmetric-thin-wall]). The appearance of the surface will then be somewhat different when viewed from below instead of above, as then the coat and fuzz layers are not directly visible but occluded by the base.
+
+   - **Asymmetric-but-always-facing**: The same as above, but the thin wall is automatically oriented so that the incident ray is always entering the surface from the top, so the surface appears the same viewed from above or below. This is physically implausible, but quite convenient as the light transport can always be dealt with as in the bulk case (i.e. incident rays enter top-down).
+
+   ***************************************************************************************************************
+   *                                                                                      ^ emission             *
+   *  +-----------+-----------------------------------------------------------------------|------+               *
+   *  |           |                                    fuzz                               |      |               *
+   *  |           +-----------------------------------------------------------------------|------+               *
+   *  |           |                                    coat                               |      |               *
+   *  |           +---------------------+----------------------+----------------+---------+------+ <-- thin-film *
+   *  |           |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  |  ambient  |░░░░░░░ metal ░░░░░░░|   translucent base   |   subsurface   |░glossy-diffuse░|               *
+   *  |  medium   |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  +-----------+---------------------+----------------------+----------------+----------------+               *
+   *                                                            <--------- opaque base --------->                *
+   *                                     <------------------ dielectric base ------------------->                *
+   *              <------------------------------------ base ----------------------------------->                *
+   ***************************************************************************************************************
+   <div class="shifted-caption">
+      ![Figure [asymmetric-thin-wall]: Asymmetric interpretation of the thin-walled mode.](dummy)
+  </div>
+
+   - **Symmetric**:  The thin wall structure above the base is mirrored so that it appears identical viewed from either side (Figure [symmetric-thin-wall]). This is a more physically plausible interpretation of a symmetric thin-wall than the Asymmetric-but-always-facing mode, though in the presence of the translucent base or subsurface the light transport will differ as rays will encounter the coat and fuzz layers on both sides.
+
+   **************************************************************************************************************
+   *                                                                                     ^ emission             *
+   *  +----------+-----------------------------------------------------------------------|------+               *
+   *  |          |                                    fuzz                               |      |               *
+   *  |          +-----------------------------------------------------------------------|------+               *
+   *  |          |                                    coat                               |      |               *
+   *  |          +---------------------+----------------------+----------------+---------+------+ <-- thin-film *
+   *  |          |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  |  ambient |░░░░░░░ metal ░░░░░░░|   translucent base   |   subsurface   |░glossy-diffuse░|               *
+   *  |  medium  |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  |          +---------------------+----------------------+----------------+---------+------+               *
+   *  |          |                                    coat                               |      |               *
+   *  |          +-----------------------------------------------------------------------|------+               *
+   *  |          |                                    fuzz                               |      |               *
+   *  +----------+-----------------------------------------------------------------------|------+               *
+   *                                                                                     v emission             *
+   **************************************************************************************************************
+   <div class="shifted-caption">
+      ![Figure [symmetric-thin-wall]: Symmetric interpretation of the thin-walled mode.](dummy)
+  </div>
+
+   
+   - **Double-sided**: Each side of the thin-wall is defined by a distinct OpenPBR Surface (one associated to the top, in the direction of the normal, and one to the bottom in the opposite direction). If there are different translucent base or subsurface parameters on each side, then these need to be resolved somehow (e.g. the parameters could be blended, or the light transport could model the presence of the two distinct thin layers of dielectric).
+
+  ******************************************************************************************************************
+  *                                                                                      ^ emission_up         ^   *
+  * +----------+-------------------------------------------------------------------------|-----------+         |   *
+  * |          |                                    fuzz_up                              |           |         up  *
+  * |          +-------------------------------------------------------------------------|-----------+             *
+  * |          |                                    coat_up                              |           |             *
+  * |          +---------------------+-----------------------+-----------------+---------+-----------+ <--thin-film*
+  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|    -up      *
+  * |          |░░░░░░metal_up ░░░░░░|  translucent base up  |  subsurface_up  |░░glossy-diffuse_up░░|             *
+  * |  ambient |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
+  * |  medium  +---------------------+-----------------------+-----------------+---------------------+             *
+  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
+  * |          |░░░░░░metal_down░░░░░| translucent base down | subsurface_down |░glossy-diffuse_down░|             *
+  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
+  * |          +---------------------+-----------------------+-----------------+---------+-----------+ <--thin-film*
+  * |          |                                    coat_down                            |           |    -down    *
+  * |          +-------------------------------------------------------------------------|-----------+             *
+  * |          |                                    fuzz_down                            |           |         down*
+  * +----------+-------------------------------------------------------------------------|-----------+         |   *
+  *                                                                                      v emission_down       v   *
+  ******************************************************************************************************************
+  <div class="shifted-caption">
+     ![Figure [double-sided-thin-wall]: Double-sided interpretation of the thin-walled mode.](dummy)
+ </div>
+
+
 
 (insert parametrization.md.html here)
 
