@@ -7,7 +7,7 @@
 <center>Zap Andersson, Paul Edmondson, Julien Guertault, Adrien Herubel, Alan King, </center>
 <center>Peter Kutz, Andréa Machizaud, Jamie Portsmouth, Frédéric Servant.</center>
 
-<center>*Version 0.0, 2023-04-06. A joint work of Adobe and Autodesk*</center>
+<center>*Version 0.1, 2023-07-13. A joint work of Adobe and Autodesk*</center>
 
 This document is a draft specification of a surface shading model: the OpenPBR Surface model. Designed as a über-surface, it aims to be capable of accurately modeling the vast majority of CG materials used in practical visual effects and feature animation productions. The model has been developed as a synthesis of the Autodesk Standard Surface and the Adobe Standard Material models.
 
@@ -17,19 +17,24 @@ Historical background and objectives
 
 Interchange of computer graphics scene assets between different facilities remains a significant problem today, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem and is a topic of active scientific research. However, there is a strong need today for the industry to find a standardized material model that both covers most common use cases in day-to-day workflows and is easy to use.
 
-Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX, Material Definition Language (MDL), and Open Shading Language (OSL) [#Gritz2010], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users who should not be expected to build surface shaders from the ground up for day-to-day tasks. There is a need for a standard über-shader parametrization with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials. In this proposal we aim to fill this gap; one of our reference implementations is written in OSL [#Georgiev2019].
+Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX, Material Definition Language (MDL), and Open Shading Language (OSL) [#Gritz2010], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users who should not be expected to build surface shaders from the ground up for day-to-day tasks. There is a need for a standard über-shader parametrization, i.e. a single monolithic definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials. In this proposal we aim to fill this gap; one of our reference implementations is written in OSL [#Georgiev2019].
 
 Our proposed model follows closely the Autodesk Standard Surface shader [#Georgiev2019], which has strong spiritual predecessors in Anders Langlands' alSurface [#Langlands2014] and Autodesk 3ds Max's Physical Material [#Andersson2016]. It also incorporates many elements of the Adobe Standard Material [#Kutz2021], based heavily on Allegorithmic's PBR shading model [#McDermott2018]. 3ds Max's Physical Material in turn has been strongly inspired by Allegorithmic's model, Disney's Principled Shader [Burley2012], and general industry trends in several real-time 3D engines, and has been production proven with support by all major render engines for 3ds Max.
 
-In this proposal, rather than providing parameters for every conceivable case, we intentionally try to boil the set of parameters down to only those that are most useful in practice. We also fix the combination of primitive reflectance models to ensure that the users work within the bounds of what is physically plausible as much as possible. We aim for the overall behavior to be simple, logical, intuitive, and understandable, so that the model covers most day-to-day use cases. For the few it does not cover, one may need to use a renderer-specific shader, or build a bespoke shading network. We thus adopt a material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]).
+In this proposal, rather than providing parameters for every conceivable case, we intentionally try to boil the set of parameters down to only those that are most useful in practice. We also fix the combination of primitive reflectance models to ensure that the users work within the bounds of what is physically plausible as much as possible. We aim for the overall behavior to be simple, logical, intuitive, and understandable, so that the model covers most day-to-day use cases. For the few it does not cover, one may need to use a renderer-specific shader, or build a bespoke shading network.
 
-In outline this consists of:
+We thus adopt a material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]). With each component of the structure, we also define a set of parameters with names, valid ranges and default values, and describe how the component should be affected by the parameters.
 
-   - A base substrate which consists of a mixture of metal or dielectric.
-   - The dielectric base represents either the bulk of highly translucent media (e.g. glass, crystals, and liquids), the subsurface of highly scattering media (e.g. marble, plastic, skin, vegetation), or the surface of effectively opaque "diffuse" media (e.g. dirt, dense rock, concrete), where these three components are statistically mixed.
-   - The base dielectric (or metal) interface produces the primary specular reflection lobe.
-   - This base is optionally coated with a layer of dielectric, which may have an absorbing medium. The dielectric interface of this coat layer provides a secondary specular lobe.
-   - The surface is finished with an optional layer of "fuzz", which is a coat of micro-fibers representing e.g. fine hair (peach fuzz), textile strands or dust.
+In outline the structure consists of:
+   - A base substrate made of a mixture of metal or dielectric.
+     The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe.
+     - The dielectric base represents either of three components, that can be statistically mixed:
+       1. The bulk of highly translucent media (e.g. glass, crystals, liquids, etc.),
+       2. The subsurface of highly scattering media (e.g. marble, plastic, skin, vegetation, etc.), or
+       3. The surface of effectively opaque "diffuse" media (e.g. dirt, dense rock, concrete, etc.),
+   - An optional layer of dielectric, which may have an absorbing medium, acting as a coating on top of the base substrate.
+     The dielectric interface of this coat layer provides a secondary specular lobe.
+   - An optional layer of "fuzz", representing the reflection from micro-fibers (e.g. fine hair, peach fuzz, textile strands, dust, etc.) on top of everything else.
 
    ![Figure [diagram_model]: Schematic illustration of the idealized material model that our shader emulates. Horizontal stacking of components represents statistical mixture and vertical stacking represents layering.](images/model_schematic.svg width="100%")
 
@@ -403,11 +408,10 @@ Metalness maps from applications like Substance Painter can be connected to this
 Rainbow-like iridescence effects which occur due to interference when a thin refractive film with thickness on the order of the light wavelength is placed on top of a material. There is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by its thickness and the film IOR.
 In practice, these effects are most easily incorporated directly into the microfacet BSDFs of both the metal and dielectric base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
 
-thin-film params             | Type    |  Range    | Default          | Description
----------------------------- | --------|-----------|------------------|----------------------------------------------
-**`thin_film_thickness`**    | `float` | [0,1000]  | 0.0              | thickness of the film
-**`thin_film_ior`**          | `float` | [1,3)     | 1.5              | refractive index of the film
-
+Thin-film params          | Label     | Type    | Range         | Default | Description
+--------------------------|-----------|---------|:-------------:|:-------:|----------------------------------------------
+**`thin_film_thickness`** | Thickness | `float` | $ [0, 1000) $ | 0.0     | Thickness of the film in nanometers
+**`thin_film_ior`**       | IOR       | `float` | $ [1, 3)    $ | 1.5     | Refractive index of the film
 
 ![](images/thin_film1.jpg width=99%) ![](images/thin_film2.jpg width=99%) ![](images/thin_film3.jpg width=99%)
 <div class="shifted-caption">
@@ -477,16 +481,15 @@ This Fresnel factor is then modulated by multiplying by twice the **`specular_io
 \end{equation}
 Note there is a constraint $\xi_s < 1/(2 F_s)$ since the scaled reflection coefficient cannot exceed $1$. So the range of $\xi_s$ needs to be clamped: $\xi_s \in [0, \mathrm{min}(1, 1/(2 F_s)]$. Applying this modulated IOR ratio $\eta^\prime_s$ in the dielectric Fresnel factor then produces the desired reflectivity modulation at any incident angle.
 
-
-specular params              | Type     |  Range  | Default          | Description
------------------------------| ---------|---------|------------------|---------------------------------------------------------------
-**`specular_weight`**        | `float`  | [0,1]   | `1`              | multiplies the dielectric Fresnel factor
-**`specular_color`**         | `color3` | [0,1]   | `(1,1,1)`        | tints the dielectric Fresnel factor
-**`specular_roughness`**     | `float`  | [0,1)   | `0.2`            | roughness of the dielectric microfacet surface
-**`specular_ior`**           | `float`  | [1,3)   | `1.5`            | index of refraction of the dielectric
-**`specular_ior_level`**     | `float`  | [0,1]   | `0.5`            | modulates the dielectric reflectivity at normal incidence between zero and double the original
-**`specular_anisotropy`**    | `float`  | [0,1]   | `0`              | anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_rotation`**      | `float`  | [0,1]   | `0`              | orientation of roughness anisotropy
+Specular params           | Label      | Type     | Range        | Default         | Description
+--------------------------|------------|----------|:------------:|:---------------:|----------------------------------------------
+**`specular_weight`**     | Weight     | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to the dielectric Fresnel factor
+**`specular_color`**      | Color      | `color3` | $ [0, 1)^3 $ | (1.0, 1.0, 1.0) | Tints the dielectric Fresnel factor
+**`specular_roughness`**  | Roughness  | `float`  | $ [0, 1)   $ | 0.3             | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_ior`**        | IOR        | `float`  | $ [1, 3)   $ | 1.5             | Refractive index of $V_\mathrm{dielectric}$
+**`specular_ior_level`**  | IOR level  | `float`  | $ [0, 1]   $ | 0.5             | Modulates the dielectric reflectivity at normal incidence between zero and double the original
+**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]   $ | 0.0             | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]   $ | 0.0             | Orientation of roughness anisotropy
 
 ![](images/spec_ior1.jpg width=95%) ![](images/spec_ior2.jpg width=95%) ![](images/spec_ior3.jpg width=95%)
 <div class="shifted-caption">
@@ -512,11 +515,11 @@ In the limit of infinite density, this slab can be modelled by the classic Ashik
 
 The albedo of the diffuse lobe is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the total albedo. A **`base_roughness`** parameter controls the shape of the diffuse lobe (dialing from pure Lambertian to a more "dusty" look). The model is agnostic about the choice of diffuse BSDF lobe used, though typically it would be the Oren-Nayar microfacet model, where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. (How this base roughness arises from the physical model of a dielectric embedding a volumetric medium is left open to interpretation).
 
-glossy-diffuse params        | Type     |  Range  | Default          | Description
----------------------------- | ---------|---------|------------------|---------------------------------------------------------------
-**`base_weight`**            | `float`  | [0,1]   | `1`              | scales albedo of diffuse lobe
-**`base_color`**             | `color3` | [0,1]   | `(0.8,0.8,0.8)`  | scales albedo color of diffuse lobe
-**`base_roughness`**         | `float`  | [0,1)   | `0`              | roughness of the diffuse lobe
+Glossy-diffuse params | Label     | Type     | Range        | Default         | Description
+----------------------|-----------|----------|:------------:|:---------------:|----------------------------------------------
+**`base_weight`**     | Weight    | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to **`base_color`**
+**`base_color`**      | Color     | `color3` | $ [0, 1)^3 $ | (0.8, 0.8, 0.8) | Reflection albedo color of $f_\mathrm{dielectric}$
+**`base_roughness`**  | Roughness | `float`  | $ [0, 1)   $ | 0.0             | Roughness of the diffuse lobe
 
 !!! Tip
    TODO: Explain why default `base_color` is (0.8,0.8,0.8)
@@ -536,7 +539,7 @@ In this case the subsurface medium $V^\infty_\mathrm{subsurface}$ is given a par
 
    - **`subsurface_scale`** * **`subsurface_radius`**: the desired size of the "blur" on the surface per RGB channel, i.e. roughly the average distance that light travels _along the surface_ per-channel, $\mathbf{r}$, also termed the _diffusion radius_.
    - **`subsurface_color`**: the observed RGB reflection albedo color taking into account all orders of multiple scattering, $\mathbf{A}$, also termed the _multi-scatter albedo_.
-   - **`subsurface_anisotropy`**: the medium's phase function, parametrized by the (scalar) anisotropy $g$.
+   - **`subsurface_anisotropy`**: the medium's phase function (assumed to be the standard Henyey-Greenstein form), parametrized by the scalar anisotropy $g \in [-1,1]$.
 
 These parameters collectively determine the underlying volumetric parameters (extinction $\boldsymbol{\mu}_t$, single-scattering albedo $\boldsymbol{\alpha}$, and phase function anisotropy $g$).
 
@@ -564,13 +567,14 @@ Note that due to the singularity at $g=1$, in practice the anisotropy needs to b
 
 Implementations may choose to compute light transport in the subsurface medium either via a fast approximate BSSRDF model (using e.g. the dipole approximation), or more accurately via volumetric path tracing.
 
-subsurface params              | Type      |  Range                  | Default            | Description
--------------------------------|-----------|-------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------
-**`subsurface_weight`**        | `float`   | [0,1]                   | 0                  | mix weight of subsurface and glossy-diffuse slab
-**`subsurface_color`**         | `color3`  | [0,1]                   | (1,1,1)            | subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
-**`subsurface_radius`**        | `float`   | [0,$\infty$]            | 1                  | subsurface radii, i.e. average distance light travels along the surface per color channel
-**`subsurface_radius_scale`**  | `vector3` | [0,1]                   | (1,1,1)            | scalar scale for **`subsurface_radius`**
-**`subsurface_anisotropy`**    | `float`   | [0,1]                   | 0.5                | anisotropy of the $V^\infty_\mathrm{subsurface}$ medium phase function
+
+Subsurface params             | Label        | Type      | Range           | Default         | Description
+------------------------------|--------------|-----------|:---------------:|:---------------:|----------------------------------------------
+**`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]      $ | 0.0             | Mix weight between subsurface and diffuse slabs
+**`subsurface_color`**        | Color        | `color3`  | $ [0, 1)^3    $ | (1.0, 1.0, 1.0) | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
+**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty] $ | 1.0             | Subsurface radii, i.e. average distance light travels along the surface per color channel
+**`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3    $ | (1.0, 1.0, 1.0) | Scalar scale for **`subsurface_radius`**
+**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1,1]      $ | 0.0             | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
 
 ![](images/subsurface1.jpg width=99%) ![](images/subsurface2.jpg width=99%) ![](images/subsurface3.jpg width=99%)
 <div class="shifted-caption">
@@ -616,8 +620,7 @@ If any component of $\boldsymbol{\mu}_a$ is negative, then $\boldsymbol{\mu}_a$ 
 && \quad\quad \boldsymbol{\mu}_a \rightarrow \boldsymbol{\mu}_a - \mathrm{min}(\boldsymbol{\mu}_a) \ .
 \end{eqnarray}
 After this shifting, the final extinction coefficient is given by the new $\boldsymbol{\mu}_a + \boldsymbol{\mu}_s$.
-This formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light. Finally the medium phase function anisotropy $g$ is given by **`transmission_scatter_anisotropy`**.
-
+This formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light. Finally the medium phase function anisotropy $g \in [-1,1]$ is given by **`transmission_scatter_anisotropy`** (the standard Henyey-Greenstein phase function is assumed).
 
 ![](images/transmission1.jpg width=99%) ![](images/transmission2.jpg width=99%) ![](images/transmission3.jpg width=99%)
 <div class="shifted-caption">
@@ -652,15 +655,15 @@ At the default **`transmission_dispersion_scale`** of zero, the Abbe number is i
    TODO: An image showing dispersion off, low, high.
 
 
-translucent base params                      | Type       |  Range                  | Default            | Description
----------------------------------------------|------------|-------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------
-**`transmission_weight`**                    | `float`    | [0,1]                   | 0                  | mix weight between translucent and opaque base
-**`transmission_color`**                     | `color3`   | [0,1]                   | (1,1,1)            | transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
-**`transmission_depth`**                     | `float`    | [0,$\infty$]            | 1                  | distance travelled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
-**`transmission_scatter`**                   | `color3`   | [0,1]                   | (0,0,0)            | scattering albedo of the interior medium
-**`transmission_scatter_anisotropy`**        | `float`    | [0,1]                   | 0.0                | anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
-**`transmission_dispersion_abbe_number`**    | `float`    | [10,70]                 | 10.0               | Abbe number $V_d$ of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in `[0,1]`
-**`transmission_dispersion_scale`**          | `float`    | [0,1]                   | 0.0                | linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
+Translucent base params                   | Label            | Type     | Range           | Default         | Description
+------------------------------------------|------------------|----------|:---------------:|:---------------:|----------------------------------------------
+**`transmission_weight`**                 | Weight           | `float`  | $ [0, 1]      $ | 0.0             | Mix weight between translucent and opaque base slabs
+**`transmission_color`**                  | Color            | `color3` | $ [0, 1)^3    $ | (1.0, 1.0, 1.0) | Transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
+**`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty] $ | 0.0             | Distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
+**`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3    $ | (0.0, 0.0, 0.0) | Scattering albedo of the interior medium
+**`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]    $ | 0.0             | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
+**`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [10, 70)    $ | 20.0            | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in `[0,1]`
+**`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]     $ | 0.0             | Linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
 
 
 <!--
@@ -713,16 +716,18 @@ where $\bar{\mu} = \cos(82^\circ)$, and $\mathbf{F}(\bar{\mu})$ is the desired m
 \end{equation}
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of $\mathtt{specular\_weight}$ and $\mathtt{specular\_color}$. Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
-metal params               | Type       |  Range                  | Default             | Description
----------------------------|------------|-------------------------|---------------------|-------------------------------------------------------------------
-**`base_weight`**          | `float`    | [0,1]                   | 1.0                 | scalar multiplier to **`base_color`**
-**`base_color`**           | `color3`   | [0,1]                   | (0.8, 0.8, 0.8)     | specifies color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
-**`specular_weight`**      | `float`    | [0,1]                   | 1.0                 | scalar multiplier to **`specular_color`**
-**`specular_color`**       | `color3`   | [0,1]                   | (1.0, 1.0, 1.0)     | specifies tint color of Fresnel reflection albedo at near-grazing incidence
-**`specular_roughness`**   | `float`    | [0,1)                   | 0.3                 | roughness of conductor BRDF $f_\mathrm{conductor}$
-**`specular_anisotropy`**  | `float`    | [0,1]                   | 0.0                 | anisotropy of conductor BRDF $f_\mathrm{conductor}$
-**`specular_rotation`**    | `float`    | [0,1]                   | 0.0                 | orientation of roughness anisotropy
+!!! Tip
+   TODO: Though, should we say that the tint can be a soft-max at the upper bound, i.e. $[0,1)$ range, to support "exotic" metals?
 
+Metal params              | Label      | Type     | Range        | Default         | Description
+--------------------------|------------|----------|:------------:|:---------------:|----------------------------------------------
+**`base_weight`**         | Weight     | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to **`base_color`**
+**`base_color`**          | Color      | `color3` | $ [0, 1)^3 $ | (0.8, 0.8, 0.8) | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
+**`specular_weight`**     | Weight     | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to **`specular_color`**
+**`specular_color`**      | Color      | `color3` | $ [0, 1)^3 $ | (1.0, 1.0, 1.0) | Tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_roughness`**  | Roughness  | `float`  | $ [0, 1)   $ | 0.3             | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]   $ | 0.0             | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]   $ | 0.0             | Orientation of roughness anisotropy
 
 ![Figure [metal]: Metals produced (in **`base_metalness`=1** mode) by setting the **`base_color`** and **`specular_color`** parameters. From left to right: aluminium, copper, gold.](images/metals.jpg)
 
@@ -802,23 +807,23 @@ In some practical use cases however, it may be desirable for this physical effec
 -->
 
 
-Coat params                  | Type       |  Range                 | Default      | Description
------------------------------|------------|------------------------|--------------|-------------------------------------------------------------------
-**`coat_weight`**            | `float`   | [0,1]                   | 0.0          | coverage weight of coat layer
-**`coat_color`**             | `color3`  | [0,1]                   | (1, 1, 1)    | controls the overall color due to absorption of $V_\mathrm{coat}$
-**`coat_roughness`**         | `float`   | [0,1)                   | 0.3          | roughness of NDF of coat BSDF $f_\mathrm{coat}$
-**`coat_anisotropy`**        | `float`   | [0,1]                   | 0.0          | anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
-**`coat_rotation`**          | `float`   | [0,1]                   | 0.0          | orientation of anisotropy
-**`coat_ior`**               | `float`   | [1,3)                   | 1.6          | refractive index of $V_\mathrm{coat}$
-**`coat_ior_level`**         | `float`   | [0,1]                   | 0.5          | modulates the coat reflectivity at normal incidence between zero and double the original
+Coat params                 | Label            | Type     | Range        | Default         | Description
+----------------------------|------------------|----------|:------------:|:---------------:|----------------------------------------------
+**`coat_weight`**           | Weight           | `float`  | $ [0, 1]   $ | 0.0             | Coverage weight of coat slab
+**`coat_color`**            | Color            | `color3` | $ [0, 1)^3 $ | (1.0, 1.0, 1.0) | Overall color due to absorption of $V_\mathrm{coat}$
+**`coat_roughness`**        | Roughness        | `float`  | $ [0, 1)   $ | 0.3             | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
+**`coat_ior`**              | IOR              | `float`  | $ [1, 3)   $ | 1.6             | Refractive index of $V_\mathrm{coat}$
+**`coat_ior_level`**        | IOR level        | `float`  | $ [0, 1]   $ | 0.5             | Modulates the coat reflectivity at normal incidence between zero and double the original
+**`coat_anisotropy`**       | Anisotropy       | `float`  | $ [0, 1]   $ | 0.0             | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
+**`coat_rotation`**         | Rotation         | `float`  | $ [0, 1]   $ | 0.0             | Orientation of roughness anisotropy
 
 <!-- Markdeep:
-**`coat_affect_color`**      | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the brightness and saturation of layers below
-**`coat_affect_roughness`**  | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the roughness of layers below
-**`coat_affect_ior`***       | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the relative IOR of layers below
+**`coat_affect_color`**     | Affect Color     | `float`  | $ [0, 1]   $ | 1.0             | How much to prevent the coat from affecting the brightness and saturation of layers below
+**`coat_affect_roughness`** | Affect Roughness | `float`  | $ [0, 1]   $ | 1.0             | How much to prevent the coat from affecting the roughness of layers below
+**`coat_affect_ior`**       | Affect IOR       | `float`  | $ [0, 1]   $ | 1.0             | How much to prevent the coat from affecting the relative IOR of layers below
  -->
 
-![](images/Hulkbuster-Coat_0.jpeg width=90% align=right) ![](images/Hulkbuster-Coat-0-5.jpeg width=90% align=left)
+![](images/coat_0.png width=90% align=right) ![](images/coat_1.png width=90% align=left)
 <div class="shifted-caption">
     ![Figure [coat]: Effect of adding a coat. Left: **`coat_weight`**=0. **`coat_weight`**=1](dummy)
 </div>
@@ -855,11 +860,11 @@ The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be deri
 
 One practical model is the approach of [#Estevez2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the unreflected light is assumed to transmit through to the base layers. The form of this is the same as the approximate microflake model of [#Kutz2021].
 
-fuzz params                  | Type         |  Range                 | Default      | Description
------------------------------|--------------|------------------------|--------------|-------------------------------------------------------------------
-**`fuzz_weight`**            | `float`      | [0,1]                  | 0            | coverage weight of $f_\mathrm{fuzz}$
-**`fuzz_color`**             | `color3`     | [0,1]                  | (1, 1, 1)    | reflection albedo color of $f_\mathrm{fuzz}$
-**`fuzz_roughness`**         | `float`      | [0,1]                  | 0.5          | reflection roughness of $f_\mathrm{fuzz}$
+Fuzz params          | Label     | Type     | Range        | Default         | Description
+---------------------|-----------|----------|:------------:|:---------------:|----------------------------------------------
+**`fuzz_weight`**    | Weight    | `float`  | $ [0, 1]   $ | 0.0             | Coverage weight of fuzz slab
+**`fuzz_color`**     | Color     | `color3` | $ [0, 1)^3 $ | (1.0, 1.0, 1.0) | Reflection albedo color of $f_\mathrm{fuzz}$
+**`fuzz_roughness`** | Roughness | `float`  | $ [0, 1]   $ | 0.5             | Reflection roughness of $f_\mathrm{fuzz}$
 
 ![](images/fuzz1.jpg width=99%) ![](images/fuzz2.jpg width=99%) ![](images/fuzz3.jpg width=99%)
 <div class="shifted-caption">
@@ -891,10 +896,10 @@ The intensity of the EDF is controlled by a luminance and a color multiplier. Th
 !!! TIP
    TODO: The interaction of emission and fuzz should be specified, either here or preferably in the Fuzz section.
 
-emission params          | Type         |  Range                 | Default         | Description
--------------------------|--------------|------------------------|-----------------|-------------------------
-**`emission_luminance`** | `float`      | [0,$\infty$]           | 0.0             | emission luminance, in cd/m^2 (aka. nits)
-**`emission_color`**     | `color3`     | [0,1]                  | (1.0, 1.0, 1.0) | emission color multiplier
+Emission params          | Label     | Type     | Range           | Default         | Description
+-------------------------|-----------|----------|:---------------:|:---------------:|----------------------------------------------
+**`emission_luminance`** | Luminance | `float`  | $ [0, \infty] $ | 0.0             | Emission luminance, in cd/m^2 (aka. nits)
+**`emission_color`**     | Color     | `color3` | $ [0, 1]^3    $ | (1.0, 1.0, 1.0) | Emission color multiplier
 
 ![Figure [emission]: Texture map representing hot lava connected to **`emission_color`**.](images/emission.jpg width=40%)
 
@@ -926,11 +931,9 @@ Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity}
 !!! ERROR
    Non-physical "useful hack": $0 < \mathtt{geometry\_opacity} < 1$ non-thin-walled case.
 
-
-opacity params              | Type      |  Range                 | Default      | Description
-----------------------------|-----------|------------------------|--------------|--------------------------------
-**`geometry_opacity`**      | `float`   |  [0,1]                 | 1.0          | the opacity of the surface
-
+Opacity params         | Label   | Type    | Range      | Default  | Description
+-----------------------|---------|---------|:----------:|:--------:|----------------------------------------------
+**`geometry_opacity`** | Opacity | `float` | $ [0, 1] $ | 1.0      | Opacity of the surface
 
 ![](images/transparency1.jpg width=90%) ![](images/transparency2.jpg width=90%) ![](images/transparency3.jpg width=90%)
 <div class="shifted-caption">
@@ -941,13 +944,111 @@ opacity params              | Type      |  Range                 | Default      
 Thin-walled case
 ============================================
 
-!!! Tip
-   TODO: Clarify the model structure in the thin-walled case. Is the structure asymmetric, e.g. only one side has the coat? Or is it mirrored, so both sides have the coat. If the latter, can the two coats differ in parameters? etc. This could be an implementation detail, but then it would be quite confusing.
+If the **`geometry_thin_walled`** Boolean is enabled, then the surface is assumed to be in a "thin-walled" mode. This has essentially the same structure as the bulk case, but the slabs at the base are assumed to be thin enough that, macroscopically, the material can be treated as a 2d sheet with no interior.
 
-![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
-<div class="shifted-caption">
-      ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** (right).](dummy)
-</div>
+In this case, the base slabs are interpreted as infinitesimally thin sheets, thus their behavour is assumed to change as follows:
+
+   - The $\textrm{metal}$ and $\textrm{glossy-diffuse}$ slabs remain but are considered double-sided, with the top BSDF mirrored to the bottom (and a totally opaque, albeit infinitesimally thin, interior)
+
+   - The $\textrm{translucent-base}$ slab can be considered an infinitesimally thin sheet of dielectric, with the BSDF $f_\mathrm{dielectric}$ on both sides. The specular reflection and transmission is retained, but no refraction occurs. There is no interior volume, but the reflection and transmission colors may be non-physically tinted via **`specular_color`**, and **`transmission_color`**.
+
+   - The $\textrm{subsurface}$ slab is considered to degenerate into a thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$), which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_anisotropy} \in [-1,1]$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
+      \begin{eqnarray}
+      f^R_\mathrm{diffuse} &=& \frac{1}{2} S (1 - g)\, f_+ \ , \nonumber \\
+      f^T_\mathrm{diffuse} &=& \frac{1}{2} S (1 + g)\, f_- \ .
+      \end{eqnarray}
+      This form ensures total energy conservation, i.e. the sum of the reflection and transmission albedos is less than 1:
+      \begin{equation}
+         E_R[f^R_\mathrm{diffuse}] + E_T[f^T_\mathrm{diffuse}] = S \le 1 \ .
+      \end{equation}
+      At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission.
+      The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this).
+
+   - As noted above, **`geometry_opacity`** makes physical sense as a float value in the thin-walled case (unlike the bulk case), controlling the presence weight of the thin wall.
+
+
+   ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
+   <div class="shifted-caption">
+         ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** (right).](dummy)
+   </div>
+   
+
+There are a number of reasonable options for how to interpret the layer structure of the thin-walled mode for light transport purposes:
+
+   - **Asymmetric**:  The thin wall is oriented according to the local shading normal, so when viewed from below the incident ray encounters the base slab first (Figure [asymmetric-thin-wall]). The appearance of the surface will then be somewhat different when viewed from below instead of above, as then the coat and fuzz layers are not directly visible but occluded by the base.
+
+   - **Asymmetric-but-always-facing**: The same as above, but the thin wall is automatically oriented so that the incident ray is always entering the surface from the top, so the surface appears the same viewed from above or below. This is physically implausible, but quite convenient as the light transport can always be dealt with as in the bulk case (i.e. incident rays enter top-down).
+
+   ***************************************************************************************************************
+   *                                                                                      ^ emission             *
+   *  +-----------+-----------------------------------------------------------------------|------+               *
+   *  |           |                                    fuzz                               |      |               *
+   *  |           +-----------------------------------------------------------------------|------+               *
+   *  |           |                                    coat                               |      |               *
+   *  |           +---------------------+----------------------+----------------+---------+------+ <-- thin-film *
+   *  |           |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  |  ambient  |░░░░░░░ metal ░░░░░░░|   translucent base   |   subsurface   |░glossy-diffuse░|               *
+   *  |  medium   |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  +-----------+---------------------+----------------------+----------------+----------------+               *
+   *                                                            <--------- opaque base --------->                *
+   *                                     <------------------ dielectric base ------------------->                *
+   *              <------------------------------------ base ----------------------------------->                *
+   ***************************************************************************************************************
+   <div class="shifted-caption">
+      ![Figure [asymmetric-thin-wall]: Asymmetric interpretation of the thin-walled mode.](dummy)
+  </div>
+
+   - **Symmetric**:  The thin wall structure above the base is mirrored so that it appears identical viewed from either side (Figure [symmetric-thin-wall]). This is a more physically plausible interpretation of a symmetric thin-wall than the Asymmetric-but-always-facing mode, though in the presence of the translucent base or subsurface the light transport will differ as rays will encounter the coat and fuzz layers on both sides.
+
+   **************************************************************************************************************
+   *                                                                                     ^ emission             *
+   *  +----------+-----------------------------------------------------------------------|------+               *
+   *  |          |                                    fuzz                               |      |               *
+   *  |          +-----------------------------------------------------------------------|------+               *
+   *  |          |                                    coat                               |      |               *
+   *  |          +---------------------+----------------------+----------------+---------+------+ <-- thin-film *
+   *  |          |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  |  ambient |░░░░░░░ metal ░░░░░░░|   translucent base   |   subsurface   |░glossy-diffuse░|               *
+   *  |  medium  |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  |          +---------------------+----------------------+----------------+---------+------+               *
+   *  |          |                                    coat                               |      |               *
+   *  |          +-----------------------------------------------------------------------|------+               *
+   *  |          |                                    fuzz                               |      |               *
+   *  +----------+-----------------------------------------------------------------------|------+               *
+   *                                                                                     v emission             *
+   **************************************************************************************************************
+   <div class="shifted-caption">
+      ![Figure [symmetric-thin-wall]: Symmetric interpretation of the thin-walled mode.](dummy)
+  </div>
+
+   
+   - **Double-sided**: Each side of the thin-wall is defined by a distinct OpenPBR Surface (one associated to the top, in the direction of the normal, and one to the bottom in the opposite direction). If there are different translucent base or subsurface parameters on each side, then these need to be resolved somehow (e.g. the parameters could be blended, or the light transport could model the presence of the two distinct thin layers of dielectric).
+
+  ******************************************************************************************************************
+  *                                                                                      ^ emission_up         ^   *
+  * +----------+-------------------------------------------------------------------------|-----------+         |   *
+  * |          |                                    fuzz_up                              |           |         up  *
+  * |          +-------------------------------------------------------------------------|-----------+             *
+  * |          |                                    coat_up                              |           |             *
+  * |          +---------------------+-----------------------+-----------------+---------+-----------+ <--thin-film*
+  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|    -up      *
+  * |          |░░░░░░metal_up ░░░░░░|  translucent base up  |  subsurface_up  |░░glossy-diffuse_up░░|             *
+  * |  ambient |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
+  * |  medium  +---------------------+-----------------------+-----------------+---------------------+             *
+  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
+  * |          |░░░░░░metal_down░░░░░| translucent base down | subsurface_down |░glossy-diffuse_down░|             *
+  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
+  * |          +---------------------+-----------------------+-----------------+---------+-----------+ <--thin-film*
+  * |          |                                    coat_down                            |           |    -down    *
+  * |          +-------------------------------------------------------------------------|-----------+             *
+  * |          |                                    fuzz_down                            |           |         down*
+  * +----------+-------------------------------------------------------------------------|-----------+         |   *
+  *                                                                                      v emission_down       v   *
+  ******************************************************************************************************************
+  <div class="shifted-caption">
+     ![Figure [double-sided-thin-wall]: Double-sided interpretation of the thin-walled mode.](dummy)
+ </div>
+
 
 
 (insert parametrization.md.html here)
