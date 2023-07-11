@@ -56,7 +56,7 @@ In both cases, the important consideration is that the implementation respects t
     There is also the question of possibly wanting a renderer to document its set of supported features.
 
 
-OpenPBR Surface material formalism
+Formalism
 ============================================
 
 Our goal is to create a surface shading model that is able to faithfully represent a wide variety of real-world materials. The light scattering characteristics at the surfaces of basic materials like metal, glass, or wall paint are well studied and can be accurately represented via simple analytical models. Other materials, such as finished wood, cloth, or skin, comprise semi-transparent layers of matter stacked on top of each other. The more intricate behavior of such materials is the result of light scattering at the interfaces between these layers and propagating through them, and each such scattering interface can typically be represented by an analytical model. Materials are also heterogeneous across the surface, for example a rusty metal surface has regions with bare specular metal and dull iron oxide, and the transition between these may be abrupt or smooth.
@@ -328,7 +328,7 @@ Other assumptions
    2. A user can model a thin surface (like some foil or a leaf or a ground plane) and get good results without enabling the thin-wall feature. (In an earlier version of ASM, users were confused to see total internal reflection on the back of a plane.)
 
 
-OpenPBR Surface model
+Model
 ============================================
 
 Overview
