@@ -56,7 +56,7 @@ In both cases, the important consideration is that the implementation respects t
     There is also the question of possibly wanting a renderer to document its set of supported features.
 
 
-OpenPBR Surface material formalism
+Formalism
 ============================================
 
 Our goal is to create a surface shading model that is able to faithfully represent a wide variety of real-world materials. The light scattering characteristics at the surfaces of basic materials like metal, glass, or wall paint are well studied and can be accurately represented via simple analytical models. Other materials, such as finished wood, cloth, or skin, comprise semi-transparent layers of matter stacked on top of each other. The more intricate behavior of such materials is the result of light scattering at the interfaces between these layers and propagating through them, and each such scattering interface can typically be represented by an analytical model. Materials are also heterogeneous across the surface, for example a rusty metal surface has regions with bare specular metal and dull iron oxide, and the transition between these may be abrupt or smooth.
@@ -328,8 +328,11 @@ Other assumptions
    2. A user can model a thin surface (like some foil or a leaf or a ground plane) and get good results without enabling the thin-wall feature. (In an earlier version of ASM, users were confused to see total internal reflection on the back of a plane.)
 
 
-OpenPBR Surface model overview
+Model
 ============================================
+
+Overview
+-------------------------------------
 
 Using the operator formalism and parametrization described, we now specify the structure of the OpenPBR surface model. The structure differs fundamentally depending on whether it is considered to be "thin-walled" or a "bulk". 
 
@@ -385,7 +388,7 @@ Which are composed to build the material structure, denoted $\textrm{PBR}$ below
 We now describe the components in detail, working from the base upwards.
 
 Base Substrate
-================================
+-------------------------------------
 
 The bulk at the bottom of the material structure, termed the base substrate, consists of a statistical mix of metal and dielectric bulks:
 
@@ -419,8 +422,7 @@ Thin-film params          | Label     | Type    | Range         | Default | Desc
 </div>
 
 
-Dielectric base
-----------------------------
+### Dielectric base
 
 The dielectric base is assumed to have a surface BSDF described by a rough GGX dielectric microfacet model [#Walter2007], and a bulk volumetric medium supporting absorption and scattering (whether physically due to the inherent molecular properties of the dielectric as in water, or e.g. a dispersion of embedded particles or flakes as in paint).
 
@@ -524,6 +526,7 @@ Glossy-diffuse params | Label     | Type     | Range        | Default         | 
    !!! Tip
    TODO: An image showing a pure glossy-diffuse slab! (with textured color and roughness)
 
+
 ### Subsurface
 
 For solid objects (for which thin_walled is false), subsurface scattering models the effect of light propagation and diffusion under the surface, where in general the exiting ray leaves at a different surface location than the incident ray.
@@ -566,7 +569,6 @@ and remapped extinction coefficient $\bar{\boldsymbol{\mu}}_t$ by
 Note that due to the singularity at $g=1$, in practice the anisotropy needs to be limited to be not too close to 1.
 
 Implementations may choose to compute light transport in the subsurface medium either via a fast approximate BSSRDF model (using e.g. the dipole approximation), or more accurately via volumetric path tracing.
-
 
 Subsurface params             | Label        | Type      | Range           | Default         | Description
 ------------------------------|--------------|-----------|:---------------:|:---------------:|----------------------------------------------
@@ -639,8 +641,7 @@ Translucent base params                   | Label            | Type     | Range 
    TODO: Group dispersion parameters with regular specular parameters, not volume parameters. Dispersion occurs at the surface and affects reflection in addition to refraction. Some implementations might choose to neglect dispersion's effect on reflection, but if specular reflection and transmission are implemented as a single BSDF (as they are in ASM) it's actually easier to make it apply to both refraction and reflection.
 
 
-Metallic base
--------------------------------------
+### Metallic base
 
 The characteristic appearance of metal, i.e. conductors, is another form of specularity which needs to be modelled, distinct from dielectrics. This is provided by a bulk slab which consists of an opaque microfacet conductor surface:
 
@@ -687,7 +688,7 @@ Metal params              | Label      | Type     | Range        | Default      
 
 
 Coat
-============================================
+-------------------------------------
 
 We next apply a dielectric coating, with an embedded purely absorbing medium $V_\mathrm{coat}$. This is intended to support the appearance of objects with a coat of colored varnish or lacquer:
 \begin{equation}
@@ -743,7 +744,6 @@ and the roughnesses of the metal and dielectric BSDFs via
 In some practical use cases however, it may be desirable for this physical effect to be ignored so that the base color is unaffected by the presence of the coat. For this purpose we provide the **`coat_affect_color`** parameter, which allows
 -->
 
-
 Coat params                 | Label            | Type     | Range        | Default         | Description
 ----------------------------|------------------|----------|:------------:|:---------------:|----------------------------------------------
 **`coat_weight`**           | Weight           | `float`  | $ [0, 1]   $ | 0.0             | Coverage weight of coat slab
@@ -767,7 +767,7 @@ Coat params                 | Label            | Type     | Range        | Defau
 
 
 Fuzz
-============================================
+-------------------------------------
 
 The topmost scattering layer supports the appearance of textiles, "fuzzy" surfaces, or dusty surfaces, where the surface consists of opaque colored "fibers" oriented with axes primarily parallel to the surface normal, producing a specular highlight at grazing angles.
 
@@ -810,7 +810,7 @@ Fuzz params          | Label     | Type     | Range        | Default         | D
 
 
 Emission
-============================================
+-------------------------------------
 
 It is assumed that the base substrate below the coat may emit light, with a directionally uniform (i.e. Lambertian) EDF.
 
@@ -842,7 +842,7 @@ Emission params          | Label     | Type     | Range           | Default     
 
 
 Opacity / Transparency
-============================================
+-------------------------------------
 
 The final surface is defined as a mix of the entire $\mathrm{fuzz\; layer}$ bulk with the ambient medium denoted:
 \begin{equation}
@@ -879,7 +879,7 @@ Opacity params         | Label   | Type    | Range      | Default  | Description
 
 
 Thin-walled case
-============================================
+-------------------------------------
 
 If the **`geometry_thin_walled`** Boolean is enabled, then the surface is assumed to be in a "thin-walled" mode. This has essentially the same structure as the bulk case, but the slabs at the base are assumed to be thin enough that, macroscopically, the material can be treated as a 2d sheet with no interior.
 
