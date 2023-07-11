@@ -844,11 +844,11 @@ Emission params          | Label     | Type     | Range           | Default     
 Anisotropy
 -------------------------------------
 
-For the dielectric-base, metal-base and coat, an anisotropy model allows the elongation of the specular highlight in a single direction, to simulate coherent microscale geometry due to processes like scratches or brushing. A pair of anisotropy parameters controls the elongation and the direction of the elongation. The dielectric-base and metal-base layers shares a same pair of parameters, while the coat layer, considered to be independent, uses another pair.
+For the dielectric-base, metal-base and coat, an anisotropy model allows the elongation of the specular highlight in a single direction, to simulate coherent microscale geometry due to processes like scratches or brushing. A pair of anisotropy parameters controls the elongation and the direction of the elongation. The dielectric-base and metal-base layers share a same pair of parameters, while the coat layer, considered to be independent, uses another pair.
 
-- For the dielectric-base and metal-base, and respectively coat, **`specular_anisotropy`**, and respectively **`coat_anisotropy`**, specify the degree to which the specular highlight is stretched in the direction of anisotropic rotation.
+- **`specular_anisotropy`** for the dielectric-base and metal-base, and respectively **`coat_anisotropy`** for the coat, specify the degree to which the specular highlight is stretched in the direction of anisotropic rotation.
 
-- For the dielectric-base and metal-base, and respectively coat, **`specular_rotation`**, and respectively **`coat_rotation`**, specify direction of the elongation of the specular highlight. The rotation is normalized from 0° to 360° counterclockwise, with 0° being the tangent direction. Note that the appearance of the specular highlight is identical between $[0, 0.5]$ and $[0.5, 1]$; this allows the preservation of value when converting to/from other models that support directional anisotropy.
+- **`specular_rotation`** for the dielectric-base and metal-base, and respectively **`coat_rotation`** for the coat, specify direction of the elongation of the specular highlight. The rotation is normalized from 0° to 360° counterclockwise, with 0° being the tangent direction. Note that the appearance of the specular highlight is identical between $[0, 0.5]$ and $[0.5, 1]$; this allows the preservation of value when converting to/from other models that support directional anisotropy.
 
 Specular anisotropy params | Label      | Type     | Range        | Default         | Description
 ---------------------------|------------|----------|:------------:|:---------------:|----------------------------------------------
