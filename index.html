@@ -617,7 +617,7 @@ The **`transmission_scatter`** color thus controls the observed color of the sin
 If any component of $\boldsymbol{\mu}_a$ is negative, then $\boldsymbol{\mu}_a$ is shifted by enough gray to make all the components positive, i.e. (in an obvious notation):
 \begin{eqnarray}
 && \mathrm{if \;\; min(\boldsymbol{\mu}_a)} < 0 \nonumber \\
-&& \quad\quad \boldsymbol{\mu}_a \rightarrow \boldsymbol{\mu}_a - \mathrm{min}(\boldsymbol{\mu}_a) \ .
+&& \quad\quad \boldsymbol{\mu}_a \leftarrow \boldsymbol{\mu}_a - \mathrm{min}(\boldsymbol{\mu}_a) \ .
 \end{eqnarray}
 After this shifting, the final extinction coefficient is given by the new $\boldsymbol{\mu}_a + \boldsymbol{\mu}_s$.
 This formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light. Finally the medium phase function anisotropy $g \in [-1,1]$ is given by **`transmission_scatter_anisotropy`** (the standard Henyey-Greenstein phase function is assumed).
