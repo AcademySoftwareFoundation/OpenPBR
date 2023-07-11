@@ -7,7 +7,7 @@
 <center>Zap Andersson, Paul Edmondson, Julien Guertault, Adrien Herubel, Alan King, </center>
 <center>Peter Kutz, Andréa Machizaud, Jamie Portsmouth, Frédéric Servant.</center>
 
-<center>*Version 0.0, 2023-04-06. A joint work of Adobe and Autodesk*</center>
+<center>*Version 0.1, 2023-07-13. A joint work of Adobe and Autodesk*</center>
 
 This document is a draft specification of a surface shading model: the OpenPBR Surface model. Designed as a über-surface, it aims to be capable of accurately modeling the vast majority of CG materials used in practical visual effects and feature animation productions. The model has been developed as a synthesis of the Autodesk Standard Surface and the Adobe Standard Material models.
 
@@ -15,26 +15,48 @@ This document is a draft specification of a surface shading model: the OpenPBR S
 Historical background and objectives
 ============================================
 
-Interchange of computer graphics scene assets between different facilities remains a significant problem today, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem, and is a topic of active scientific research. However, there is a strong need today for the industry to find a standardized material model that both covers most common use cases in day-to-day workflows and is easy to use.
+Interchange of computer graphics scene assets between different facilities remains a significant problem today, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem and is a topic of active scientific research. However, there is a strong need today for the industry to find a standardized material model that both covers most common use cases in day-to-day workflows and is easy to use.
 
-Over the years, certain de-facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX, Material Definition Language (MDL), and Open Shading Language (OSL) [#Gritz2010], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users who should not be expected to build surface shaders from the ground up for day-to-day tasks. There is a need for a standard uber-shader parametrization with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials. In this proposal we aim to fill this gap; one of our reference implementations is written in OSL [#Georgiev2019].
+Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX, Material Definition Language (MDL), and Open Shading Language (OSL) [#Gritz2010], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users who should not be expected to build surface shaders from the ground up for day-to-day tasks. There is a need for a standard über-shader parametrization, i.e. a single monolithic definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials. In this proposal we aim to fill this gap; one of our reference implementations is written in OSL [#Georgiev2019].
 
 Our proposed model follows closely the Autodesk Standard Surface shader [#Georgiev2019], which has strong spiritual predecessors in Anders Langlands' alSurface [#Langlands2014] and Autodesk 3ds Max's Physical Material [#Andersson2016]. It also incorporates many elements of the Adobe Standard Material [#Kutz2021], based heavily on Allegorithmic's PBR shading model [#McDermott2018]. 3ds Max's Physical Material in turn has been strongly inspired by Allegorithmic's model, Disney's Principled Shader [Burley2012], and general industry trends in several real-time 3D engines, and has been production proven with support by all major render engines for 3ds Max.
 
-In this proposal, rather than providing parameters for every conceivable case, we intentionally try to boil the set of parameters down to only those that are most useful in practice. We also fix the combination of primitive reflectance models to ensure that the users work within the bounds of what is physically plausible as much as possible. We aim for the overall behavior to be simple, logical, intuitive, and understandable, so that the model covers most day-to-day use cases. For the few it does not cover, one may need to use a renderer-specific shader, or build a bespoke shading network. We thus adopt a material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]).
+In this proposal, rather than providing parameters for every conceivable case, we intentionally try to boil the set of parameters down to only those that are most useful in practice. We also fix the combination of primitive reflectance models to ensure that the users work within the bounds of what is physically plausible as much as possible. We aim for the overall behavior to be simple, logical, intuitive, and understandable, so that the model covers most day-to-day use cases. For the few it does not cover, one may need to use a renderer-specific shader, or build a bespoke shading network.
 
-In outline this consists of:
+We thus adopt a material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]). With each component of the structure, we also define a set of parameters with names, valid ranges and default values, and describe how the component should be affected by the parameters.
 
-   - A base substrate which consists of a mixture of metal or dielectric.
-   - The dielectric base represents either the bulk of highly translucent media (e.g. glass, crystals, and liquids), the subsurface of highly scattering media (e.g. marble, plastic, skin, vegetation), or the surface of effectively opaque "diffuse" media (e.g. dirt, dense rock, concrete), where these three components are statistically mixed.
-   - The base dielectric (or metal) interface produces the primary specular reflection lobe.
-   - This base is optionally coated with a layer of dielectric, which may have an absorbing medium. The dielectric interface of this coat layer provides a secondary specular lobe.
-   - The surface is finished with an optional layer of "fuzz", which is a coat of micro-fibres representing e.g fine hair (peach fuzz), textile strands or dust.
+In outline the structure consists of:
+   - A base substrate made of a mixture of metal or dielectric.
+     The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe.
+     - The dielectric base represents either of three components, that can be statistically mixed:
+       1. The bulk of highly translucent media (e.g. glass, crystals, liquids, etc.),
+       2. The subsurface of highly scattering media (e.g. marble, plastic, skin, vegetation, etc.), or
+       3. The surface of effectively opaque "diffuse" media (e.g. dirt, dense rock, concrete, etc.),
+   - An optional layer of dielectric, which may have an absorbing medium, acting as a coating on top of the base substrate.
+     The dielectric interface of this coat layer provides a secondary specular lobe.
+   - An optional layer of "fuzz", representing the reflection from micro-fibers (e.g. fine hair, peach fuzz, textile strands, dust, etc.) on top of everything else.
 
    ![Figure [diagram_model]: Schematic illustration of the idealized material model that our shader emulates. Horizontal stacking of components represents statistical mixture and vertical stacking represents layering.](images/model_schematic.svg width="100%")
 
 
-OpenPBR Surface material formalism
+Implementing OpenPBR Surface
+============================================
+
+We want this material model to be useful to a wide range of renderers, from offline path tracers all the way to game engines on mobile devices. Enforcing a particular implementation would make the use of the material model impractical for certain classes of renderers, and ultimately make the model less useful. For this reason we consider the choice of a specific implementation to be outside the scope of this specification.
+
+When a particular rendering model is widely adopted we may mention it, and when an accurate solution can be prohibitively costly we may also suggest alternative approximations. But in the end, it is up to the developer to choose the appropriate implementation for their use case, based on their practical constraints and the level of visual quality they are aiming for.
+
+Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that e.g. a given renderer may not support subsurface scattering, or that anisotropic coating may be too expensive for VR. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't (e.g. a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect).
+
+In both cases, the important consideration is that the implementation respects the intent of the material. To that end, we make our best effort to describe as unambiguously as possible the material model, its physical layout, and the behavior of the parameters that control its properties.
+
+!!! Tip
+    TODO: The question of a reference renderer is still pending. It is quite possible that the MaterialX implementation may become the reference one.
+    
+    There is also the question of possibly wanting a renderer to document its set of supported features.
+
+
+Formalism
 ============================================
 
 Our goal is to create a surface shading model that is able to faithfully represent a wide variety of real-world materials. The light scattering characteristics at the surfaces of basic materials like metal, glass, or wall paint are well studied and can be accurately represented via simple analytical models. Other materials, such as finished wood, cloth, or skin, comprise semi-transparent layers of matter stacked on top of each other. The more intricate behavior of such materials is the result of light scattering at the interfaces between these layers and propagating through them, and each such scattering interface can typically be represented by an analytical model. Materials are also heterogeneous across the surface, for example a rusty metal surface has regions with bare specular metal and dull iron oxide, and the transition between these may be abrupt or smooth.
@@ -47,7 +69,7 @@ Slabs
 -------------------------------------
 
 To define our model unambiguously we use a simple formalism which describes an abstraction of a physical optical material consisting of "slabs" of dielectric or conductor, bounded by BSDFs. We work in the local space of a 2d surface, so "horizontal" directions mean those in the local plane, and "vertical" means aligned with the outward shading normal. The direction towards the "top" of the material is understood to align with the local shading normal at the current light transport vertex.
-The notion that the slabs are homogeneous in the horizontal extent is an idealization, where we assume in order to make the light transport tractable that on the "mesoscopic" scale of the depth of the slabs in the structure, the slabs are approximately locally homogeneous. On a larger scale, the properties of the slabs (and the overall structure of the material) will vary over the surface.
+The notion that the slabs are homogeneous in the horizontal extent is an idealization where, in order to make the light transport tractable, we consider that on the "mesoscopic" scale of the depth of the slabs in the structure, the slabs are locally homogeneous. On a larger scale, the properties of the slabs (and the overall structure of the material) will vary over the surface.
 
 Each slab consists of a homogeneous dielectric or conducting medium $V$ with conceptually unbounded extent horizontally and a finite vertical extent, bounded above by a surface with a given interface BSDF $f$.
 
@@ -55,7 +77,7 @@ We denote a general slab therefore as follows:
 \begin{equation}
 \quad S = \mathrm{Slab}(f, V)
 \end{equation}
-where $f$ is the interface BSDF and $V$ is the medium VDF. To clarify the relationships, we represents slabs diagrammatically in a block form as follows:
+where $f$ is the interface BSDF and $V$ is the medium VDF. To clarify the relationships, we represent slabs diagrammatically in a block form as follows:
 
 *******************************
 *    +-----------------+ f    *
@@ -66,19 +88,19 @@ where $f$ is the interface BSDF and $V$ is the medium VDF. To clarify the relati
 *******************************
 
 We do not dictate how the surfaces of the slab are described physically at the microscopic level, but at the level of the macroscopic slab description they are flat interfaces with a known BSDF. Ideally these BSDFs should be reciprocal and energy conserving, though a given implementation may want to relax these assumptions for efficiency or simplicity.
-Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ as usual, but we will generally remain agnostic about the actual specific functional form and details of the BSDFs (or VDFs), leaving it for the implementation to make reasonable assumptions given a verbal description of the slab physical properties and the described parameters. We expect that the BSDF implementations will typically be microfacet (or "microflake") models, but we do not want to dictate specific implementations for the BSDFs since specific models may differ depending on the hardware constraints, and also tend to evolve over time. We hope the provided verbal description combined with the set of parameters is sufficient to make it reasonably unambiguous what a good implementation would look like.
+Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ as usual. We will generally remain agnostic about the actual specific functional form and details of the BSDFs (or VDFs), leaving it for the implementation to make reasonable assumptions given a verbal description of the slab physical properties and the described parameters. We expect that the BSDF implementations will typically be microfacet (or "microflake") models, but we do not want to dictate specific implementations for the BSDFs since specific models may differ depending on the hardware constraints, and tend to evolve over time. We hope the provided verbal description combined with the set of parameters is sufficient to make it reasonably unambiguous what a good implementation would look like.
 
 If the slab is completely opaque (e.g. conducting or diffuse) we need only specify the surface BSDF $f$, as the interior medium is irrelevant for light transport. If the slab is non-opaque, i.e. translucent, the interior medium $V$ of the slab is taken to be a homogeneous dielectric which optionally contains a specified (also homogeneous) volumetric medium (or "VDF"). By VDF we mean the set of quantities (in general spatially varying fields) which define a volumetric optical medium, i.e.
 
    - the normalized phase function parameters
    - the absorption and scattering coefficients (alternatively, extinction coefficient and scattering albedo)
-   - the IOR and dispersion of the embedding dielectric medium
+   - the index of refraction (IOR) and dispersion of the embedding dielectric medium
 
 We assume that the renderer is aware that the volumetric properties may vary from point to point, inherited from the surface parameters, and how the fields are "filled-in" in the space surrounding the surfaces is a matter for implementations to deal with.
 
-It is understood that in principle the medium $V$ specifies its own depth, which can also be unbounded denoting a semi-infinite "bulk" medium with no substrate (we denote such an unbounded semi-infinite volumetric medium as $V^\infty$). This is an abstraction of course, where we understand that such a semi-infinite medium actually just represents the bottom layer of the material structure and the medium will most likely terminate somewhere. Such a slab with a semi-infinite medium does not need to supply a base BSDF (it can be just omitted). Note that the BSDF of the bottom interface (if the depth is finite) does not need to be specified as it will be derivable from the BSDF of the underlying slab if present (in combination with the properties of the medium VDF).
+It is understood that in principle the medium $V$ specifies its own depth, which can also be unbounded denoting a semi-infinite "bulk" medium with no substrate. We denote such an unbounded semi-infinite volumetric medium as $V^\infty$. This is an abstraction of course, where we understand that such a semi-infinite medium actually just represents the bottom layer of the material structure and the medium will most likely terminate somewhere. Such a slab with a semi-infinite medium does not need to supply a base BSDF (it can be just omitted). Note that the BSDF of the bottom interface (if the depth is finite) does not need to be specified as it will be derivable from the BSDF of the underlying slab if present (in combination with the properties of the medium VDF).
 
-If the bounding BSDFs of a slab are completely non-transmissive and opaque (e.g. metallic), the internal medium is irrelevant for light transport purposes so can for convenience be omitted:
+If the bounding BSDFs of a slab are completely non-transmissive and opaque (e.g. metallic), the internal medium is irrelevant for light transport purposes. For convenience, it can be omitted:
 \begin{equation}
 S_\mathrm{opaque} = \mathrm{Slab}(f) \ .
 \end{equation}
@@ -101,25 +123,25 @@ S_\mathrm{bulk} = \mathrm{Slab}(f, V^\infty) \ .
 *  |                 |     *
 *  |       V∞        |     *
 *  |                 |     *
-*  + - - - - - - - - +     *
+*  +- - - - - - - - -+     *
 ****************************
 
 For completeness, the absence of a slab (i.e. no surface or underlying medium), which corresponds just to the ambient medium, is denoted $\mathrm{Slab}(\emptyset)$.
 
 A slab does not itself specify anything about other slabs in relation to itself (e.g. its substrate slab or overlying slab).
-The ambient medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top and bottom of the entire structure is also assumed to be given and unspecified by the model. Renderers which track the dielectric medium may wish to account for this ambient medium when computing the light transport.
+The adjacent medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top and bottom of the entire structure is also assumed to be given and unspecified by the model. If the renderer keeps track of the dielectric medium in which the surface is embedded (via a scheme such as "nested dielectrics" [#Budge2002]) which may be the interior dielectric bulk of some transparent object in the scene such as a piece of glass or body of water, then the ambient medium is a general dielectric whose IOR we denote **`ambient_ior`**, or if dielectric medium tracking is not done then **`ambient_ior`** can be assumed to be 1 corresponding to air or vacuum.
 
-We build a more complex composite material by "vertically" layering and "horizontally" mixing slabs, as described below.
+Given constituent slabs, we then build a more complex composite material by "vertically" layering and "horizontally" mixing slabs, as described below.
 
 
 Layering
 -------------------------------------
 
-The layer operation deposits a coat slab (or composite material) $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab (or composite material) $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$, conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$ (i.e. $V_\mathrm{coat}$ becomes the ambient medium above the microsurface of $S_\mathrm{sub}$).
+The layer operation generates a composite material by depositing a slab $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$ (or composite material), conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$, so that $V_\mathrm{coat}$ becomes the adjacent medium above the microsurface of $S_\mathrm{sub}$. 
 
-The physical act of bringing the two independent slabs together and bonding them produces a new, "vertically" heterogeneous composite material denoted
+The physical act of bringing the two independent slabs $S_\mathrm{sub}$ and $S_\mathrm{coat}$ together and bonding them produces a new, "vertically" heterogeneous composite material $L$ denoted
 \begin{equation}
-\mathrm{layer}(S_\mathrm{sub}, S_\mathrm{coat}) \ .
+L = \mathrm{layer}(S_\mathrm{sub}, S_\mathrm{coat}) \ .
 \end{equation}
 
 Diagrammatically, we represent the layering operation as putting the two slabs vertically adjacent, where one is to imagine the physical slabs of material being bonded at their top and bottom interfaces.
@@ -142,7 +164,7 @@ Diagrammatically, we represent the layering operation as putting the two slabs v
 *                                                                                           *
 *********************************************************************************************
 
-It is understood that the BSDF $f^\prime_\mathrm{sub}$ at the new internal interface formed from the joining of the coat and substrate slabs is not necessarily the same as $f_\mathrm{sub}$, but would be derivable by considering the physics and geometry of the bond. Physically this BSDF should be consistent with the adjacent media $V_\mathrm{coat}$ and $V_\mathrm{sub}$. We don't attempt to derive or enforce this physics, we just try to make it reasonably unambiguous how the BSDF of the internal interface should be implemented, given the known BSDFs and media of the component slabs being bonded in the layering, and the final suite of parameters which is supposed to describe the resultant interfaces. For example bringing two dielectric slabs together produces well-understood Fresnel effects at the interface according to the ratio of the IORs of the dielectric media, and similarly covering a metallic surface with a coat of dielectric will alter the BSDF of the metallic interface. 
+It is understood that the BSDF $f^\prime_\mathrm{sub}$ at the new internal interface formed from the joining of the coat and substrate slabs is not necessarily the same as $f_\mathrm{sub}$, but would be derivable from it by considering the physics and geometry of the bond. Physically this BSDF should be consistent with the adjacent media $V_\mathrm{coat}$ and $V_\mathrm{sub}$. We don't attempt to derive or enforce this physics, we just try to make it reasonably unambiguous how the BSDF of the internal interface should be implemented, given the known BSDFs and media of the component slabs being bonded in the layering, and the final suite of parameters which is supposed to describe the resultant interfaces. For example bringing two dielectric slabs together produces well-understood Fresnel effects at the interface according to the ratio of the IORs of the dielectric media, and similarly covering a metallic surface with a coat of dielectric will alter the BSDF of the metallic interface.
 
 The mapping from the physical layer structure into a form usable within a renderer depends on the level of approximation which is desired for the specific use-case.
 Typically the light transport properties will be represented by BSDFs representing the various lobes generated by the model, which we can roughly identify with the BSDFs of the top interfaces of each slab. Then the resultant BSDF of the layering operation can be approximated via various schemes which combine the BSDFs of the individual interfaces.
@@ -169,9 +191,9 @@ $E_X(\omega_o) \equiv \int_{\mathcal{H}_+} f_X(\omega_i, \omega_o) \,\mathrm{d}\
 
 A simple, albeit non-reciprocal, form of albedo scaling is to take the substrate weight factor to be one minus the directional reflectance of the coat (intuitively meaning that the energy not reflected by the coat is assumed to transmit through to the substrate), i.e.:
 \begin{equation}
-f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  +  \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o)
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o) + \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o)
 \end{equation}
-where the directional albedo integral $E_\mathrm{coat}(\omega_o)$ can be either precomputed and tabulated, or computed on-the-fly via Monte Carlo sampling of the BSDF.
+where the directional albedo integral $E_\mathrm{coat}(\omega_o)$ can be either precomputed and tabulated, or computed on-the-fly via [Monte Carlo](https://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions#Application:EstimatingReflectance) sampling of the BSDF.
 This form ensures that if the directional albedos of the coat and substrate BSDFs are "weakly" energy conserving (i.e. $E_\mathrm{coat}(\omega_o) \le 1$, $E_\mathrm{sub}(\omega_o) \le 1$), then the combined BSDF is also weakly energy conserving, since
 \begin{equation}
 E_\mathrm{layer}(\omega_o) \,=\, E_\mathrm{coat}(\omega_o)  +  \left(1 - E_\mathrm{coat}(\omega_o)\right) \,E_\mathrm{sub}(\omega_o) \;\; \le \, 1  \ .
@@ -185,13 +207,13 @@ f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + C 
 where to ensure the energy conservation the normalization constant $C$ involves an integral over the albedo times the substrate BSDF. Depending on the form of the substrate BSDF this may require more elaborate tabulation.
 
 Note though that this albedo-scaling approximation does not correctly take into account the effect of multiple light bounces back and forth between the interfaces, or absorption and scattering in the volumetric medium of the coat $V_\mathrm{coat}$. In general the resulting BSDF lobe shape will not be a simple linear combination of the interface BSDFs.
-To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric transmittance $T$ through the coat in the incident and output directions could be approximately modelled as
-\begin{equation}
-f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + T(\omega_i)\,T(\omega_o) \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o) \ .
+To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric transmittance through the coat in the incident and output directions could be approximately modelled as
+\begin{equation} \label{general-albedo-scaling}
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  +  T_\mathrm{coat}(\omega_i, \omega_o) \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o) \ .
 \end{equation}
-Similarly if the coat is rough this will effectively roughen the substrate BSDF lobe also, which can be accounted for approximately via various heuristics.
+where $T_\mathrm{coat}(\omega_i, \omega_o)$ accounts for the total volumetric absorption of the coat along the input and output rays. Similarly if the coat is rough this will effectively roughen the substrate BSDF lobe also, which can be accounted for approximately via various heuristics.
 
-In general we will not specify particular such approximations which we favour, and instead aim to make it as clear as possible what the underlying basic physical structure is and leave it to each implementation to decide how best to approximate this for its particular use case.
+In general we will not specify particular such approximations which we favor, and instead aim to make it as clear as possible what the underlying basic physical structure is and leave it to each implementation to decide how best to approximate this for its particular use case.
 
 
 Mixing
@@ -199,12 +221,11 @@ Mixing
 
 The mix operation linearly blends two materials at the microsurface level. The physical picture is that the microsurface consists of randomly distributed patches of each material in proportion to the blend weight, which thus exhibits heterogeneity in the "horizontal" direction. Many real-world objects are made of several different materials, e.g. metal and plastic, and it is convenient to model the appearance of such objects by texturing the type of each material on their surfaces. While the material transitions are typically abrupt, the ability to continuously mix materials is useful for artistic purposes as well as for anti-aliasing.
 
-The mix operation is denoted:
-
+The mix operation of two slabs $S_0$ and $S_1$ with weight $w_1$, generating a new “horizontally” heterogeneous composite material $M$, is denoted:
 \begin{equation}
 M = \mathrm{\mathbf{mix}}(S_0, S_1, w_1)
 \end{equation}
-where $M \rightarrow S_0$ as $w_1 \rightarrow 0$, and $M \rightarrow S_1$ as $w_1 \rightarrow 1$.
+where the $M \rightarrow S_0$ as $w_1 \rightarrow 0$, and $M \rightarrow S_1$ as $w_1 \rightarrow 1$.
 
 Diagrammatically, we represent the mix as putting the two slabs horizontally adjacent, where the intention is that one should imagine the physical slabs lying adjacent at the same surface level, though randomly distributed in microscopic patches with relative area in proportion to the given mix weight.
 
@@ -245,25 +266,41 @@ For convenience this may also be written more concisely as an weighted layer ope
 
 This physical picture of the mix operation becomes somewhat unrealistic in some cases where the bottom-most bulk materials being blended are not obviously consistent (e.g. blending dielectric and metallic bulks), but in such cases it is understood that the implementation should do the best it can to make sense of the physics (e.g. the metal bulk could be considered to actually be surface metallic flakes on top of a single consistent dielectric). 
 
-The implementation of the mix operation in a renderer depends on how the material model is approximated. Typically the model will be reduced to an effective BSDF per slab being mixed, in which case the mix will be implemented simply as a linear blend of those BSDFs. Though in some cases it may be more convenient to implement the mixture as a microfacet model where the selection of the mix component happens during the statistical sampling of the microfacets.
+The implementation of the mix operation in a renderer depends on how the material model is approximated. Typically the model will be reduced to an effective BSDF per slab being mixed, in which case the mix can be implemented simply as a linear blend of those BSDFs, i.e. if slabs $S_0$, $S_1$ have BSDFs $f_0$, $f_1$ respectively, then the BSDF of $\mathrm{\mathbf{mix}}(S_0, S_1, w_1)$ can be mapped to
+\begin{equation}
+f_\mathrm{mix} = (1 - w_1) f_0 + w_1 f_1 \ .
+\end{equation}
 
-!!! Tip
-    TODO: Do we need to suggest how the mix operation is implemented? It is probably obvious, e.g. at a macroscopic level amounts to blending BSDFs, or at a microscopic level corresponds to stochastically choosing/distributing microfacets.
+In the case of the weighted layer operation, if the BSDFs of the substrate is $f_\mathrm{sub}$ then $\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat})$ maps to
+\begin{equation}
+f_\mathrm{weighted-layer} = (1 - w_\mathrm{coat}) f_\mathrm{sub} + w_\mathrm{coat} f_\mathrm{layer}
+\end{equation}
+where $f_\mathrm{layer}$ is the BSDF corresponding to $\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat})$.
+If we use the non-reciprocal albedo scaling approach described in the Layering section (equation [general-albedo-scaling]), then $f_\mathrm{layer}$ can be expressed as
+\begin{equation}
+f_\mathrm{layer} = f_\mathrm{coat} +  T_\mathrm{coat} \left(1 - E_\mathrm{coat}\right) \,f_\mathrm{sub}
+\end{equation}
+where $f_\mathrm{coat}$ is the BSDF of the coat. Thus combining these,
+\begin{equation}
+f_\mathrm{weighted-layer} = w_\mathrm{coat} f_\mathrm{coat} +  \mathrm{lerp}\left(1,  T_\mathrm{coat} (1 - E_\mathrm{coat}),  w_\mathrm{coat}\right) f_\mathrm{sub} \ ,
+\end{equation}
+which, for example, is the formula used in the Autodesk Standard Surface [#Georgiev2019] coat layer.
 
-!!! Tip
-    Describe how the material is supposed to behave with it consists of a mixture of components. For the individual components of the model, reasonable behavior could be determined from the physical description. However, things get murkier when you have a mixture of different components.
-    For example, what does it mean to hit a surface from the inside if it is 1/4 diffuse, 1/4 metal, 1/4 transparent, and 1/4 subsurface?
-    In ASM, we made diffuse and metal reflect normally from the inside for a few reasons:
-    1. If light got inside a diffuse or metallic object in the first place, then that means the metal and diffuse components probably represent thin coatings on a translucent object (like foil or a sticker).
-    2. A user can model a thin surface (like some foil or a leaf or a ground plane) and get good results without enabling the thin-wall feature. (In an earlier version of ASM, users were confused to see total internal reflection on the back of a plane.)
+In this fashion the abstract mix and layer operations can be mapped to a more computationally convenient representation in terms of a weighted sum of BSDF lobes. In practice we will defer to the MaterialX implementation of the OpenPBR Surface model to define exactly how this mapping to a mixture model is done.
 
+Note though that since this model is simply a physical description of the material structure, in principle it would also be amenable to solution via more advanced and accurate methods such as those developed in [#Jakob2014], [#Belcour2018], and [#Zeltner2018], which attempt to compute all the various modes of reflection and transmission through the whole stack of layers, generating a final BSDF which is not necessarily a simple linear combination of the individual interface BSDFs.
 
 Emission model
 -------------------------------------
 
-We assume that each slab has emission distribution functions (EDFs) that come along with the surface BSDFs, though these correspond by default to no emission at all. The EDF of the top/bottom surfaces specifies the emitted radiance from the slab into the positive/negative hemispheres. We will generally assume in this model that the emission is uniformly distributed in all directions into the hemisphere. The emission from the structure as a whole is then physically determined (in principle) by the propagation of this emitted light from the emitting slabs through their neighbours into the ambient space. 
+Each slab also has an emission distribution function (EDF) that comes along with the surface BSDF, though it corresponds by default to no emission at all. The EDF of the top/bottom surfaces specifies the emitted radiance from the slab into the positive/negative hemispheres. We will generally assume in this model that the emission is uniformly distributed in all directions into the hemisphere. The emission from the structure as a whole is then physically determined (in principle) by the propagation of this emitted light from the emitting slabs through their neighbors into the ambient space. 
 
 As for the BSDFs, we remain agnostic about the specific functional form of the EDFs, giving enough information from a verbal description combined with parameters to make the implementation reasonably unambiguous.
+
+Emissive properties are expressed in photometric units, since reference values are widely available. The conversion to radiometric units is the responsibility of the renderer. For RGB renderers, a simple approximation is proposed in [#Lagarde2014].
+
+!!! Tip
+   There is an ongoing discussion in the [MaterialX](https://github.com/AcademySoftwareFoundation/MaterialX) and [USD](https://github.com/PixarAnimationStudios/OpenUSD) working groups regarding the description of lights and emissive objects. This part of the specification may be subject to change if it doesn't align with those standards.
 
 
 Other assumptions
@@ -283,31 +320,47 @@ Other assumptions
    - what is the default state of the OpenPBR surface, and why
 
 
-OpenPBR Surface model overview
+!!! Tip
+   Describe how the material is supposed to behave with it consists of a mixture of components. For the individual components of the model, reasonable behavior could be determined from the physical description. However, things get murkier when you have a mixture of different components.
+   For example, what does it mean to hit a surface from the inside if it is 1/4 diffuse, 1/4 metal, 1/4 transparent, and 1/4 subsurface?
+   In ASM, we made diffuse and metal reflect normally from the inside for a few reasons:
+   1. If light got inside a diffuse or metallic object in the first place, then that means the metal and diffuse components probably represent thin coatings on a translucent object (like foil or a sticker).
+   2. A user can model a thin surface (like some foil or a leaf or a ground plane) and get good results without enabling the thin-wall feature. (In an earlier version of ASM, users were confused to see total internal reflection on the back of a plane.)
+
+
+Model
 ============================================
+
+Overview
+-------------------------------------
 
 Using the operator formalism and parametrization described, we now specify the structure of the OpenPBR surface model. The structure differs fundamentally depending on whether it is considered to be "thin-walled" or a "bulk". 
 
 We describe first the latter case of a bulk, where the material structure informally looks informally like the following diagram:
 
-*************************************************************************************************************
-*                                                                                     ^ emission            *
-*  +-----------+----------------------------------------------------------------------|-----+               *
-*  |           |                                    fuzz                              |     |               *
-*  |           +----------------------------------------------------------------------|-----+               *
-*  |           |                                    coat                              |     |               *
-*  |           +---------------------+---------------------+----------------+---------+-----+ <-- thin-film *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-*  |  ambient  |░░░░░░░░░░░░░░░░░░░░░+                     |                |░░░░░░░░░░░░░░░|               *
-*  |  medium   |░░░░░░░░metal░░░░░░░░|     translucent     |   subsurface   |░░░░glossy░░░░░|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|        base         |                |░░░░diffuse░░░░|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|                     |<--------- opaque base -------->|               *
-*  |           |░░░░░░░░░░░░░░░░░░░░░|<----------------- dielectric base ------------------>|               *
-*  +-----------+<---------------------------------- base ---------------------------------->|               *
-*************************************************************************************************************
+************************************************************************************************************
+*                                                                         emission                         *
+*                                                                             ^                            *
+* +-----------+---------------------------------------------------------------|------------+               *
+* |           |                                    fuzz                       |            |               *
+* |           +---------------------------------------------------------------|------------+               *
+* |           |                                    coat                       |            |               *
+* |           +---------------------+---------------------+----------------+--+------------+ <-- thin-film *
+* |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |           |░░░░░░░ metal ░░░░░░░|     translucent     |   subsurface   |░░░ glossy  ░░░|               *
+* |           |░░░░░░░░░░░░░░░░░░░░░|        base         |                |░░░ diffuse ░░░|               *
+* |           |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |  ambient  |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* |  medium   |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
+* +-----------+ - - - - - - - - - - +- - - - - - - - - - -+ - - - - - - - -+ - - - - - - - +               *
+*                                                                                                          *
+*                                                          <--------- opaque base -------->                *
+*                                                                                                          *
+*                                    <------------------ dielectric base ----------------->                *
+*                                                                                                          *
+*              <---------------------------------- base ---------------------------------->                *
+************************************************************************************************************
 
 To summarize the formal structure, this consists of the following slabs:
 
@@ -335,37 +388,33 @@ Which are composed to build the material structure, denoted $\textrm{PBR}$ below
 We now describe the components in detail, working from the base upwards.
 
 Base Substrate
-================================
+-------------------------------------
 
 The bulk at the bottom of the material structure, termed the base substrate, consists of a statistical mix of metal and dielectric bulks:
 
 \begin{eqnarray}
 \mathrm{base} &=& \mathrm{\mathbf{mix}}(\textrm{dielectric-base}, \mathrm{metal}, \mathtt{base\_metalness})       \nonumber \\
 \end{eqnarray}
-*******************************************************************************************************************
-*                                                     base_metalness       1 - base_metalness                     *
-* +-------------------------------------+        +----------------------+----------------------+ <---- thin-film  *
-* |                                     |        |░░░░░░░░░░░░░░░░░░░░░░|                      |                  *
-* |               base                  |   ==   |░░░░░░░░metal ░░░░░░░░|   dielectric-base    |                  *
-* |                                     |        |░░░░░░░░░░░░░░░░░░░░░░|                      |                  *
-* + - - - - - - - - - - - - - - - - - - +        + - - - - - - - - - - -+ - - - - - - - - - - -+                  *
-*******************************************************************************************************************
+
+********************************************************************************************************************
+*                                                    base_metalness         1 - base_metalness                     *
+* +-----------------------------------+        +------------------------+------------------------+ <---- thin-film *
+* |                                   |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |                 *
+* |                base               |   ==   |░░░░░░░░░ metal ░░░░░░░░|    dielectric-base     |                 *
+* |                                   |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |                 *
+* +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+                 *
+********************************************************************************************************************
 
 The **`base_metalness`** parameter controls the fraction of surface which is metal, where values between 0 and 1 can be used to texture surfaces like rusted iron, where different areas of the surface can have more reflective clean metal and more diffuse rust.
 Metalness maps from applications like Substance Painter can be connected to this parameter.
 
-!!! Tip
-   TODO: Say something about how to interpret this if the metal is mixed with a transparent base. Then it may be best to treat the metal as flakes on top of an underlying dielectric, rather than a bulk?
+Rainbow-like iridescence effects which occur due to interference when a thin refractive film with thickness on the order of the light wavelength is placed on top of a material. There is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by its thickness and the film IOR.
+In practice, these effects are most easily incorporated directly into the microfacet BSDFs of both the metal and dielectric base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
 
-Rainbow-like iridescence effects which occur due to interference when a thin refractive film with thickness on the order of the light wavelength is placed on top of a material.
-There is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by its thickness and the film IOR.
-In practice, these effects are most easily just incorporated into the microfacet BSDFs of both the metal and dielectric base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
-
-thin-film params             | Type    |  Range    | Default          | Description
----------------------------- | --------|-----------|------------------|----------------------------------------------
-**`thin_film_thickness`**    | `float` | [0,1000]  | 0.0              | thickness of the film
-**`thin_film_ior`**          | `float` | [1,3)     | 1.5              | refractive index of the film
-
+Thin-film params          | Label     | Type    | Range         | Default | Description
+--------------------------|-----------|---------|:-------------:|:-------:|----------------------------------------------
+**`thin_film_thickness`** | Thickness | `float` | $ [0, 1000) $ | 0.0     | Thickness of the film in nanometers
+**`thin_film_ior`**       | IOR       | `float` | $ [1, 3)    $ | 1.5     | Refractive index of the film
 
 ![](images/thin_film1.jpg width=99%) ![](images/thin_film2.jpg width=99%) ![](images/thin_film3.jpg width=99%)
 <div class="shifted-caption">
@@ -373,75 +422,76 @@ thin-film params             | Type    |  Range    | Default          | Descript
 </div>
 
 
-Dielectric base
-----------------------------
+### Dielectric base
 
-The dielectric base is assumed to have a surface BSDF described by a rough GGX dielectric microfacet model [#Walter2007], and a bulk volumetric medium supporting absorption and scattering (whether physically due to the inherent molecular properties of the dielectric as in water, or e.g a dispersion of embedded particles or flakes as in paint).
+The dielectric base is assumed to have a surface BSDF described by a rough GGX dielectric microfacet model [#Walter2007], and a bulk volumetric medium supporting absorption and scattering (whether physically due to the inherent molecular properties of the dielectric as in water, or e.g. a dispersion of embedded particles or flakes as in paint).
 
 However we distinguish between a separate "translucent" dielectric bulk and "opaque" dielectric bulk, which are placed in a statistical mix:
 
 \begin{equation}
 \textrm{dielectric-base} = \mathrm{\mathbf{mix}}(\textrm{opaque-base}, \textrm{translucent-base}, \mathtt{transmission\_weight}) \ .
 \end{equation}
-*****************************************************************************************
-*                                   1 - transmission_weight     transmission_weight     *
-*   +---------------------+        +------------------------+------------------------+  *
-*   |                     |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |  *
-*   |   dielectric-base   |   ==   |░░░░░░opaque-base░░░░░░░|    translucent-base    |  *
-*   |                     |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |  *
-*   + - - - - - - - - - - +        + - - - - - - - - - - - -+  - - - - - - - - - - - +  *
-*****************************************************************************************
 
-This is in order to mirror the usual workflow of artists where they are either modelling an opaque surface potentially with some specularity and dense subsurface scattering (such as rock, plastic, skin etc.), or a translucent material (such as glass, liquids, organic matter etc.) with some limited amount of volumetric absorption and scattering. These use cases require different parametrizations to effectively control, so are convenient to split into separate slabs. The translucent case is described in the Translucent base section, while the opaque base is further broken down below.
+****************************************************************************************************
+*                                               1 - transmission_weight     transmission_weight    *
+* +-----------------------------------+        +------------------------+------------------------+ *
+* |                                   |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        | *
+* |           dielectric-base         |   ==   |░░░░░ opaque-base ░░░░░░|    translucent-base    | *
+* |                                   |        |░░░░░░░░░░░░░░░░░░░░░░░░|                        | *
+* +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
+****************************************************************************************************
 
-The **`transmission_weight`** mix weight selects between these models. Note that technically a mix weight between 0 and 1 produces a physically ambiguous state (since there are then superimposed bulk media with different properties), so we expect that normally this weight acts as a boolean selector.
+This mirrors the usual workflow of artists where they are either modelling an opaque surface potentially with some specularity and dense subsurface scattering (such as rock, plastic, skin etc.), or a translucent material (such as glass, liquids, organic matter etc.) with some limited amount of volumetric absorption and scattering. These use cases require different parametrizations to effectively control, so are convenient to split into separate slabs. The translucent case is described in the Translucent base section, while the opaque base is further broken down below.
+
+The **`transmission_weight`** mix weight selects between these models. Note that technically a mix weight between 0 and 1 produces a physically ambiguous state (since there are then superimposed bulk media with different properties), so we expect that normally this weight acts as a Boolean selector.
 
 The opaque-base substrate is assumed to be a dielectric with dense subsurface volumetric absorption and scattering, which tends to an idealized "glossy-diffuse" BSDF in the limit of infinite density medium.
 
-In some cases a blend of subsurface and completely opaque glossy-diffuse scattering is desired, for example in skin rendering where the diffuse component provides the surface details of the skin (freckles, blemishes, makeup, etc.) and the subsurface component provides the color detail of the underlying veins and tissue. In order to support this we make the opaque base substrate be a statistical mix of subsurface and glossy-diffuse models controlled via **`subsurface_weight`**:
+In some cases a blend of subsurface and completely opaque glossy-diffuse scattering is desired, for example in skin rendering where the diffuse component provides the surface details of the skin (freckles, blemishes, makeup, etc.) and the subsurface component provides the color detail of the underlying veins and tissue. To support this, we make the opaque base substrate be a statistical mix of subsurface and glossy-diffuse models controlled via **`subsurface_weight`**:
 
 \begin{eqnarray}
 \textrm{opaque-base}  &=& \mathrm{\mathbf{mix}}(\textrm{glossy-diffuse}, \mathrm{subsurface}, \mathtt{subsurface\_weight})        \nonumber \\
 \end{eqnarray}
-*****************************************************************************************
-*                                    1 - subsurface_weight      subsurface_weight       *
-*   +---------------------+        +------------------------+------------------------+  *
-*   |░░░░░░░░░░░░░░░░░░░░░|        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |  *
-*   |░░░░░opaque-base░░░░░|   ==   |░░░░glossy-diffuse░░░░░░|      subsurface        |  *
-*   |░░░░░░░░░░░░░░░░░░░░░|        |░░░░░░░░░░░░░░░░░░░░░░░░|                        |  *
-*   + - - - - - - - - - - +        + - - - - - - - - - - -  + - - - - - - - - - - -  +  *
-*****************************************************************************************
 
-The two models for the opaque base are describe in the Glossy-diffuse section and the Subsurface section.
+****************************************************************************************************
+*                                                1 - subsurface_weight      subsurface_weight      *
+* +-----------------------------------+        +------------------------+------------------------+ *
+* |░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|        |░░░░░░░░░░░░░░░░░░░░░░░░|                        | *
+* |░░░░░░░░░░░ opaque-base ░░░░░░░░░░░|   ==   |░░░░ glossy-diffuse ░░░░|       subsurface       | *
+* |░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|        |░░░░░░░░░░░░░░░░░░░░░░░░|                        | *
+* +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
+****************************************************************************************************
+
+The two models for the opaque base are described in the Glossy-diffuse section and the Subsurface section.
 
 Both the opaque and translucent dielectric base share the same dielectric interface BSDF $f_\mathrm{dielectric}$, whose parameters are termed "specular" since they control the primary specular reflection lobe which is provided by the base dielectric (and the coat provides a secondary specular lobe, see the Coat section):
 
- - The **`specular_weight`** and **`specular_color`** parameters modulate the Fresnel factor of $f_\mathrm{dielectric}$. Note that these are technically unphysical if altered from the defaults (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice (for example, to simulate green or purple anti-reflective coatings on lenses).
+ - The **`specular_weight`** and **`specular_color`** parameters modulate the Fresnel factor of $f_\mathrm{dielectric}$. Note that these are technically unphysical if altered from the defaults (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice (for example, to simulate green or purple anti-reflective coatings on lenses). The light transmitted through the dielectric will be compensated accordingly to preserve the energy balance (thus generating a complementary color if **`specular_color`** is not white).
 
  - The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`**.
 
- - The **`specular_ior`** parameter controls the index of refraction of the dielectric, which in this case only affects the Fresnel factor. The **`specular_ior_level`** parameter additionally provides a convenient [0,1] control for dialling the dielectric reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum, by modulating the IOR.  This is useful for texturing the specular reflectivity in a more physically correct way than via the **`specular_weight`** (for example low **`specular_weight`** suppresses the entire specular lobe at all viewing angles, while low **`specular_ior`** still retains the Fresnel highlights at grazing angles). 
+ - The **`specular_ior`** parameter controls the index of refraction of the dielectric, which in this case only affects the Fresnel factor. The **`specular_ior_level`** parameter additionally provides a convenient [0,1] control for dialing the dielectric reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum, by modulating the IOR.  This is useful for texturing the specular reflectivity in a more physically correct way than via the **`specular_weight`** (for example low **`specular_weight`** suppresses the entire specular lobe at all viewing angles, while low **`specular_ior`** still retains the Fresnel highlights at grazing angles). 
 
-The formula for the IOR modulation is as follows. Given the existing **`specular_ior`**, the ratio $\eta_0$ of this to the IOR of the surrounding ambient medium is computed (technically this should also take into account the **`coat_ior`**). 
+The formula for the IOR modulation is as follows. Given the existing **`specular_ior`**, the ratio $\eta_0$ of this to the IOR of the surrounding medium is computed (which should take into account the presence of the coat, as discussed in the Coat section).
 Given this ratio, the dielectric Fresnel reflection factor at normal incidence is given by
 \begin{equation}
 F_0 = \frac{|1 - \eta_0|^2}{(1 + \eta_0)^2} \ .
 \end{equation}
 This Fresnel factor is then modulated by multiplying by twice the **`specular_ior_level`** denoted $s$. Thus solving for the new IOR ratio $\eta$ after the modulation:
-\begin{equation}
+\begin{equation}  \label{modulated_ior}
 \eta = \frac{1 + \mathrm{sgn}(\eta_0-1)\sqrt{2 s F_0}}{1 - \mathrm{sgn}(\eta_0-1)\sqrt{2 s F_0}} \ .
 \end{equation}
-Note there is a constraint $s < 1/(2F_0)$ since the scaled reflection coefficient cannot exceed $1$. So the range of $s$ needs to be clamped: $s \in [0, \mathrm{min}(1, 1/(2F_0)]$. Applying this IOR ratio at the dielectric interface then produces the desired reflectivity modulation.
+Note there is a constraint $s < 1/(2F_0)$ since the scaled reflection coefficient cannot exceed $1$. So the range of $s$ needs to be clamped: $s \in [0, \mathrm{min}(1, 1/(2F_0)]$. Applying this modulated IOR ratio in the dielectric Fresnel factor then produces the desired reflectivity modulation.
 
-specular params              | Type     |  Range  | Default          | Description
------------------------------| ---------|---------|------------------|---------------------------------------------------------------
-**`specular_weight`**        | `float`  | [0,1]   | `1`              | multiplies the dielectric Fresnel factor
-**`specular_color`**         | `color3` | [0,1]   | `(1,1,1)`        | tints the dielectric Fresnel factor
-**`specular_roughness`**     | `float`  | [0,1)   | `0.2`            | roughness of the dielectric microfacet surface
-**`specular_ior`**           | `float`  | [1,3)   | `1.5`            | index of refraction of the dielectric
-**`specular_ior_level`**     | `float`  | [0,1]   | `0.5`            | modulates the dielectric reflectivity at normal incidence between zero and double the original
-**`specular_anisotropy`***   | `float`  | [0,1]   | `0`              | anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_rotation`***     | `float`  | [0,1]   | `0`              | orientation of roughness anisotropy
+Specular params           | Label      | Type     | Range        | Default         | Description
+--------------------------|------------|----------|:------------:|:---------------:|----------------------------------------------
+**`specular_weight`**     | Weight     | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to the dielectric Fresnel factor
+**`specular_color`**      | Color      | `color3` | $ [0, 1)^3 $ | (1.0, 1.0, 1.0) | Tints the dielectric Fresnel factor
+**`specular_roughness`**  | Roughness  | `float`  | $ [0, 1)   $ | 0.3             | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_ior`**        | IOR        | `float`  | $ [1, 3)   $ | 1.5             | Refractive index of $V_\mathrm{dielectric}$
+**`specular_ior_level`**  | IOR level  | `float`  | $ [0, 1]   $ | 0.5             | Modulates the dielectric reflectivity at normal incidence between zero and double the original
+**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]   $ | 0.0             | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]   $ | 0.0             | Orientation of roughness anisotropy
 
 ![](images/spec_ior1.jpg width=95%) ![](images/spec_ior2.jpg width=95%) ![](images/spec_ior3.jpg width=95%)
 <div class="shifted-caption">
@@ -462,19 +512,19 @@ The glossy-diffuse slab is assumed to be a dielectric with a rough GGX microface
 
 In the limit of infinite density, this slab can be modelled by the classic Ashikhmin-Shirley type BSDF of a diffuse lobe summed with a "glossy" dielectric microfacet specular lobe, with factors designed ensure that the combination conserves energy [#Ashikhmin2000], [#Kutz2021]. This form of BSDF model is ubiquitous in computer graphics so we assume its implementation is standard. This reasonably effectively models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
 
-The albedo of the diffuse lobe is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the total albedo. A **`base_roughness`** parameter controls the shape of the diffuse lobe (dialling from pure Lambertian to a more "dusty" look). The model is agnostic about the choice of diffuse BSDF lobe used, though typically it would be the Oren-Nayar microfacet model, where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. (How this base roughness arises from the physical model of a dielectric embedding a volumetric medium is left open to interpretation).
+The albedo of the diffuse lobe is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the total albedo. A **`base_roughness`** parameter controls the shape of the diffuse lobe (dialing from pure Lambertian to a more "dusty" look). The model is agnostic about the choice of diffuse BSDF lobe used, though typically it would be the Oren-Nayar microfacet model, where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. (How this base roughness arises from the physical model of a dielectric embedding a volumetric medium is left open to interpretation).
 
-glossy-diffuse params        | Type     |  Range  | Default          | Description
----------------------------- | ---------|---------|------------------|---------------------------------------------------------------
-**`base_weight`**            | `float`  | [0,1]   | `1`              | scales albedo of diffuse lobe
-**`base_color`**             | `color3` | [0,1]   | `(0.8,0.8,0.8)`  | scales albedo color of diffuse lobe
-**`base_roughness`**         | `float`  | [0,1)   | `0`              | roughness of the diffuse lobe
-
-!!! Tip
-   TODO: Supply the formula for the `specular_level` IOR modulation in an Appendix
+Glossy-diffuse params | Label     | Type     | Range        | Default         | Description
+----------------------|-----------|----------|:------------:|:---------------:|----------------------------------------------
+**`base_weight`**     | Weight    | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to **`base_color`**
+**`base_color`**      | Color     | `color3` | $ [0, 1)^3 $ | (0.8, 0.8, 0.8) | Reflection albedo color of $f_\mathrm{dielectric}$
+**`base_roughness`**  | Roughness | `float`  | $ [0, 1)   $ | 0.0             | Roughness of the diffuse lobe
 
 !!! Tip
    TODO: Explain why default `base_color` is (0.8,0.8,0.8)
+
+   !!! Tip
+   TODO: An image showing a pure glossy-diffuse slab! (with textured color and roughness)
 
 
 ### Subsurface
@@ -491,7 +541,7 @@ In this case the subsurface medium $V^\infty_\mathrm{subsurface}$ is given a par
 
    - **`subsurface_scale`** * **`subsurface_radius`**: the desired size of the "blur" on the surface per RGB channel, i.e. roughly the average distance that light travels _along the surface_ per-channel, $\mathbf{r}$, also termed the _diffusion radius_.
    - **`subsurface_color`**: the observed RGB reflection albedo color taking into account all orders of multiple scattering, $\mathbf{A}$, also termed the _multi-scatter albedo_.
-   - **`subsurface_anisotropy`**: the medium's phase function, parametrized by the (scalar) anisotropy $g$.
+   - **`subsurface_anisotropy`**: the medium's phase function, parametrized by the (scalar) anisotropy $g \in [-1,1]$.
 
 !!! Tip
     TODO: Technically the anisotropy could be different in each channel, but we don't support this. Rationalize this?
@@ -520,13 +570,13 @@ Note that due to the singularity at $g=1$, in practice the anisotropy needs to b
 
 Implementations may choose to compute light transport in the subsurface medium either via a fast approximate BSSRDF model (using e.g. the dipole approximation), or more accurately via volumetric path tracing.
 
-subsurface params              | Type      |  Range                  | Default            | Description
--------------------------------|-----------|-------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------
-**`subsurface_weight`**        | `float`   | [0,1]                   | 0                  | mix weight of subsurface and glossy-diffuse slab
-**`subsurface_color`**         | `color3`  | [0,1]                   | (1,1,1)            | subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
-**`subsurface_radius`**        | `float`   | [0,$\infty$]            | 1                  | subsurface radii, i.e. average distance light travels along the surface per color channel
-**`subsurface_radius_scale`**  | `vector3` | [0,1]                   | (1,1,1)            | scalar scale for **`subsurface_radius`**
-**`subsurface_anisotropy`**    | `float`   | [0,1]                   | 0.5                | anisotropy of the $V^\infty_\mathrm{subsurface}$ medium phase function
+Subsurface params             | Label        | Type      | Range           | Default         | Description
+------------------------------|--------------|-----------|:---------------:|:---------------:|----------------------------------------------
+**`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]      $ | 0.0             | Mix weight between subsurface and diffuse slabs
+**`subsurface_color`**        | Color        | `color3`  | $ [0, 1)^3    $ | (1.0, 1.0, 1.0) | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
+**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty] $ | 1.0             | Subsurface radii, i.e. average distance light travels along the surface per color channel
+**`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3    $ | (1.0, 1.0, 1.0) | Scalar scale for **`subsurface_radius`**
+**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1,1]      $ | 0.5             | Anisotropy of the $V^\infty_\mathrm{subsurface}$ medium phase function
 
 ![](images/subsurface1.jpg width=99%) ![](images/subsurface2.jpg width=99%) ![](images/subsurface3.jpg width=99%)
 <div class="shifted-caption">
@@ -547,28 +597,30 @@ The BSDF of the top interface $f_\mathrm{dielectric}$ is assumed to be that of a
 \textrm{translucent-base} = \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{dielectric})  \nonumber \\
 \end{equation}
 
-This is useful for modeling a range of materials, ranging from clear or colored (absorbing-only) glass and liquids to materials with visually significant scattering such as honey, a deep body of water, opalescent glass, or milky glass. The **`transmission_color`** and **`transmission_depth`** parameter pair is a commonly used artist-friendly way to set the medium extinction coefficient, while **`transmission_scatter`** directly sets the medium scattering coefficient. When **`transmission_depth`** is zero, the interior medium is absent, and **`transmission_color`** is used to (non-physically) tint the refraction Fresnel factor multiplicatively by a constant amount. When transmission_depth is positive, the tinting is governed physically by the interior medium according to Beer's law.
+This is useful for modeling a range of materials, ranging from clear or colored (absorbing-only) glass and liquids to materials with visually significant scattering such as honey, a deep body of water, opalescent glass, or milky glass. The **`transmission_color`** and **`transmission_depth`** parameter pair is a commonly used artist-friendly way to set the medium extinction coefficient, while **`transmission_scatter`** directly sets the medium scattering coefficient. When **`transmission_depth`** is zero, the interior medium is absent, and **`transmission_color`** is used to (non-physically) tint the refraction Fresnel factor multiplicatively by a constant amount (ignoring the dielectric energy balance). When **`transmission_depth`** is positive, the tinting is governed physically by the interior medium according to Beer's law.
 
 Note that the index of refraction of the medium $V^\infty_\mathrm{dielectric}$ is specified by **`specular_ior`**.
 
 !!! Tip
     TODO: Mention microfacet multiple scattering energy compensation for dielectrics?
 
-translucent base params                      | Type       |  Range                  | Default            | Description
----------------------------------------------|------------|-------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------
-**`transmission_weight`**                    | `float`    | [0,1]                   | 0                  | mix weight between translucent and opaque base
-**`transmission_color`**                     | `color3`   | [0,1]                   | (1,1,1)            | transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
-**`transmission_depth`**                     | `float`    | [0,$\infty$]            | 0                  | distance travelled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
-**`transmission_scatter`**                   | `color3`   | [0,1]                   | (0,0,0)            | scattering albedo of the interior medium
-**`transmission_scatter_anisotropy`**        | `float`    | [0,1]                   | 0.0                | anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
-**`transmission_dispersion_abbe_number`**    | `float`    | [20,70]                 | 20.0               | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in `[0,1]`
-**`transmission_dispersion_scale`**          | `float`    | [0,1]                   | 0.0                | linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
+Translucent base params                   | Label            | Type     | Range           | Default         | Description
+------------------------------------------|------------------|----------|:---------------:|:---------------:|----------------------------------------------
+**`transmission_weight`**                 | Weight           | `float`  | $ [0, 1]      $ | 0.0             | Mix weight between translucent and opaque base slabs
+**`transmission_color`**                  | Color            | `color3` | $ [0, 1)^3    $ | (1.0, 1.0, 1.0) | Transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
+**`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty] $ | 0.0             | Distance travelled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
+**`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3    $ | (0.0, 0.0, 0.0) | Scattering albedo of the interior medium
+**`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]    $ | 0.0             | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
+**`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [20, 70)    $ | 20.0            | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in `[0,1]`
+**`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]     $ | 0.0             | Linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
 
 ![](images/transmission1.jpg width=99%) ![](images/transmission2.jpg width=99%) ![](images/transmission3.jpg width=99%)
 <div class="shifted-caption">
     ![Figure [transmission]: The effect of **`transmission_scatter_anisotropy`**. From left to right: -0.5, 0.0, 0.5.](dummy)
 </div>
 
+!!! WARNING
+   TODO: The above image is not correct anymore, if we use the proposed mapping..  Anisotropy will **not** change the apparent translucency depth.
 
 !!! WARNING
    TODO: Consider restoring non-physical "useful hack" **`​transmission_extra_roughness`**, i.e. additional (positive or negative) roughness on top of **`specular_roughness`**
@@ -589,8 +641,7 @@ translucent base params                      | Type       |  Range              
    TODO: Group dispersion parameters with regular specular parameters, not volume parameters. Dispersion occurs at the surface and affects reflection in addition to refraction. Some implementations might choose to neglect dispersion's effect on reflection, but if specular reflection and transmission are implemented as a single BSDF (as they are in ASM) it's actually easier to make it apply to both refraction and reflection.
 
 
-Metallic base
--------------------------------------
+### Metallic base
 
 The characteristic appearance of metal, i.e. conductors, is another form of specularity which needs to be modelled, distinct from dielectrics. This is provided by a bulk slab which consists of an opaque microfacet conductor surface:
 
@@ -623,79 +674,100 @@ This formulation has the useful property that it reduces to the regular Schlick 
 !!! Tip
    TODO: Though, should we say that the tint can be a soft-max at the upper bound, i.e. $[0,1)$ range, to support "exotic" metals?
 
-
-metal params               | Type       |  Range                  | Default             | Description
----------------------------|------------|-------------------------|---------------------|-------------------------------------------------------------------
-**`base_weight`**          | `float`    | [0,1]                   | 1.0                 | scalar multiplier to **`base_color`**
-**`base_color`**           | `color3`   | [0,1]                   | (0.8, 0.8, 0.8)     | specifies color of Fresnel reflection albedo at normal incidence
-**`specular_weight`**      | `float`    | [0,1]                   | 1.0                 | scalar multiplier to **`specular_color`**
-**`specular_color`**       | `color3`   | [0,1]                   | (1.0, 1.0, 1.0)     | specifies tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
-**`specular_roughness`**   | `float`    | [0,1)                   | 0.3                 | roughness of conductor BRDF $f_\mathrm{conductor}$
-**`specular_anisotropy`**  | `float`    | [0,1]                   | 0.0                 | anisotropy of conductor BRDF $f_\mathrm{conductor}$
-**`specular_rotation`**    | `float`    | [0,1]                   | 0.0                 | orientation of roughness anisotropy
-
+Metal params              | Label      | Type     | Range        | Default         | Description
+--------------------------|------------|----------|:------------:|:---------------:|----------------------------------------------
+**`base_weight`**         | Weight     | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to **`base_color`**
+**`base_color`**          | Color      | `color3` | $ [0, 1)^3 $ | (0.8, 0.8, 0.8) | Color of Fresnel reflection albedo at normal incidence
+**`specular_weight`**     | Weight     | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to **`specular_color`**
+**`specular_color`**      | Color      | `color3` | $ [0, 1)^3 $ | (1.0, 1.0, 1.0) | Tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_roughness`**  | Roughness  | `float`  | $ [0, 1)   $ | 0.3             | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]   $ | 0.0             | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]   $ | 0.0             | Orientation of roughness anisotropy
 
 ![Figure [metal]: Metals produced (in **`base_metalness`=1** mode) by setting the **`base_color`** and **`specular_color`** parameters. From left to right: aluminium, copper, gold.](images/metals.jpg)
 
 
 Coat
-============================================
+-------------------------------------
 
 We next apply a dielectric coating, with an embedded purely absorbing medium $V_\mathrm{coat}$. This is intended to support the appearance of objects with a coat of colored varnish or lacquer:
 \begin{equation}
 \mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat}) \ .
 \end{equation}
-where the BSDF of the interfaces is that of a GGX microfacet dielectric.
-
-!!! TIP
-   TODO: How does the specified coat_color map to the internal medium of $V_\mathrm{coat}$? Presumably all that is required is that the transmittance at normal incidence is the given coat color.
+where the BSDF of the interfaces is that of a GGX microfacet dielectric parametrized by **`coat_roughness`**, **`coat_anisotropy`**, **`coat_rotation`**.
+The IOR specified by **`coat_ior`** is modulated by **`coat_ior_level`** in the same fashion as **`specular_ior_level`** described in the Dielectric base section.
+The dielectric Fresnel factor of the coat BSDF will then depend on the ratio between **`coat_ior`** and **`ambient_ior`**.
 
 The coat is applied on top of the base substrate, with a coverage weight $\mathtt{coat\_weight}$ as follows:
 \begin{equation}
 \textrm{coated-base} = \mathrm{\mathbf{layer}}(\textrm{base}, \textrm{coat},   \mathtt{coat\_weight}) \ .
 \end{equation}
-***************************************************
-* +---------------------------------------------+ *
-* |                    coat                     | *
-* +---------------------------------------------+ *
-* |                    base                     | *
-* +---------------------------------------------+ *
-***************************************************
 
-coat params                  | Type       |  Range                 | Default      | Description
------------------------------|------------|------------------------|--------------|-------------------------------------------------------------------
-**`coat_weight`**            | `float`   | [0,1]                   | 0.0          | coverage weight of coat layer
-**`coat_color`**             | `color3`  | [0,1]                   | (1, 1, 1)    | controls the overall color due to absorption of $V_\mathrm{coat}$
-**`coat_roughness`**         | `float`   | [0,1)                   | 0.3          | roughness of NDF of coat BSDF $f_\mathrm{coat}$
-**`coat_anisotropy`***       | `float`   | [0,1]                   | 0.0          | anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
-**`coat_rotation`***         | `float`   | [0,1]                   | 0.0          | orientation of anisotropy
-**`coat_ior`**               | `float`   | [1,3)                   | 1.6          | refractive index of $V_\mathrm{coat}$
-**`coat_ior_level`**         | `float`   | [0,1]                   | 0.5          | modulates the coat reflectivity at normal incidence between zero and double the original
-**`coat_affect_color`***     | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the brightness and saturation of layers below
-**`coat_affect_roughness`*** | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the roughness of layers below
-**`coat_affect_ior`***       | `float`   | [0,1]                   | 1.0          | how much to prevent the coat from affecting the relative IOR of layers below
+*******************************************************
+* +-------------------------------------------------+ *
+* |                      coat                       | *
+* +-------------------------------------------------+ *
+* |                      base                       | *
+* +-------------------------------------------------+ *
+*******************************************************
 
-![](images/Hulkbuster-Coat_0.jpeg width=90% align=right) ![](images/Hulkbuster-Coat-0-5.jpeg width=90% align=left)
+The absorption of the medium $V_\mathrm{coat}$ is parametrized by the observed tint color of the underlying base at normal incidence, **`coat_color`**. In the full light transport this observed color includes contributions due to multiple bounces back and forth inside the coat layer, so a calculation would be needed to map the final observed tint color to the absorption coefficient which achieves this. We leave it up to the implementation to decide what level of approximation to use for this (in the simplest approximation, the **`coat_color`** can just be treated as a transmittance $T$ which is multiplied into the substrate lobes).
+
+A number of other physical effects will occur due to the presence of the coat:
+      - The observed tint color should vary away from **`coat_color`** as the incidence angle changes, due to the change in path length in the medium.
+      - A fraction of the light reflected from the base substrate will undergo internal reflection from the coat interface and go back down to the substrate to reflect again, potentially multiple times. As a result the coat will darken and saturate the color of the underlying base. 
+      - The presence of a rough coat will increase the apparent roughness of the BSDF lobes of the underlying base.
+      - The IOR of the coat medium $V_\mathrm{coat}$ will alter the Fresnel factor of the underlying metal or dielectric.
+
+In a full light transport simulation these effects would occur automatically, but in an approximate model they may need to be accounted for by hand.
+
+In the case of the effect of the coat IOR, if there is a fractional coat weight then the surrounding IOR of the base dielectric or metal varies statistically across the surface, depending on whether the coat is locally present (the fuzz layer can be assumed to have the ambient IOR).
+A reasonable approximation of this is to take the surrounding effective coat IOR to be a linear blend between the ambient and coat IORs:
+\begin{equation}
+n_\mathrm{coat} = \mathrm{lerp}(\mathtt{ambient\_ior}, \mathtt{coat\_ior}, \mathtt{coat\_weight}) \ .
+\end{equation}
+The ratio $\eta_0 =  n_\mathrm{coat} / \mathtt{specular\_ior}$ then determines the specular Fresnel factor, as in equation [modulated_ior].
+
+<!-- Markdeep:
+For example, the Autodesk Standard Surface model modulates the **`base_color`** and **`subsurface_color`**, and the roughnesses of the metal and dielectric BSDFs, according to the
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C
+            base_color       -> pow(base_color,       1.0 + coat)
+            subsurface_color -> pow(subsurface_color, 1.0 + coat)
+            roughness        -> roughness + coat*coat_roughness*(1 - roughness)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+and the roughnesses of the metal and dielectric BSDFs via
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C
+            roughness -> roughness + coat*coat_roughness*(1 - roughness)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In some practical use cases however, it may be desirable for this physical effect to be ignored so that the base color is unaffected by the presence of the coat. For this purpose we provide the **`coat_affect_color`** parameter, which allows
+-->
+
+Coat params                 | Label            | Type     | Range        | Default         | Description
+----------------------------|------------------|----------|:------------:|:---------------:|----------------------------------------------
+**`coat_weight`**           | Weight           | `float`  | $ [0, 1]   $ | 0.0             | Coverage weight of coat slab
+**`coat_color`**            | Color            | `color3` | $ [0, 1)^3 $ | (1.0, 1.0, 1.0) | Overall color due to absorption of $V_\mathrm{coat}$
+**`coat_roughness`**        | Roughness        | `float`  | $ [0, 1)   $ | 0.3             | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
+**`coat_ior`**              | IOR              | `float`  | $ [1, 3)   $ | 1.6             | Refractive index of $V_\mathrm{coat}$
+**`coat_ior_level`**        | IOR level        | `float`  | $ [0, 1]   $ | 0.5             | Modulates the coat reflectivity at normal incidence between zero and double the original
+**`coat_anisotropy`**       | Anisotropy       | `float`  | $ [0, 1]   $ | 0.0             | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
+**`coat_rotation`**         | Rotation         | `float`  | $ [0, 1]   $ | 0.0             | Orientation of roughness anisotropy
+
+<!-- Markdeep:
+**`coat_affect_color`**     | Affect Color     | `float`  | $ [0, 1]   $ | 1.0             | How much to prevent the coat from affecting the brightness and saturation of layers below
+**`coat_affect_roughness`** | Affect Roughness | `float`  | $ [0, 1]   $ | 1.0             | How much to prevent the coat from affecting the roughness of layers below
+**`coat_affect_ior`**       | Affect IOR       | `float`  | $ [0, 1]   $ | 1.0             | How much to prevent the coat from affecting the relative IOR of layers below
+ -->
+
+![](images/coat_0.png width=90% align=right) ![](images/coat_1.png width=90% align=left)
 <div class="shifted-caption">
     ![Figure [coat]: Effect of adding a coat. Left: **`coat_weight`**=0. **`coat_weight`**=1](dummy)
 </div>
 
 
-!!! ERROR
-   Non-physical "useful hack": `coat_ignore_color`.
-
-!!! ERROR
-   Non-physical "useful hack": `coat_ignore_roughness`.
-
-!!! ERROR
-   Non-physical "useful hack": `coat_ignore_ior`.
-
-!!! TIP
-   TODO: Consider combining `coat_ignore_color`, `coat_ignore_roughness`, and `coat_ignore_ior` into one parameter and even potentially making it a boolean.
-
-
 Fuzz
-============================================
+-------------------------------------
 
 The topmost scattering layer supports the appearance of textiles, "fuzzy" surfaces, or dusty surfaces, where the surface consists of opaque colored "fibers" oriented with axes primarily parallel to the surface normal, producing a specular highlight at grazing angles.
 
@@ -708,13 +780,14 @@ Conceptually the fibers will cover only some fraction of the surface and thus do
 \begin{equation}
 \mathrm{surface} = \mathrm{\mathbf{layer}}(\textrm{coated-base}, \mathrm{fuzz}, \mathtt{fuzz\_weight}) \ .
 \end{equation}
-***************************************************
-* +---------------------------------------------+ *
-* |                    fuzz                     | *
-* +---------------------------------------------+ *
-* |                 coated-base                 | *
-* +---------------------------------------------+ *
-***************************************************
+
+*******************************************************
+* +-------------------------------------------------+ *
+* |                      fuzz                       | *
+* +-------------------------------------------------+ *
+* |                   coated-base                   | *
+* +-------------------------------------------------+ *
+*******************************************************
 
 The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution (based for example on [#Kutz2021], [#Zeltner2022]). We assume that this representation has these basic characteristics:
 
@@ -724,11 +797,11 @@ The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be deri
 
 One practical model is the approach of [#Estevez2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the unreflected light is assumed to transmit through to the base layers. The form of this is the same as the approximate microflake model of [#Kutz2021].
 
-fuzz params                  | Type         |  Range                 | Default      | Description
------------------------------|--------------|------------------------|--------------|-------------------------------------------------------------------
-**`fuzz_weight`**            | `float`      | [0,1]                  | 0            | coverage weight of $f_\mathrm{fuzz}$
-**`fuzz_color`**             | `color3`     | [0,1]                  | (1, 1, 1)    | reflection albedo color of $f_\mathrm{fuzz}$
-**`fuzz_roughness`**         | `float`      | [0,1]                  | 0.5          | reflection roughness of $f_\mathrm{fuzz}$
+Fuzz params          | Label     | Type     | Range        | Default         | Description
+---------------------|-----------|----------|:------------:|:---------------:|----------------------------------------------
+**`fuzz_weight`**    | Weight    | `float`  | $ [0, 1]   $ | 0.0             | Coverage weight of fuzz slab
+**`fuzz_color`**     | Color     | `color3` | $ [0, 1)^3 $ | (1.0, 1.0, 1.0) | Reflection albedo color of $f_\mathrm{fuzz}$
+**`fuzz_roughness`** | Roughness | `float`  | $ [0, 1]   $ | 0.5             | Reflection roughness of $f_\mathrm{fuzz}$
 
 ![](images/fuzz1.jpg width=99%) ![](images/fuzz2.jpg width=99%) ![](images/fuzz3.jpg width=99%)
 <div class="shifted-caption">
@@ -737,27 +810,39 @@ fuzz params                  | Type         |  Range                 | Default  
 
 
 Emission
-============================================
+-------------------------------------
 
-It is assumed that everything below the coat emits with a directionally uniform (i.e. Lambertian) EDF. We put emission below the coating so that light emitted from the coat top surface will be tinted due to the absorption in the coat and fuzz layers.
+It is assumed that the base substrate below the coat may emit light, with a directionally uniform (i.e. Lambertian) EDF.
 
-This allows for the convenient rendering of low-emission materials that are bounded by a reflective surface (e.g. glow sticks) without explicit modeling of the emitter and the bounding object.
+We put emission below the coating so that emitted light will be tinted due to the absorption in the coat and fuzz layers. This allows for the convenient rendering of low-emission materials that are bounded by a reflective surface (e.g. glow sticks, LEDs, display screens, etc.) without explicit modeling of the emitter and the bounding object.
 
-This EDF is parametrized only by its overall radiance in each channel.
+*******************************************************
+*                              emission               *
+*                                  ^                  *
+* +--------------------------------|----------------+ *
+* |                      fuzz      |                | *
+* +--------------------------------|----------------+ *
+* |                      coat      |                | *
+* +--------------------------------*----------------+ *
+* |                      base                       | *
+* +-------------------------------------------------+ *
+*******************************************************
+
+The intensity of the EDF is controlled by a luminance and a color multiplier. The **`emission_luminance`** parameter controls the luminance the emissive layer would have when **`emission_color`** is set to (1, 1, 1) and in the absence of coat and fuzz. The **`emission_color`** acts as a multiplier, thus the resulting luminance may be less than the input parameter, or even zero if the color multiplier is set to (0, 0, 0). Moreover, the overall material luminance may be further reduced in the presence of coat or fuzz, as they can absorb light coming from the emissive layer before it exits the surface.
 
 !!! TIP
-   TODO: Is it actually a radiance? What can we say about the assumed units of this?
+   TODO: The interaction of emission and fuzz should be specified, either here or preferably in the Fuzz section.
 
-emission params       | Type         |  Range                 | Default         | Description
-----------------------|--------------|------------------------|-----------------|-------------------------
-**`emission_weight`** | `float`      | [0,$\infty$]           | 0.0             | emission radiance
-**`emission_color`**  | `color3`     | [0,1]                  | (1.0, 1.0, 1.0) | emission color multiplier
+Emission params          | Label     | Type     | Range           | Default         | Description
+-------------------------|-----------|----------|:---------------:|:---------------:|----------------------------------------------
+**`emission_luminance`** | Luminance | `float`  | $ [0, \infty] $ | 0.0             | Emission luminance, in cd/m^2 (aka. nits)
+**`emission_color`**     | Color     | `color3` | $ [0, 1]^3    $ | (1.0, 1.0, 1.0) | Emission color multiplier
 
 ![Figure [emission]: Texture map representing hot lava connected to **`emission_color`**.](images/emission.jpg width=40%)
 
 
 Opacity / Transparency
-============================================
+-------------------------------------
 
 The final surface is defined as a mix of the entire $\mathrm{fuzz\; layer}$ bulk with the ambient medium denoted:
 \begin{equation}
@@ -769,25 +854,23 @@ That is:
 \end{equation}
 where **`geometry_opacity`** is then effectively a linear "alpha" blend.
 
-*****************************************************************************************
-*                                     1 - geometry_opacity       geometry_opacity       *
-*   +---------------------+        +------------------------+------------------------+  *
-*   |                     |        |                        |                        |  *
-*   |         PBR         |   ==   |     ambient medium     |         surface        |  *
-*   |                     |        |                        |                        |  *
-*   + - - - - - - - - - - +        + - - - - - - - - - - -  + - - - - - - - - - - -  +  *
-*****************************************************************************************
+****************************************************************************************************
+*                                                 1 - geometry_opacity       geometry_opacity      *
+* +-----------------------------------+        +------------------------+------------------------+ *
+* |                                   |        |                        |                        | *
+* |                PBR                |   ==   |     ambient medium     |         surface        | *
+* |                                   |        |                        |                        | *
+* +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
+****************************************************************************************************
 
 Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the thin-walled case this the opacity has the clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$).
 
 !!! ERROR
    Non-physical "useful hack": $0 < \mathtt{geometry\_opacity} < 1$ non-thin-walled case.
 
-
-opacity params              | Type      |  Range                 | Default      | Description
-----------------------------|-----------|------------------------|--------------|--------------------------------
-**`geometry_opacity`**      | `float`   |  [0,1]                 | 1.0          | the opacity of the surface
-
+Opacity params         | Label   | Type    | Range      | Default  | Description
+-----------------------|---------|---------|:----------:|:--------:|----------------------------------------------
+**`geometry_opacity`** | Opacity | `float` | $ [0, 1] $ | 1.0      | Opacity of the surface
 
 ![](images/transparency1.jpg width=90%) ![](images/transparency2.jpg width=90%) ![](images/transparency3.jpg width=90%)
 <div class="shifted-caption">
@@ -796,15 +879,113 @@ opacity params              | Type      |  Range                 | Default      
 
 
 Thin-walled case
-============================================
+-------------------------------------
 
-!!! Tip
-   TODO: Clarify the model structure in the thin-walled case. Is the structure asymmetric, e.g. only one side has the coat? Or is it mirrored, so both sides have the coat. If the latter, can the two coats differ in parameters? etc. This could be an implementation detail, but then it would be quite confusing.
+If the **`geometry_thin_walled`** Boolean is enabled, then the surface is assumed to be in a "thin-walled" mode. This has essentially the same structure as the bulk case, but the slabs at the base are assumed to be thin enough that, macroscopically, the material can be treated as a 2d sheet with no interior.
 
-![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
-<div class="shifted-caption">
-      ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** (right).](dummy)
-</div>
+In this case, the base slabs are interpreted as infinitesimally thin sheets, thus their behavour is assumed to change as follows:
+
+   - The $\textrm{metal}$ and $\textrm{glossy-diffuse}$ slabs remain but are considered double-sided, with the top BSDF mirrored to the bottom (and a totally opaque, albeit infinitesimally thin, interior)
+
+   - The $\textrm{translucent-base}$ slab can be considered an infinitesimally thin sheet of dielectric, with the BSDF $f_\mathrm{dielectric}$ on both sides. The specular reflection and transmission is retained, but no refraction occurs. There is no interior volume, but the reflection and transmission colors may be non-physically tinted via **`specular_color`**, and **`transmission_color`**.
+
+   - The $\textrm{subsurface}$ slab is considered to degenerate into a thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$), which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_anisotropy} \in [-1,1]$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
+      \begin{eqnarray}
+      f^R_\mathrm{diffuse} &=& \frac{1}{2} S (1 - g)\, f_+ \ , \nonumber \\
+      f^T_\mathrm{diffuse} &=& \frac{1}{2} S (1 + g)\, f_- \ .
+      \end{eqnarray}
+      This form ensures total energy conservation, i.e. the sum of the reflection and transmission albedos is less than 1:
+      \begin{equation}
+         E_R[f^R_\mathrm{diffuse}] + E_T[f^T_\mathrm{diffuse}] = S \le 1 \ .
+      \end{equation}
+      At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission.
+      The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this).
+
+   - As noted above, **`geometry_opacity`** makes physical sense as a float value in the thin-walled case (unlike the bulk case), controlling the presence weight of the thin wall.
+
+
+   ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
+   <div class="shifted-caption">
+         ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** (right).](dummy)
+   </div>
+   
+
+There are a number of reasonable options for how to interpret the layer structure of the thin-walled mode for light transport purposes:
+
+   - **Asymmetric**:  The thin wall is oriented according to the local shading normal, so when viewed from below the incident ray encounters the base slab first (Figure [asymmetric-thin-wall]). The appearance of the surface will then be somewhat different when viewed from below instead of above, as then the coat and fuzz layers are not directly visible but occluded by the base.
+
+   - **Asymmetric-but-always-facing**: The same as above, but the thin wall is automatically oriented so that the incident ray is always entering the surface from the top, so the surface appears the same viewed from above or below. This is physically implausible, but quite convenient as the light transport can always be dealt with as in the bulk case (i.e. incident rays enter top-down).
+
+   ***************************************************************************************************************
+   *                                                                                      ^ emission             *
+   *  +-----------+-----------------------------------------------------------------------|------+               *
+   *  |           |                                    fuzz                               |      |               *
+   *  |           +-----------------------------------------------------------------------|------+               *
+   *  |           |                                    coat                               |      |               *
+   *  |           +---------------------+----------------------+----------------+---------+------+ <-- thin-film *
+   *  |           |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  |  ambient  |░░░░░░░ metal ░░░░░░░|   translucent base   |   subsurface   |░glossy-diffuse░|               *
+   *  |  medium   |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  +-----------+---------------------+----------------------+----------------+----------------+               *
+   *                                                            <--------- opaque base --------->                *
+   *                                     <------------------ dielectric base ------------------->                *
+   *              <------------------------------------ base ----------------------------------->                *
+   ***************************************************************************************************************
+   <div class="shifted-caption">
+      ![Figure [asymmetric-thin-wall]: Asymmetric interpretation of the thin-walled mode.](dummy)
+  </div>
+
+   - **Symmetric**:  The thin wall structure above the base is mirrored so that it appears identical viewed from either side (Figure [symmetric-thin-wall]). This is a more physically plausible interpretation of a symmetric thin-wall than the Asymmetric-but-always-facing mode, though in the presence of the translucent base or subsurface the light transport will differ as rays will encounter the coat and fuzz layers on both sides.
+
+   **************************************************************************************************************
+   *                                                                                     ^ emission             *
+   *  +----------+-----------------------------------------------------------------------|------+               *
+   *  |          |                                    fuzz                               |      |               *
+   *  |          +-----------------------------------------------------------------------|------+               *
+   *  |          |                                    coat                               |      |               *
+   *  |          +---------------------+----------------------+----------------+---------+------+ <-- thin-film *
+   *  |          |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  |  ambient |░░░░░░░ metal ░░░░░░░|   translucent base   |   subsurface   |░glossy-diffuse░|               *
+   *  |  medium  |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+   *  |          +---------------------+----------------------+----------------+---------+------+               *
+   *  |          |                                    coat                               |      |               *
+   *  |          +-----------------------------------------------------------------------|------+               *
+   *  |          |                                    fuzz                               |      |               *
+   *  +----------+-----------------------------------------------------------------------|------+               *
+   *                                                                                     v emission             *
+   **************************************************************************************************************
+   <div class="shifted-caption">
+      ![Figure [symmetric-thin-wall]: Symmetric interpretation of the thin-walled mode.](dummy)
+  </div>
+
+   
+   - **Double-sided**: Each side of the thin-wall is defined by a distinct OpenPBR Surface (one associated to the top, in the direction of the normal, and one to the bottom in the opposite direction). If there are different translucent base or subsurface parameters on each side, then these need to be resolved somehow (e.g. the parameters could be blended, or the light transport could model the presence of the two distinct thin layers of dielectric).
+
+  ******************************************************************************************************************
+  *                                                                                      ^ emission_up         ^   *
+  * +----------+-------------------------------------------------------------------------|-----------+         |   *
+  * |          |                                    fuzz_up                              |           |         up  *
+  * |          +-------------------------------------------------------------------------|-----------+             *
+  * |          |                                    coat_up                              |           |             *
+  * |          +---------------------+-----------------------+-----------------+---------+-----------+ <--thin-film*
+  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|    -up      *
+  * |          |░░░░░░metal_up ░░░░░░|  translucent base up  |  subsurface_up  |░░glossy-diffuse_up░░|             *
+  * |  ambient |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
+  * |  medium  +---------------------+-----------------------+-----------------+---------------------+             *
+  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
+  * |          |░░░░░░metal_down░░░░░| translucent base down | subsurface_down |░glossy-diffuse_down░|             *
+  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
+  * |          +---------------------+-----------------------+-----------------+---------+-----------+ <--thin-film*
+  * |          |                                    coat_down                            |           |    -down    *
+  * |          +-------------------------------------------------------------------------|-----------+             *
+  * |          |                                    fuzz_down                            |           |         down*
+  * +----------+-------------------------------------------------------------------------|-----------+         |   *
+  *                                                                                      v emission_down       v   *
+  ******************************************************************************************************************
+  <div class="shifted-caption">
+     ![Figure [double-sided-thin-wall]: Double-sided interpretation of the thin-walled mode.](dummy)
+ </div>
+
 
 
 (insert parametrization.md.html here)
@@ -822,7 +1003,7 @@ We hope this proposal serves as a useful basis for an industry standard surface 
 Acknowledgements
 ================================================================================
 
-The authors would like to thank Jonathan Stone, Guido Quaroni, Miloš Hašan, Iliyan Georgiev, Henrik Edstrom, Nikie Monteleone, and Niklas Harrysson for their useful input and feedback.
+The authors would like to thank Jonathan Stone, Guido Quaroni, Miloš Hašan, Iliyan Georgiev, Michael Nickelsky, Henrik Edstrom, Niklas Harrysson, Nikie Monteleone and Lee Griggs for their useful input and feedback.
 
 
 
@@ -837,13 +1018,13 @@ References
 
 [#Belcour2018]: Laurent Belcour. *Efficient Rendering of Layered Materials using an Atomic Decomposition with Statistical Operators*, ACM Transactions on Graphics (2018).
 
+[#Budge2002]: Brian Budge. *Simple Nested Dielectrics in Ray Traced Images*, Journal of Graphics Tools (2002).
+
 [#Burley2012]: Brent Burley. *Physically-based Shading at Disney*, ACM SIGGRAPH Courses: Practical Physically Based Shading in Film and Game Production (2012).
 
 [#Burley2018]: Brent Burley et al. *The Design and Evolution of Disney’s Hyperion Renderer*,  ACM TOG (2018)
 
 [#d'Eon2021]: Eugene d’Eon. *A Hitchhiker’s guide to multiple scattering: Exact Analytic, Monte Carlo and Approximate Solutions in Transport Theory*, (2022)
-
-[#McDermott2018]: Wes McDermott. *The PBR Guide*, Allegorithmic white paper (2018). https://www.allegorithmic.com/pbr-guide.
 
 [#Estevez2017]: Alejandro Conty Estevez and Christopher Kulla *Production Friendly Microfacet Sheen BRDF*, Sony Pictures Imageworks technical report (2017).
 
@@ -857,11 +1038,15 @@ References
 
 [#Jakob2014]: Wenzel Jakob, Eugene d'Eon, Otto Jakob, and Steve Marschner. *A Comprehensive Framework for Rendering Layered Materials*, ACM Transactions on Graphics (2014).
 
+[#Kulla2017]: Christopher Kulla and Alejandro Conty Estevez. *Revisiting Physically Based Shading at Imageworks*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2017).
+
 [#Kutz2021]: Peter Kutz, Miloš Hašan, Paul Edmondson. *Novel aspects of the Adobe Standard Material*, Adobe white paper (2021).
+
+[#Lagarde2014]: Sébastien Lagarde, Charles de Rousiers. *Moving Frostbite to Physically Based Rendering 3.0*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2014).
 
 [#Langlands2014]: Anders Langlands. *Physically Based Shader Design in Arnold*, ACM SIGGRAPH Talks (2014).
 
-[#Kulla2017]: Christopher Kulla and Alejandro Conty Estevez. *Revisiting Physically Based Shading at Imageworks*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2017).
+[#McDermott2018]: Wes McDermott. *The PBR Guide*, Allegorithmic white paper (2018). https://www.allegorithmic.com/pbr-guide.
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
 
