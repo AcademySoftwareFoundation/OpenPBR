@@ -370,7 +370,7 @@ To summarize the formal structure, this consists of the following slabs:
 \textrm{metal}                &=& \mathrm{Slab}(f_\mathrm{conductor})                                \nonumber \\
 \textrm{translucent-base}     &=& \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{dielectric}) \nonumber \\
 \textrm{subsurface}           &=& \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{subsurface}) \nonumber \\
-\textrm{glossy-diffuse}       &=& \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{diffuse})    \nonumber \\
+\textrm{glossy-diffuse}       &=& \mathrm{Slab}(f_\textrm{glossy-diffuse})                           \nonumber \\
 \end{eqnarray}
 
 Which are composed to build the material structure, denoted $\textrm{PBR}$ below, as follows:
@@ -508,33 +508,34 @@ Specular params           | Label      | Type     | Range        | Default      
 
 ### Glossy-diffuse
 
-The glossy-diffuse slab is a dielectric with rough GGX microfacet surface BSDF $f_\mathrm{dielectric}$ (whose "specular" parameters are described in the Dielectric base section), embedding a semi-infinite bulk of extremely dense scattering material $V^\infty_\mathrm{diffuse}$.
+The glossy-diffuse slab represents a dielectric with rough GGX microfacet surface BSDF (whose "specular" parameters are described in the Dielectric base section), embedding a semi-infinite bulk of extremely dense scattering material. We assume this is represented by an effective opaque BRDF termed $f_\textrm{glossy-diffuse}$:
 
 \begin{eqnarray}
-\textrm{glossy-diffuse}       &=& \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{diffuse})    \ .
+\textrm{glossy-diffuse}       &=& \mathrm{Slab}(f_\textrm{glossy-diffuse})    \ .
 \end{eqnarray}
 
-In the limit of very high density material, this slab can reasonably be represented as the sum of a "glossy" specular lobe and a "diffuse" lobe, with factors designed to ensure that the combination conserves energy. This reasonably effectively models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
-This form of BSDF model is ubiquitous in computer graphics and typically termed the "Ashikhmin-Shirley" model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]). The model is agnostic about the choice of diffuse BSDF lobe used, though we assume **`base_roughness`** controls its roughness so a reasonable choice is the Oren-Nayar model [#Pharr2023]. How this base roughness arises from the physical model of a dielectric embedding a dense volumetric medium is left open to interpretation.
-
-We assume the BSDF has the basic form (cf. [#Kelemen2001]) of equation [reciprocal-albedo-scaling]:
+In the limit of very high density material, $f_\textrm{glossy-diffuse}$ can reasonably be represented as the sum of a "glossy" specular lobe and a "diffuse" lobe, with factors designed to ensure that the combination conserves energy. This models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
+This form of BRDF model is classic in computer graphics and typically termed the "Ashikhmin-Shirley" model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]), which has the basic form of equation [reciprocal-albedo-scaling]:
 \begin{equation}
 f_\textrm{glossy-diffuse}(\omega_i, \omega_o) = f_\mathrm{dielectric}(\omega_i, \omega_o)  + C \left(1 - E_\mathrm{dielectric}(\omega_i)\right) \, \left(1 - E_\mathrm{dielectric}(\omega_o)\right) \,f_\mathrm{diffuse}(\omega_i, \omega_o)
 \end{equation}
 where $f_\mathrm{dielectric}$ is the rough dielectric microfacet BSDF as parametrized in the Dielectric base section and $f_\mathrm{diffuse}(\omega_i, \omega_o)$ is a diffuse lobe.
+
 The normalization factor $C$ to ensure energy conservation (so that if $f_\mathrm{diffuse}$ has white albedo, the total BRDF passes the furnace test) will depend on the form of the diffuse lobe, and may require tabulation or fitting. If the non-reciprocal albedo scaling approximation of equation [non-reciprocal-albedo-scaling] is taken, then instead we can express the BRDF as
 \begin{equation}
 f_\textrm{glossy-diffuse}(\omega_i, \omega_o) = f_\mathrm{dielectric}(\omega_i, \omega_o)  +  \left(1 - E_\mathrm{dielectric}(\omega_o)\right) \,f_\mathrm{diffuse}(\omega_i, \omega_o)
 \end{equation}
 which can be evaluated more cheaply e.g. by Monte Carlo sampling of $E_\mathrm{dielectric}(\omega_o)$.
+
+The model is agnostic about the choice of diffuse BSDF lobe used, though we assume **`base_roughness`** controls its roughness so a reasonable choice is the Oren-Nayar model [#Pharr2023], where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. How this base roughness arises from the physical model of a dielectric embedding a dense volumetric medium is left open to interpretation. The albedo of the diffuse lobe is specified by **`base_weight`** multiplied by **`base_color`**.
+
+
 <!--
 For example if the diffuse lobe is Lambertian i.e. $f_\mathrm{diffuse} = \rho_d/\pi$ , then $C = 1/(1-\rho_\mathrm{dielectric})$ where $\rho_\mathrm{dielectric}$ is the average albedo [^average-albedo] of the dielectric lobe [#Kelemen2001]:
 \begin{equation}
 \rho_\mathrm{dielectric} = \frac{1}{\pi}\int_{\mathcal{H}_+} f_\mathrm{dielectric}(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i  \ .
 \end{equation}
  -->
-
-The albedo of the diffuse lobe is parametrized by **`base`** and **`base_color`**, which are multiplied to produce the total albedo. A **`base_roughness`** parameter controls the shape of the diffuse lobe (dialing from pure Lambertian to a more "dusty" look). The model is agnostic about the choice of diffuse BSDF lobe used, though typically it would be the Oren-Nayar microfacet model, where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. (How this base roughness arises from the physical model of a dielectric embedding a volumetric medium is left open to interpretation).
 
 Glossy-diffuse params | Label     | Type     | Range        | Default         | Description
 ----------------------|-----------|----------|:------------:|:---------------:|----------------------------------------------
