@@ -514,7 +514,7 @@ The glossy-diffuse slab represents a dielectric with rough GGX microfacet surfac
 \textrm{glossy-diffuse}       &=& \mathrm{Slab}(f_\textrm{glossy-diffuse})    \ .
 \end{eqnarray}
 
-In the limit of very high density material, $f_\textrm{glossy-diffuse}$ can reasonably be represented as the sum of a "glossy" specular lobe and a "diffuse" lobe, with factors designed to ensure that the combination conserves energy. This models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
+In the limit of very high density material, $f_\textrm{glossy-diffuse}$ can reasonably be represented as the sum of a "glossy" specular lobe and a diffuse lobe, with factors designed to ensure that the combination conserves energy. This models for example the reflection from shiny, totally opaque surfaces such as plastic, rock, and concrete.
 This form of BRDF model is classic in computer graphics and typically termed the "Ashikhmin-Shirley" model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]), which has the basic form of equation [reciprocal-albedo-scaling]:
 \begin{equation}
 f_\textrm{glossy-diffuse}(\omega_i, \omega_o) = f_\mathrm{dielectric}(\omega_i, \omega_o)  + C \left(1 - E_\mathrm{dielectric}(\omega_i)\right) \, \left(1 - E_\mathrm{dielectric}(\omega_o)\right) \,f_\mathrm{diffuse}(\omega_i, \omega_o)
