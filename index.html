@@ -40,6 +40,24 @@ In outline the structure consists of:
    ![Figure [diagram_model]: Schematic illustration of the idealized material model that our shader emulates. Horizontal stacking of components represents statistical mixture and vertical stacking represents layering.](images/model_schematic.svg width="100%")
 
 
+
+Since the model is simply a physical description of this material structure, in principle it would be amenable to solution via accurate methods such as those developed in [#Jakob2014], [#Belcour2018], and [#Zeltner2018], which attempt to compute all the various modes of reflection and transmission through the whole stack of layers, generating a final BSDF which is not necessarily a simple linear combination of the individual interface BSDFs.
+
+However we want this material model to be renderable on a wide range of platforms, from offline path tracers all the way to game engines on mobile devices.
+Enforcing a particular implementation would make the use of the material model impractical for certain classes of renderers, and ultimately make the model less useful. For this reason we consider the choice of a specific implementation to be outside the scope of this specification. For convenience and efficiency, at present it is more most to be mapped to a model consisting of a mixture of BSDF lobes, similar to the Autodesk Standard Surface shader [Georgiev2019] (as outlined in the Layering section and Mixing section below).
+
+!!! Tip
+      TODO: The question of a reference renderer is still pending. It is quite possible that the MaterialX implementation may become the reference one.
+            There is also the question of possibly wanting a renderer to document its set of supported features.
+
+
+When a particular rendering implementation of some aspect is widely adopted we may mention it, and when an accurate solution can be prohibitively costly we may also suggest alternative approximations. But in the end, it is up to the developer to choose the appropriate implementation for their use case, based on their practical constraints and the level of visual quality they are aiming for.
+
+Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that a given renderer may not support subsurface scattering, or that anisotropic coating may be too expensive for VR, etc. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't. For example, a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect.
+
+In both cases, the important consideration is that the implementation respects the intent of the material. To that end, we make our best effort to describe as unambiguously as possible the material model, its physical layout, and the behavior of the parameters that control its properties.
+
+
 Formalism
 ============================================
 
@@ -269,9 +287,12 @@ f_\mathrm{weighted-layer} = w_\mathrm{coat} f_\mathrm{coat} +  \mathrm{lerp}\lef
 \end{equation}
 which, for example, is the formula used in the Autodesk Standard Surface [#Georgiev2019] coat layer.
 
-In this fashion the abstract mix and layer operations can be mapped to a more computationally convenient representation in terms of a weighted sum of BSDF lobes. In practice we will defer to the MaterialX implementation of the OpenPBR Surface model to define exactly how this mapping to a mixture model is done.
+In this fashion the abstract mix and layer operations can be mapped to a more computationally convenient representation in terms of a weighted sum of BSDF lobes.
 
-Note though that since this model is simply a physical description of the material structure, in principle it would also be amenable to solution via more advanced and accurate methods such as those developed in [#Jakob2014], [#Belcour2018], and [#Zeltner2018], which attempt to compute all the various modes of reflection and transmission through the whole stack of layers, generating a final BSDF which is not necessarily a simple linear combination of the individual interface BSDFs.
+!!! Tip
+   In practice we will most likely defer to the MaterialX implementation of the OpenPBR Surface model to define exactly how this mapping to a mixture model is done.
+
+
 
 Emission model
 -------------------------------------
@@ -284,22 +305,6 @@ Emissive properties are expressed in photometric units, since reference values a
 
 !!! Tip
    There is an ongoing discussion in the [MaterialX](https://github.com/AcademySoftwareFoundation/MaterialX) and [USD](https://github.com/PixarAnimationStudios/OpenUSD) working groups regarding the description of lights and emissive objects. This part of the specification may be subject to change if it doesn't align with those standards.
-
-
-Implementing OpenPBR Surface
--------------------------------------
-
-We want this material model to be useful to a wide range of renderers, from offline path tracers all the way to game engines on mobile devices. Enforcing a particular implementation would make the use of the material model impractical for certain classes of renderers, and ultimately make the model less useful. For this reason we consider the choice of a specific implementation to be outside the scope of this specification.
-
-When a particular rendering implementation of some aspect is widely adopted we may mention it, and when an accurate solution can be prohibitively costly we may also suggest alternative approximations. But in the end, it is up to the developer to choose the appropriate implementation for their use case, based on their practical constraints and the level of visual quality they are aiming for.
-
-Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that e.g. a given renderer may not support subsurface scattering, or that anisotropic coating may be too expensive for VR. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't. For example, a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect.
-
-In both cases, the important consideration is that the implementation respects the intent of the material. To that end, we make our best effort to describe as unambiguously as possible the material model, its physical layout, and the behavior of the parameters that control its properties.
-
-!!! Tip
-      TODO: The question of a reference renderer is still pending. It is quite possible that the MaterialX implementation may become the reference one.
-            There is also the question of possibly wanting a renderer to document its set of supported features.
 
 
 Other assumptions
