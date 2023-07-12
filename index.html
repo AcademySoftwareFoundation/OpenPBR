@@ -868,24 +868,84 @@ Coat anisotropy params     | Label      | Type     | Range        | Default     
 **`coat_anisotropy`**      | Anisotropy | `float`  | $ [0, 1]   $ | 0.0             | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
 **`coat_rotation`**        | Rotation   | `float`  | $ [0, 1]   $ | 0.0             | Orientation of roughness anisotropy
 
-!!! Tip:
-   The exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_x$ and $\alpha_y$ is not settled yet.
 
-   The Autodesk Standard Surface model preserves the average roughness, similar to what is done in [#Burley2012].
-   $$
-   \begin{align}
-   \alpha_x &= \texttt{min}(\frac{r^2}{\sqrt{1-a}}, 1.0)\\
-   \alpha_y &= r^2 \sqrt{1-a}
-   \end{align}
-   $$
+Although using a pair roughness $r = \alpha^\frac{1}{2}$ and anisotropy $a$ is a common parametrization, its mapping to NDF terms $\alpha_t$ and $\alpha_b$, along the tangent and bitangent directions, doesn't seem to have met a consensus in the industry. We identify two trends however.
 
-   The Adobe Standard Material model uses a mapping that stretches the highlight, without squeezing it in the other direction. It allows to express anisotropy even with a roughness at zero.
-   $$
-   \begin{align}
-   \alpha_x &= r^2 + a^4\\
-   \alpha_y &= r^2
-   \end{align}
-   $$
+In some models, modifying the anisotropy has the effect of increasing the roughness along one axis, while reducing it along the other, so the average roughness is preserved. For example, [#Burley2012] propose the mapping
+$$
+\left\{
+\begin{aligned}
+\alpha_t &= \alpha \frac{1}{\sqrt{1 - 0.9 a}}\\[2ex]
+\alpha_b &= \alpha \sqrt{1 - 0.9 a}
+\end{aligned}
+\right.
+\ ,
+$$
+where $0.9$ is a value chosen to limit the aspect ratio of the specular highlight to $10:1$.
+
+[#Georgiev2019] use a very similar mapping, without limiting the aspect ratio:
+$$
+\left\{
+\begin{aligned}
+\alpha_t &= \operatorname{min}\bigl(\frac{\alpha}{\sqrt{1-a}}, 1.0\bigr)\\[2ex]
+\alpha_b &= \alpha \sqrt{1-a}
+\end{aligned}
+\right.
+\ .
+$$
+
+[#Kulla2017] also use a similar, but simpler mapping:
+$$
+\left\{
+\begin{aligned}
+\alpha_t &= \alpha \, (1 + a)\\[3ex]
+\alpha_b &= \alpha \, (1 - a)
+\end{aligned}
+\right.
+\ .
+$$
+
+
+Some models prefer instead to set the roughness along one axis, and modify the roughness along the other axis based on the anisotropy. This allows to stretch the specular highlight without squeezing it in the other direction. [#Neubelt13] propose:
+$$
+\left\{
+\begin{aligned}
+\alpha_t &= \alpha\\[3ex]
+\alpha_b &= \operatorname{lerp}(0, \alpha, 1 - a)
+\end{aligned}
+\right.
+\ .
+$$
+
+[#Kutz2021] use the following mapping. One reason being to allow expressing anisotropy even with a roughness at zero.
+$$
+\left\{
+\begin{aligned}
+\alpha_t &= \alpha + a^4\\[3ex]
+\alpha_b &= \alpha
+\end{aligned}
+\right.
+\ .
+$$
+
+
+We are considering using the following formulation, which has the property $\alpha^2 = \alpha_t^2 + \alpha_b^2$. A rationale is that if a renderer doesn't support anisotropy and only uses the roughness parameter, the visual result should degrade to a perceptually close isotropic specular highlight.
+$$
+\left\{
+\begin{aligned}
+\alpha_t &= (1 - a) \, \alpha_b\\[2ex]
+\alpha_b &= \frac{\alpha}{\sqrt{1 + (1 - a)^2}}
+\end{aligned}
+\right.
+\ .
+$$
+
+
+!!! Tip
+   As mentioned, the exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet.
+
+!!! Tip
+   TODO: add diagrams showing the behavior of each parametrization.
 
 
 Opacity / Transparency
@@ -1094,6 +1154,8 @@ References
 [#Langlands2014]: Anders Langlands. *Physically Based Shader Design in Arnold*, ACM SIGGRAPH Talks (2014).
 
 [#McDermott2018]: Wes McDermott. *The PBR Guide*, Allegorithmic white paper (2018). https://www.allegorithmic.com/pbr-guide.
+
+[#Neubelt13]: David Neubelt, Matt Pettineo. *Crafting a Next-Gen Material Pipeline for The Order: 1886*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2013).
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
 
