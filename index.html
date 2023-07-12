@@ -525,7 +525,7 @@ The normalization factor $C$ to ensure energy conservation (so that if $f_\mathr
 \begin{equation}
 f_\textrm{glossy-diffuse}(\omega_i, \omega_o) = f_\mathrm{dielectric}(\omega_i, \omega_o)  +  \left(1 - E_\mathrm{dielectric}(\omega_o)\right) \,f_\mathrm{diffuse}(\omega_i, \omega_o)
 \end{equation}
-which can be evaluated more cheaply e.g. by Monte Carlo sampling of $E_\mathrm{dielectric}(\omega_o)$.
+which can be evaluated more cheaply e.g. by [Monte Carlo](https://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions#Application:EstimatingReflectance) estimation of $E_\mathrm{dielectric}(\omega_o)$.
 
 The model is agnostic about the choice of diffuse BSDF lobe used, though we assume **`base_roughness`** controls its roughness so a reasonable choice is the Oren-Nayar model [#Pharr2023], where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. How this base roughness arises from the physical model of a dielectric embedding a dense volumetric medium is left open to interpretation. The albedo of the diffuse lobe is specified by **`base_weight`** multiplied by **`base_color`**.
 
