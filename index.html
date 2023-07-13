@@ -926,18 +926,15 @@ where **`geometry_opacity`** is then effectively a linear "alpha" blend.
 * +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
 ****************************************************************************************************
 
-Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) this the opacity has the clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$).
-
-!!! ERROR
-   Non-physical "useful hack": $0 < \mathtt{geometry\_opacity} < 1$ non-thin-walled case.
+Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) this the opacity has the clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$) as in the leaf render below.
 
 Opacity params         | Label   | Type    | Range      | Default  | Description
 -----------------------|---------|---------|:----------:|:--------:|----------------------------------------------
 **`geometry_opacity`** | Opacity | `float` | $ [0, 1] $ | 1.0      | Opacity of the surface
 
-![](images/transparency1.jpg width=90%) ![](images/transparency2.jpg width=90%) ![](images/transparency3.jpg width=90%)
+![](images/leaf_alpha.png width=90%) ![](images/leaf_texture.jpg width=90%) ![](images/leaf-rendered-driving-the-opacity-using-a-mask.jpg width=90%)
 <div class="shifted-caption">
-    ![Figure [opacity]: Opacity vs. transmission. From left to right: sphere with transmission only, (binary) opacity mask, sphere with transmission and masked opacity.](dummy)
+    ![Figure [opacity]: Alpha map driving **`geometry_opacity`**,  texture map (driving e.g. **`base_color`**), and rendered leaf.](dummy)
 </div>
 
 
