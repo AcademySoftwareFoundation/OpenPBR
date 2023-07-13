@@ -932,6 +932,23 @@ Coat anisotropy params     | Label      | Type     | Range        | Default     
 **`coat_rotation`**        | Rotation   | `float`  | $ [0, 1]   $ | 0.0             | Orientation of roughness anisotropy
 
 
+Due to its long tail that matches observed materials, the Trowbridge-Reitz distribution, aka GGX (Ground Glass unknown), has become a very popular NDF. Its term to control roughness is commonly noted $\alpha$, but [#Burley2012] proposed a perceptually linear remapping $r = \alpha^\frac{1}{2}$ which has since become widely adopted as well. [#Burley2012] also introduced the Generalized-Trowbridge-Reitz distribution, or GTR, in which the exponent 2 of GGX becomes a $\gamma$ term and gives control over the tail of the curve.
+
+$$
+D_{GGX}(\theta) = \frac{\alpha^2}{\pi \left( \cos^2\theta \, (\alpha^2 - 1) + 1 \right)^2}
+$$
+
+$$
+D_{GTR}(\theta) = \frac{\alpha^2}{\pi \left( \cos^2\theta \, (\alpha^2 - 1) + 1 \right)^\gamma}
+$$
+
+Furthermore, [#Burley2012] derived an anisotropic version of GGX by substituting $\frac{1}{\alpha^2}$ with $\frac{\cos^2\phi}{\alpha_t^2} + \frac{\sin^2\phi}{\alpha_b^2}$:
+$$
+D_{GGXaniso}(\theta, \phi) = \frac{1}{\pi \, \alpha_t \alpha_b \biggl( \sin^2\theta \left( \frac{\cos2\phi}{\alpha_t^2} + \frac{\sin2\phi}{\alpha_b^2} \right) + \cos^2\theta \biggr)^2}
+$$
+
+
+
 Although using a pair roughness $r = \alpha^\frac{1}{2}$ and anisotropy $a$ is a common parametrization, its mapping to NDF terms $\alpha_t$ and $\alpha_b$, along the tangent and bitangent directions, doesn't seem to have met a consensus in the industry. We identify two trends however.
 
 In some models, modifying the anisotropy has the effect of increasing the roughness along one axis, while reducing it along the other, so the average roughness is preserved. For example, [#Burley2012] propose the mapping
@@ -991,21 +1008,28 @@ $$
 \ .
 $$
 
-
-We are considering using the following formulation, which has the property $\alpha^2 = \alpha_t^2 + \alpha_b^2$. A rationale is that if a renderer doesn't support anisotropy and only uses the roughness parameter, the visual result should degrade to a perceptually close isotropic specular highlight.
+We suggest the following formulation, to preserve the average roughness regardless of the anisotropy. A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
 $$
 \left\{
 \begin{aligned}
 \alpha_t &= (1 - a) \, \alpha_b\\[2ex]
-\alpha_b &= \frac{\alpha}{\sqrt{1 + (1 - a)^2}}
+\alpha_b &= \alpha \sqrt{\frac{2}{1 + (1 - a)^2}}
 \end{aligned}
 \right.
 \ .
 $$
 
+To validate that the formulation is sound with regards to the definition of the anisotropic NDF, we apply the substitution $a = 0$ and obtain $\alpha_t = \alpha_b = \alpha$, leading to:
+$$
+\begin{align}
+\frac{1}{\alpha^2} &= \frac{\cos^2\phi}{\alpha_t^2} + \frac{\sin^2\phi}{\alpha_b^2} \\
+                   &= \frac{\cos^2\phi}{\alpha^2} + \frac{\sin^2\phi}{\alpha^2} \\
+                   &= \frac{1}{\alpha^2} \\
+\end{align}
+$$
 
 !!! Tip
-   As mentioned, the exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet.
+   The exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet, and the formulation described needs validation from artists
 
 !!! Tip
    TODO: add diagrams showing the behavior of each parametrization.
