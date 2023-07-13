@@ -26,16 +26,13 @@ In this proposal, rather than providing parameters for every conceivable case, w
 We thus adopt a material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]). With each component of the structure, we also define a set of parameters with names, valid ranges and default values, and describe how the component should be affected by the parameters.
 
 In outline the structure consists of:
-   - A [base substrate](index.html#model/basesubstrate) consisting of a mixture of
-      - [Metal](index.html#model/metallicbase)
-      - [Dielectric](index.html#model/dielectricbase), represented by three components that are mixed:
+   - A [base substrate](index.html#model/basesubstrate) made of a mixture of [metal](index.html#model/metallicbase) or [dielectric](index.html#model/dielectricbase). The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric base represents either of three components, that can be statistically mixed:
         1. [Glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse): dielectric with opaque "diffuse" internal media such as mud, plastic, dense rock, and concrete
-        2. [Subsurface](index.html#model/dielectricbase/subsurface): dielectric with highly scattering internal media such as marble, skin, and vegetation.
-        3. [Translucent base](index.html#model/dielectricbase/translucentbase) dielectric with highly translucent internal media such as glass, crystals, and liquids.
-
-   - [Coat](index.html#model/coat) An optional layer of dielectric, which may have an absorbing medium, acting as a coating on top of the base substrate.
+        2. [Subsurface](index.html#model/dielectricbase/subsurface): dielectric with dense highly scattering internal media such as marble, skin, and vegetation.
+        3. [Translucent base](index.html#model/dielectricbase/translucentbase) dielectric with translucent internal media such as glass, crystals, and liquids.
+   - [Coat](index.html#model/coat): An optional layer of dielectric, which may have an absorbing medium, acting as a coating on top of the base substrate.
      The dielectric interface of this coat layer provides a secondary specular lobe.
-   - [Fuzz](index.html#model/fuzz) An optional layer of "fuzz", representing the reflection from micro-fibers (e.g. fine hair, peach fuzz, textile strands, dust, etc.) on top of everything else.
+   - [Fuzz](index.html#model/fuzz): An optional layer representing the reflection from micro-fibers (e.g. fine hair, peach fuzz, textile strands, dust, etc.) on top of everything else.
 
    ![Figure [diagram_model]: Schematic illustration of the idealized material model that our shader emulates. Horizontal stacking of components represents statistical mixture and vertical stacking represents layering.](images/model_schematic.svg width="100%")
 
