@@ -991,18 +991,25 @@ $$
 \ .
 $$
 
-
-We are considering using the following formulation, which has the property $\alpha^2 = \alpha_t^2 + \alpha_b^2$. A rationale is that if a renderer doesn't support anisotropy and only uses the roughness parameter, the visual result should degrade to a perceptually close isotropic specular highlight.
+We are considering the following formulation, to preserve the average roughness regardless of the anisotropy. A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
 $$
 \left\{
 \begin{aligned}
 \alpha_t &= (1 - a) \, \alpha_b\\[2ex]
-\alpha_b &= \frac{\alpha}{\sqrt{1 + (1 - a)^2}}
+\alpha_b &= \alpha \sqrt{\frac{2}{1 + (1 - a)^2}}
 \end{aligned}
 \right.
 \ .
 $$
 
+In [#Burley2012], a Generalized-Trowbridge-Reitz NDF is presented, and an anisotropic version is derived by substituting $\frac{1}{\alpha^2} = \frac{\cos^2\phi}{\alpha_t^2} + \frac{\sin^2\phi}{\alpha_b^2}$. When applying the substitution $a = 0$ we obtain $\alpha_t = \alpha_b = \alpha$, leading to:
+$$
+\begin{align}
+\frac{1}{\alpha^2} &= \frac{\cos^2\phi}{\alpha_t^2} + \frac{\sin^2\phi}{\alpha_b^2} \\
+                   &= \frac{\cos^2\phi}{\alpha^2} + \frac{\sin^2\phi}{\alpha^2} \\
+                   &= \frac{1}{\alpha^2} \\
+\end{align}
+$$
 
 !!! Tip
    As mentioned, the exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet.
