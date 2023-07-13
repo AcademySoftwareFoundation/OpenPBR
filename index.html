@@ -278,7 +278,7 @@ If we use the non-reciprocal albedo scaling approach described in the Layering s
 \begin{equation}
 f_\mathrm{layer} = f_\mathrm{coat} +  T_\mathrm{coat} \left(1 - E_\mathrm{coat}\right) \,f_\mathrm{sub}
 \end{equation}
-where $f_\mathrm{coat}$ is the BSDF of the coat. Thus combining these,
+where $f_\mathrm{coat}$ is the BSDF of the coat. Thus combining these [^lerp],
 \begin{equation}
 f_\mathrm{weighted-layer} = w_\mathrm{coat} f_\mathrm{coat} +  \mathrm{lerp}\left(1,  T_\mathrm{coat} (1 - E_\mathrm{coat}),  w_\mathrm{coat}\right) f_\mathrm{sub} \ ,
 \end{equation}
@@ -525,7 +525,6 @@ f_\textrm{glossy-diffuse}(\omega_i, \omega_o) = f_\mathrm{dielectric}(\omega_i, 
 which can be evaluated more cheaply e.g. by [Monte Carlo](https://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions#Application:EstimatingReflectance) estimation of $E_\mathrm{dielectric}(\omega_o)$.
 
 The model is agnostic about the choice of diffuse BSDF lobe used, though we assume **`base_roughness`** controls its roughness so a reasonable choice is the Oren-Nayar model [#Pharr2023], where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. How this base roughness arises from the physical model of a dielectric embedding a dense volumetric medium is left open to interpretation. The albedo of the diffuse lobe is specified by **`base_weight`** multiplied by **`base_color`**.
-
 
 <!--
 For example if the diffuse lobe is Lambertian i.e. $f_\mathrm{diffuse} = \rho_d/\pi$ , then $C = 1/(1-\rho_\mathrm{dielectric})$ where $\rho_\mathrm{dielectric}$ is the average albedo [^average-albedo] of the dielectric lobe [#Kelemen2001]:
@@ -803,7 +802,7 @@ The factor $F_c$ is then modulated by multiplying by twice the **`coat_ior_level
 \end{equation}
 where the range of $\xi_c$ is clamped according to $\xi_c \in [0, \mathrm{min}(1, 1/(2 F_c)]$. Inserting this modulated IOR ratio $\eta^\prime_c$ in the coat Fresnel factor then produces the desired reflectivity modulation.
 
-If there is a fractional $\mathtt{coat\_weight}$, then the surrounding IOR of the base dielectric or metal varies statistically across the surface depending on whether the coat is locally present (the fuzz layer can be assumed to have the ambient IOR). A reasonable approximation of this is to take the surrounding effective coat IOR to be a linear blend between the ambient and modulated coat IORs according to the coat weight:
+If there is a fractional $\mathtt{coat\_weight}$, then the surrounding IOR of the base dielectric or metal varies statistically across the surface depending on whether the coat is locally present (the fuzz layer can be assumed to have the ambient IOR). A reasonable approximation of this is to take the surrounding effective coat IOR to be a linear blend [^lerp] between the ambient and modulated coat IORs according to the coat weight:
 \begin{equation} \label{effective_coat_ior}
 n_\mathrm{coat} = \mathtt{ambient\_ior} \times \mathrm{lerp}(1, \eta^\prime_c, \mathtt{coat\_weight}) \ .
 \end{equation}
@@ -1075,19 +1074,30 @@ where **`geometry_opacity`** is then effectively a linear "alpha" blend.
 * +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
 ****************************************************************************************************
 
-Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) this the opacity has the clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$).
-
-!!! ERROR
-   Non-physical "useful hack": $0 < \mathtt{geometry\_opacity} < 1$ non-thin-walled case.
+Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) the opacity has a clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$) like in the leaf render below.
 
 Opacity params         | Label   | Type    | Range      | Default  | Description
 -----------------------|---------|---------|:----------:|:--------:|----------------------------------------------
 **`geometry_opacity`** | Opacity | `float` | $ [0, 1] $ | 1.0      | Opacity of the surface
 
-![](images/transparency1.jpg width=90%) ![](images/transparency2.jpg width=90%) ![](images/transparency3.jpg width=90%)
+![](images/leaf_alpha.png width=90%) ![](images/leaf_texture.jpg width=90%) ![](images/leaf-rendered-driving-the-opacity-using-a-mask.jpg width=90%)
 <div class="shifted-caption">
-    ![Figure [opacity]: Opacity vs. transmission. From left to right: sphere with transmission only, (binary) opacity mask, sphere with transmission and masked opacity.](dummy)
+    ![Figure [opacity]: Alpha map driving **`geometry_opacity`**,  texture map (driving e.g. **`base_color`**), and rendered leaf.](dummy)
 </div>
+
+We generally leave it as an implementation detail for a renderer to determine how connections to light sources be made through the surface. However a very common approximation used by many renderers is "transparent shadows", where a straight-line connection is made to lights and the contribution of the light determined by the total transmittance along the ray, ignoring any refraction events. We give here a suggested form for this shadow ray transmittance.
+
+The computed transmittance should take into account the presence weight of the entire geometry (**`geometry_opacity`**), and the transmittance through the geometry if present. The latter is the transmittance through the base dielectric only (as the metal is opaque), denoted $\mathbf{T}_\mathrm{dielectric}$, which should take into account the Fresnel factor of the dielectric interface and the extinction in the volumetric media  (in general a statistical mixture of the subsurface medium $V^\infty_\mathrm{subsurface}$ and translucent base medium $V^\infty_\mathrm{dielectric}$).
+The mix weight of the base dielectric is
+\begin{equation}
+w_\mathrm{dielectric} = 1 - \mathtt{base\_metalness} \ .
+\end{equation}
+The total transmittance can thus be approximated as [^lerp]
+\begin{eqnarray}
+\mathbf{T}_\mathrm{pbr} &=& \mathrm{lerp}(1,  w_\mathrm{dielectric} \mathbf{T}_\mathrm{dielectric},  \mathtt{geometry\_opacity}) \nonumber \\
+                        &=& 1 - \mathtt{geometry\_opacity} \left(1 - w_\mathrm{dielectric} \mathbf{T}_\mathrm{dielectric}\right) \ .
+\end{eqnarray}
+
 
 
 Thin-walled case
@@ -1280,8 +1290,11 @@ References
 <br>
 <br>
 
+[^lerp]:  Where $\mathrm{lerp}(a, b, t) \equiv (1 - t) a + tb$.
 
+<!--
 [^average-albedo]: Also termed the *hemispherical-hemispherical* reflectance.
+-->
 
 <!-- Markdeep: -->
 <style class="fallback">
