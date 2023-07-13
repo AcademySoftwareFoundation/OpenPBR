@@ -1044,10 +1044,8 @@ Opacity params         | Label   | Type    | Range      | Default  | Description
     ![Figure [opacity]: Alpha map driving **`geometry_opacity`**,  texture map (driving e.g. **`base_color`**), and rendered leaf.](dummy)
 </div>
 
-We generally leave it as an implementation detail for a renderer to determine how connections to light sources be made through the surface.
+We generally leave it as an implementation detail for a renderer to determine how connections to light sources be made through the surface. However a very common approximation used by many renderers is "transparent shadows", where a straight-line connection is made to lights and the contribution of the light determined by the total transmittance along the ray, ignoring any refraction events. We give here a suggested form for this shadow ray transmittance.
 
-A common approximation used by many renderers is "transparent shadows", where a straight-line connection is made to lights and the contribution of
-the light determined by the total transmittance along the ray, ignoring any refraction events. We give here a suggested form for this shadow ray transmittance.
 The computed transmittance should take into account the presence weight of the entire geometry (**`geometry_opacity`**), and the transmittance through the geometry if present. The latter is the transmittance through the base dielectric only (as the metal is opaque), denoted $\mathbf{T}_\mathrm{dielectric}$, which should take into account the Fresnel factor of the dielectric interface and the extinction in the volumetric media  (in general a statistical mixture of the subsurface medium $V^\infty_\mathrm{subsurface}$ and translucent base medium $V^\infty_\mathrm{dielectric}$).
 The total presence weight of the base dielectric is
 \begin{equation}
