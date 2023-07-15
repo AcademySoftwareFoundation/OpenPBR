@@ -574,7 +574,7 @@ Similarly the RGB single-scattering albedo $\boldsymbol{\alpha}$ is approximatel
 \end{equation}
 The physical RGB scattering coefficient is then given by $\boldsymbol{\mu}_s = \boldsymbol{\alpha}\,\boldsymbol{\mu}_t$.
 
-This relationship was derived (via fitting) in the isotropic $g=0$ case. To account for anisotropy, "similarity theory" [#d'Eon2021] says that a medium with anisotropy $g$ will have approximately similar light transport to an isotropic medium provided that the scattering coefficient is remapped to $\bar{\boldsymbol{\mu}}_s = \boldsymbol{\mu}_s / (1 - g)$, while keeping the absorption coefficient the same. Applying this, the net result is that the remapped single-scattering albedo $\bar{\boldsymbol{\alpha}}$ is given by
+This relationship was derived (via fitting) in the isotropic $g=0$ case. To account for anisotropy, "similarity theory" [#d'Eon2021] says that a medium with anisotropy $g$ will have approximately similar overall light transport to an isotropic medium (while still exhibiting noticeably different directional effects, especially in low-order scattering) provided that the scattering coefficient is remapped to $\bar{\boldsymbol{\mu}}_s = \boldsymbol{\mu}_s / (1 - g)$, while keeping the absorption coefficient the same. Applying this, the net result is that the remapped single-scattering albedo $\bar{\boldsymbol{\alpha}}$ is given by
 \begin{equation}
 \bar{\boldsymbol{\alpha}} = \frac{\boldsymbol{\alpha}} {1  - g (1 - \boldsymbol{\alpha})} \ ,
 \end{equation}
