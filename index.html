@@ -651,14 +651,14 @@ Dispersion is parametrized by the _Abbe number_ $V_d$, which is the ratio betwee
 \begin{equation}
 V_d = \frac{n_{\mathrm{medium}} - 1}{n_{\mathrm{short}} - n_{\mathrm{long}}} \ ,
 \end{equation}
-where in the standard definition $n_{\mathrm{short}} = n_C$, $n_{\mathrm{medium}} = n_d$ and $n_{\mathrm{long}} = n_F$ are the IORs of the material at the wavelengths of the Fraunhofer C, d, and F spectral lines (at $\lambda_C$=486.1 nm, $\lambda_d$=587.56 nm, and $\lambda_F$=656.3 nm respectively). The amount of dispersion (i.e. angular separation of colors) is roughly proportional to the reciprocal of the Abbe number. The IOR at any wavelength can be determined from the Cauchy empirical formula:
+where in the standard modern definition $n_{\mathrm{long}} = n_C$, $n_{\mathrm{medium}} = n_d$ and $n_{\mathrm{short}} = n_F$ are the IORs of the material at the wavelengths of the Fraunhofer C, d, and F spectral lines (at $\lambda_C$=656.3 nm, $\lambda_d$=587.6 nm, and $\lambda_F$=486.1 nm respectively). The amount of dispersion (i.e. angular separation of colors) is roughly proportional to the reciprocal of the Abbe number. The IOR at any wavelength can be determined from the Cauchy empirical formula:
 \begin{equation}
-n(\lambda) = B + \frac{C}{\lambda^2} \ .
+n(\lambda) = A + \frac{B}{\lambda^2} \ .
 \end{equation}
-It follows that if the Abbe number $V_d$, and IOR $n(\lambda_d)$ is given, the coefficients in the Cauchy formula are given by
+It follows that if the Abbe number $V_d$ and IOR $n_d = n(\lambda_d)$ are given, the coefficients in the Cauchy formula are given by
 \begin{eqnarray}
-C &=& \frac{n(\lambda_d) - 1}{V_d} \; \frac{(\lambda_F \lambda_C)^2}{\lambda^2_C - \lambda^2_F} \ , \nonumber \\
-B &=& n(\lambda_d) - \frac{C}{\lambda^2_d} \ .
+B &=& \frac{n_d - 1}{V_d \; (\lambda^{-2}_F - \lambda^{-2}_C)} \ , \nonumber \\
+A &=& n_d - \frac{B}{\lambda^2_d} \ .
 \end{eqnarray}
 We assume that **`specular_ior`** (including any modulation via **`specular_ior_level`** as in equation [modulated_ior]) defines $n(\lambda_d)$.
 Thus the IOR $n$ at any wavelength $\lambda$ is determined, given $V_d$. A renderer can use this known $n(\lambda)$ function to model the effect of dispersion, for example by stochastically choosing a wavelength sample and tracing the refracted ray direction according to the corresponding IOR.
@@ -667,7 +667,7 @@ However the Abbe number itself is not very intuitive to work with, as the disper
 \begin{equation}
 V_d = \frac{\mathtt{transmission\_dispersion\_abbe\_number}} {\mathtt{transmission\_dispersion\_scale}} \ .
 \end{equation}
-At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 10. The default 10 was chosen since real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], while water and diamond both have Abbe numbers between 55 and 56 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the **`transmission_dispersion_abbe_number`** can be changed.
+At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20. The default 20 was chosen since common real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], water and diamond both have Abbe numbers between 55 and 56, while the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the **`transmission_dispersion_abbe_number`** can be changed.
 
 !!! Tip
    TODO: An image showing dispersion off, low, high.
