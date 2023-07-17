@@ -306,9 +306,9 @@ Emissive properties are expressed in photometric units, since reference values a
 Metadata
 -------------------------------------
 
-This specification is designed to facilitate exchange of assets and interoperability between facilities which may use different render engines and pipelines, and have different constraints. To this end it attempts to reduce the ambiguity about the look, so that shared assets can be expected to render roughly the same if the implementation conforms reasonably well to the specification.
+This specification is designed to facilitate exchange of assets between facilities which may use different render engines and pipelines. To this end it attempts to reduce the ambiguity about the final look, so that assets can be expected to render roughly the same visually if the implementation conforms reasonably well to the specification.
 
-However the parameters of the physical model that we describe do not specify all of the assumptions that would be needed to obtain a good match. We recommend therefore, for the purposes of asset exchange, that the parameters be packaged with certain metadata that provides the following missing information:
+However the parameters of the physical model that we describe do not specify all of the assumptions that would be needed to obtain a good visual match. We recommend therefore, for the purposes of asset exchange, that the parameters be packaged with certain metadata that provides the following missing information:
 
    - The assumed color space of all the color parameters. If unspecified, following MaterialX [#Smythe2021], by default this color space is assumed to be [ACEScg](https://docs.acescentral.com/specifications/acescg/).
 
