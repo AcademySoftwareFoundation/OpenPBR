@@ -388,9 +388,9 @@ Microfacet model
 
 We give here some general assumptions about the form and parametrization of the BSDFs which describe the interfaces in the model outlined in the previous section.
 
-The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$ and $f_\mathrm{coat}$ of the [metal](index.html#model/metallicbase), [dielectric](index.html#model/dielectricbase) and [coat](index.html#model/coat) slabs respectively, are each assumed to be described by a standard microfacet model. This is a widely used approximation in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal or dielectric, where the distribution of the normals of these facets determines the surface roughness characteristics.
+The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$ and $f_\mathrm{coat}$ of the [metal](index.html#model/metallicbase), [dielectric](index.html#model/dielectricbase) and [coat](index.html#model/coat) slabs respectively, are each assumed to be described by a standard microfacet model. This is a widely used approximation in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal or dielectric, where the statistical distribution of the normal of these facets (termed the "micronormal") determines the surface roughness characteristics at the macroscopic scale.
 
-The other interfaces are not standard microfacet models, but related:
+The other interfaces are not standard microfacet models, but strongly related:
 
    - The [glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse) BRDF $f_\textrm{glossy-diffuse}$ is the combination of a microfacet dielectric BRDF and a diffuse lobe, normalized to be energy-conserving.
 
@@ -400,16 +400,16 @@ A microfacet BRDF has the standard form [^Jacobian] ([#Walter2007], [#Pharr2023]
 $$ \label{microfacet_brdf_ss}
 f(\omega_i, \omega_o) \propto F(\omega_i, h) \; D(h) \; G(\omega_i, \omega_o)
 $$
-where $h = (\omega_i+\omega_o)/|(\omega_i+\omega_o|$ is the half-vector (i.e. the micronormal which reflects $\omega_i$ into $\omega_o$). For dielectrics there is also a BTDF (i.e. the portion of the BSDF where the input and output directions lie in opposite rather than the same hemispheres), which has a similar form to the BRDF [#Walter2007] (with a modified half-vector and Fresnel factor).
+where $h = (\omega_i+\omega_o)/|(\omega_i+\omega_o|$ is the half-vector, i.e. the micronormal which mirror reflects $\omega_i$ into $\omega_o$. For dielectrics there is also a BTDF, i.e. the portion of the BSDF where the input and output directions lie in opposite rather than the same hemispheres, which has a similar form to the BRDF [#Walter2007] (with a modified half-vector and Fresnel factor).
 
 The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a conductor or dielectric [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metallic base section. The "masking-shadowing" function $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the "Smith" model which determines $G$ given the NDF, and for the GGX NDF (below) the masking-shadowing function then has a well-known form [#Heitz2014b].
 
 The Normal Distribution Function (NDF) $D(m)$ describes the relative probability of occurrence of micronormal $m$ on the surface, and thus the roughness characteristics.
-A popular form of NDF which well-approximates real materials is the so-called GGX distribution ([#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
+A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution ([#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
 $$
 D_\mathrm{GGX}(m) \propto \left( 1 + \frac{\tan^2\theta_m}{\alpha^2} \right)^{-2}
 $$
-where $\theta_m$ is the angle between $m$ and the (macro)-surface normal, and the parameter $\alpha \in [0, \infty]$ controls the roughness of the surface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ i.e. flat microfacets, while as $\alpha \rightarrow \infty$ microfacets of all orientations are equally prevalent.
+where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, and the parameter $\alpha \in [0, \infty]$ controls the roughness of the surface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ i.e. flat microfacets, while as $\alpha \rightarrow \infty$ microfacets of all orientations are equally prevalent.
 Following [#Burley2012], we set
 $$
 \alpha = r^2 \ ,
@@ -466,7 +466,7 @@ $$
 
 To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{dielectric}$ and metal-base BRDF $f_\mathrm{conductor}$ share the same parameters, while the coat BSDF $f_\mathrm{coat}$ uses an independent set:
 
-- **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$ (where $\alpha = r^2$).
+- **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$ (where $\alpha = r^2$). These roughnesses are given a soft-maximum at 1, since $r=1$ corresponds to a perceptually very rough surface.
 
 - **`specular_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_anisotropy`** for $f_\mathrm{coat}$, specify $a$ (the degree  to which the specular highlight is stretched in the direction of anisotropic rotation).
 
