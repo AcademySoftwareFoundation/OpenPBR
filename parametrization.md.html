@@ -9,14 +9,14 @@ Parameter reference
 To guarantee a non-ambiguous way to transport and present the model across different tools, for each parameter we specify in the following table:
 - **Identifier**: its unique identifier string (used in the formal description of the material, and in code).
 - **Label**: a suggested, non-unique UI name, where parameter grouping for UI purposes can be inferred based on the common identifer prefix.
-- **Type**: one of `float`, `boolean`, `color3`, `vector3`. A `color3` value is associated with a color space ([`acescg`](https://docs.acescentral.com/specifications/acescg/) bydefault), while a `vector3` value is a raw 3-component vector.
+- **Type**: one of `float`, `boolean`, `color3`, `vector3`. A `color3` value is associated with a color space ([ACEScg](https://docs.acescentral.com/specifications/acescg/) by default), while a `vector3` value is a raw 3-component vector.
 - **Range**: the allowed value range for scalar parameters (per-channel for color and vector parameters).
   - Square brackets `[]` indicate a range the value must be within.
   - Round brackets `()` indicate the range the value is expected to be within to remain physically plausible, but going beyond may still be possible.
   - Curly brackets `{}` indicate a discrete set of possible values.
 - **Default**: the suggested default value.
-- **Unit**: where relevant, otherwise assumed to be dimensionless. Note that lengths can be assumed to be in the world space units of the scene.
-- **Uniform**: whether a parameter is expected to be uniform (i.e. constant) or varying over the surface
+- **Unit**: where relevant, otherwise assumed to be dimensionless. Note that lengths (other than `thin_film_thickness`) can be assumed to be in the world space units of the scene.
+- **Uniform**: whether a parameter is non-normalized, i.e. not in the $[0,1]$ range, and not a color. Such parameters are less convenient to texture as the values will generally need to be remapped, so we expect that in most cases they will be left as uniform (i.e. constant) non-textured values. However, this is not enforced.
 
 | Identifier                            | Label               | Type      | Range           | Default                          | Unit       | Uniform   |
 |---------------------------------------|---------------------|-----------|:---------------:|:--------------------------------:|------------|:---------:|
@@ -100,154 +100,14 @@ window.alreadyProcessedMarkdeep || (document.body.style.visibility="visible")
 | `geometry_height`                     | `float`   | Height                    | [0,1]                   | 0.0                              |            |           |
 | `geometry_combine_normal_and_height`  | `boolean` | Combine normal and height | N/A                     | false                            |            | ✅        |
 
--->
-
-<!---
-
-!!! WARNING
-    TODO: Suggest these descriptions are just folded/merged into the main text where appropriate, as this is not a user guide.
-          Alternatively, supply a separate document in say JSON form, with the descriptions supplied as suggested "tooltips".
-
-`base_weight` 
-: The amount of diffuse reflection in the material in the case of dielectrics, or a scaling factor for `base_color` in case of conductors.
-
-`base_color` 
-: The ideal color at normal incidence of diffuse reflection for dielectrics and metallic specular reflection.
-
-`base_roughness` 
-: The diffuse reflection roughness.
-
-`base_metalness` 
-: Whether the surface behaves as a dielectric or a conductor (0 = dielectric, 1 = conductor). Only the dielectric portion of a surface may be translucent. Partial values may be used to denote microscale differentiation, anodization, or oxidation.
-
-`specular_weight` 
-: The amount of specular reflection in the material.
-
-`specular_color` 
-: Tints the grazing edges of metallic specular reflections. This property allows art-directable variation in reflectivity toward the edges that approximates the color shift observed in real metals.
-
-`specular_roughness` 
-: Roughness of the surface interface, for dielectrics and metals. 
-
-`specular_ior` 
-: Dielectric index of refraction (IOR) for specular surface reflection and transmission. May be modified by `specular_ior_level`. The effect of the IOR may be altered by the presence of a coat, which has its own index of refraction.
-
-`specular_ior_level` 
-: A modifier of the specular index of refraction allowing linear variation in specular reflectivity for dielectric surfaces. At the default value of 0.5, specular reflectivity at normal incidence will match that of the index of refraction (specified in the translucency section). Metals are unaffected by specular level.
-
-`specular_anisotropy` 
-: Specifies the degree to which the specular highlight is stretched in the direction of anisotropic rotation. May affect
-either dielectric or metallic specularity. (0 = no stretch, 1 = maximum stretch). 
-
-`specular_rotation` 
-: Counter-clockwise rotation of anisotropy of surface layer from the tangent direction, normalized from 0° to 360°. Note that the appearance of the specular highlight is identical between 0–0.5 and 0.5–1; this allows the preservation of value when converting to/from other models that support directional anisotropy.
-
-`transmission_weight` 
-: Amount of refractive transmission through the surface. Translucency only affects dielectric surfaces—any amount of metallicity present in a material will not be translucent. For non-refractive transmission, use opacity instead.
-
-`transmission_dispersion_abbe_number` 
-: Dispersion Abbe number, describing how much the index of refraction varies across wavelengths
-
-`transmission_dispersion_scale` 
-: Lorem Ipsum
-
-`transmission_depth` 
-: Depth in the volume at which the `transmission_color` is matched, in scene units. Volumes with greater depth than the distance will have more absorption and thus appear darker. Volumes with less depth than the distance will have less absorption and thus appear lighter
-
-`transmission_color` 
-: Color of attenuated white light in volume after it has reached the `transmission_depth`.
-
-`transmission_scatter` 
-: Lorem Ipsum
-
-`transmission_anisotropy` 
-: Lorem Ipsum
-
-`subsurface_weight` 
-: Lorem Ipsum
-
-`subsurface_color` 
-: Lorem Ipsum
-
-`subsurface_radius` 
-: Lorem Ipsum
-
-`subsurface_radius_scale` 
-: Lorem Ipsum
-
-`subsurface_anisotropy` 
-: Lorem Ipsum
-
-`coat_weight` 
-: Coat presence opacity. Note that this also affects the strength of the tint effect of the coat.
-
-`coat_color` 
-: Color of all surface reflections beneath the coat. Note that it does not tint the reflections on the coat itself.
-
-`coat_roughness` 
-: Roughness of coat layer. 
-
-`coat_ior` 
-: Index of refraction of the coat.
-
-`coat_ior_level` 
-: Modifier of coat specularity, behaving in the same way as the underlying surface’s `specular_ior_level` and `specular_ior`.
-
-`coat_anisotropy` 
-: Specifies the degree to which the specular highlight is stretched in the direction of anisotropic rotation for the coat.
-
-`coat_rotation` 
-: Counter-clockwise rotation of anisotropy of surface layer from the tangent direction, normalized from 0° to 360°.
-
-`coat_affect_color` 
-: Whether the coat color does affect the color of the surface beneath or not (0 = no effect, 1 = full effect). Although in the physical world, a coat color always affects the perceived appearance of the color of the surface beneath, this parameter is useful to have the flexibility to bend those rules. 
-
-`coat_affect_roughness` 
-: Whether the coat roughness does affect the roughness of the surface beneath or not (0 = no effect, 1 = full effect). Although in the physical world, a coat roughness always affects the perceived appearance of the roughness of the surface beneath, this parameter is useful to have the flexibility to bend those rules. 
-
-`coat_affect_ior` 
-: Whether the coat specular IOR does affect the specular IOR of the surface beneath or not (0 = no effect, 1 = full effect). Although in the physical world, a coat specular IOR always affects the perceived appearance of the specular IOR of the surface beneath, this parameter is useful to have the flexibility to bend those rules. 
-
-`sheen_weight` 
-: Coat presence opacity. 
-
-`sheen_color` 
-: The color of the sheen.
-
-`sheen_roughness` 
-: The roughness of the sheen. 
-
-`emission_weight` 
-: Emissive intensity multiplier, in units of radiance.
-
-`emission_color` 
-: Color of emitted light when emissive intensity is 1.
-
-`thin_film_thickness` 
-: Lorem Ipsum
-
-`thin_film_ior` 
-: Lorem Ipsum
-
-`geometry_opacity` 
-: Cut-through opacity, i.e., non-refractive transparency (0 = transparent, 1 = opaque). Opacity is evaluated at each interface, so closed objects will appear more opaque than open ones with the same values
-
-`geometry_thin_walled` 
-: Lorem Ipsum
-
 `geometry_height` 
 : Displacement (or bump) amount in the direction of the normal. Displacement is a scalar change in surface position toward unperturbed, blended normal surface. In cases where tessellated displacement is not possible or desired, height may be implemented as a bump map.
-
-`geometry_normal` 
-: Normal to use for shading of the base slab, this defaults to the same as the geometric normal or can be overridden by the user. A popular choice for this is the use of tangent-space normal map, this may requires additional parameter and renderer support for correct behavior (e.g. disambiguate between tangent-space normal map handedness).
 
 `geometry_combine_normal_and_height` 
 : Indicates how the normal information should be interpreted when there is also a height information. If the normal already contains the detail of the height, then it should be set to false to avoid double perturbation of the normals. If the normal curvature is intended to be applied in combination with displacement from the height, combine normal and height should be true to allow the displacement to be considered when perturbing normals.
 
-`geometry_tangent` 
-: Lorem Ipsum
-
-`geometry_coat_normal` 
-: Normal to use for shading of the coat slab, behaving in the same way as the `geometry_normal`, it does affect it though. 
 
 -->
+
+
+
