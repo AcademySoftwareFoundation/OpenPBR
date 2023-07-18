@@ -697,6 +697,8 @@ Implementations may choose to compute light transport in the subsurface medium e
    With the new mapping, the anisotropy has a more subtle effect, where shadow edges are more blurred/crisp for forward/backward scattering respectively.
    However we need to better describe and give some images making more clear the resulting behavior.
 
+!!! WARNING
+   The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here are just what is available in the current papers, but make certain approximations (e.g. assumptions about the dielectrics interface IOR). Ideally these would allow for an arbitrary dielectric interface. 
 
 !!! WARNING
    TODO: Technically, the anisotropy could be different in each channel, but we don't support this (also it could be problematic to implement).
