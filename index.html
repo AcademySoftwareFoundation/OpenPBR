@@ -179,14 +179,7 @@ For example given the general situation described above of a dielectric coat sla
 ********************************
 
 The simplest representation of this layer configuration would amount to some linear combination of the interface BSDFs $f_\mathrm{sub}$ and $f_\mathrm{coat}$.
-A common approximation is to use so-called "albedo scaling" where the total BSDF of this layered configuration is given by summing $f_\mathrm{coat}$ and $f_\mathrm{sub}$ with the substrate lobe weighted with a factor designed to ensure that the resulting BSDF is energy conserving:
-\begin{equation}
-f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + W(\omega_i, \omega_o) \,f_\mathrm{sub}(\omega_i, \omega_o)   \ .
-\end{equation}
-Energy conservation of a BSDF $f_X$ amounts to the requirement that the directional reflectance (or albedo) $E_X(\omega_o) \le 1$ for all output ray directions (where $E_X$ is defined as the integral of the BSDF $f_X$ over incident directions in the positive hemisphere $\mathcal{H}_+$ with projected solid angle measure:
-$E_X(\omega_o) \equiv \int_{\mathcal{H}_+} f_X(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i$).
-
-A simple, albeit non-reciprocal, form of albedo scaling is to take the substrate weight factor to be one minus the directional reflectance of the coat (intuitively meaning that the energy not reflected by the coat is assumed to transmit through to the substrate), i.e.:
+A common approximation is to use so-called "albedo scaling" where the total BSDF of this layered configuration is given by summing $f_\mathrm{coat}$ and $f_\mathrm{sub}$ with the substrate lobe weighted with a factor designed to ensure that the resulting BSDF is energy conserving. Energy conservation of a BSDF $f_X$ amounts to the requirement that the directional reflectance (or albedo) $E_X(\omega_o) \le 1$ for all output ray directions (where the directional albedo $E_X$ is defined as the integral of the BSDF $f_X$ over incident directions in the positive hemisphere $\mathcal{H}_+$ with projected solid angle measure: $E_X(\omega_o) \equiv \int_{\mathcal{H}_+} f_X(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i$). A simple, albeit non-reciprocal, form of albedo scaling is thus to take the substrate weight factor to be one minus the directional reflectance of the coat (intuitively meaning that the energy not reflected by the coat is assumed to transmit through to the substrate), i.e.:
 \begin{equation} \label{non-reciprocal-albedo-scaling}
 f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o) + \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o)
 \end{equation}
@@ -195,7 +188,7 @@ This form ensures that if the directional albedos of the coat and substrate BSDF
 \begin{equation}
 E_\mathrm{layer}(\omega_o) \,=\, E_\mathrm{coat}(\omega_o)  +  \left(1 - E_\mathrm{coat}(\omega_o)\right) \,E_\mathrm{sub}(\omega_o) \;\; \le \, 1  \ .
 \end{equation}
-It also ensures that if the substrate BSDF perfectly preserves energy (i.e. $E_\mathrm{sub}(\omega_o) = 1$, also termed "strongly energy conserving"), then the layer BSDF does also, ensuring that the white furnace test would pass.
+It also ensures that if the substrate BSDF perfectly preserves energy (i.e. $E_\mathrm{sub}(\omega_o) = 1$, also termed "strongly energy conserving"), then the layer BSDF does also, ensuring that a "white furnace" test would pass.
 
 A form of albedo-scaling which additionally satisfies reciprocity is
 \begin{equation} \label{reciprocal-albedo-scaling}
