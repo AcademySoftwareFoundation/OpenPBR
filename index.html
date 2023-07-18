@@ -15,9 +15,9 @@ This document is a draft specification of a surface shading model: the OpenPBR S
 Historical background and objectives
 ============================================
 
-Interchange of computer graphics scene assets between different facilities remains a significant problem today, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem and is a topic of active scientific research. However, there is a strong need today for the industry to find a standardized material model that both covers most common use cases in day-to-day workflows and is easy to use.
+Interchange of computer graphics scene assets between different facilities remains a significant problem today, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem and is a topic of active scientific research. However, there is a strong need today for the industry to find a standardized material model that covers the most common use cases in day-to-day workflows and is easy to use.
 
-Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX, Material Definition Language (MDL), and Open Shading Language (OSL) [#Gritz2010], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users who should not be expected to build surface shaders from the ground up for day-to-day tasks. There is a need for a standard über-shader parametrization, i.e. a single monolithic definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials. In this proposal we aim to fill this gap.
+Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX [#Smythe2021], Material Definition Language (MDL) [#Kettner2015], and Open Shading Language (OSL) [#Gritz2010], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users who should not be expected to build surface shaders from the ground up for day-to-day tasks. There is a need for a standard über-shader parametrization, i.e. a single monolithic definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials. In this proposal we aim to fill this gap.
 
 Our proposed model follows closely the Autodesk Standard Surface shader [#Georgiev2019], which has strong spiritual predecessors in Anders Langlands' alSurface [#Langlands2014] and Autodesk 3ds Max's Physical Material [#Andersson2016]. It also incorporates many elements of the Adobe Standard Material [#Kutz2021], based heavily on Allegorithmic's PBR shading model [#McDermott2018]. 3ds Max's Physical Material in turn has been strongly inspired by Allegorithmic's model, Disney's Principled Shader [Burley2012], and general industry trends in several real-time 3D engines, and has been production proven with support by all major render engines for 3ds Max.
 
@@ -35,7 +35,6 @@ In outline the structure consists of:
    - [Fuzz](index.html#model/fuzz): An optional layer representing the reflection from micro-fibers (e.g. fine hair, peach fuzz, textile strands, dust, etc.) on top of everything else.
 
    ![Figure [diagram_model]: Schematic illustration of the idealized material model that our shader emulates. Horizontal stacking of components represents statistical mixture and vertical stacking represents layering.](images/model_schematic.svg width="100%")
-
 
 
 Since the model is simply a physical description of this material structure, in principle it would be amenable to solution via accurate methods such as those developed in [#Jakob2014], [#Belcour2018], and [#Zeltner2018], which attempt to compute all the various modes of reflection and transmission through the whole stack of layers, generating a final BSDF which is not necessarily a simple linear combination of the individual interface BSDFs.
@@ -304,29 +303,25 @@ Emissive properties are expressed in photometric units, since reference values a
    There is an ongoing discussion in the [MaterialX](https://github.com/AcademySoftwareFoundation/MaterialX) and [USD](https://github.com/PixarAnimationStudios/OpenUSD) working groups regarding the description of lights and emissive objects. This part of the specification may be subject to change if it doesn't align with those standards.
 
 
-Other assumptions
+Metadata
 -------------------------------------
 
+This specification is designed to facilitate exchange of assets between facilities which may use different render engines and pipelines. To this end it attempts to reduce the ambiguity about the final look, so that assets can be expected to render roughly the same visually if the implementation conforms reasonably well to the specification.
+
+However the parameters of the physical model that we describe do not specify all of the assumptions that would be needed to obtain a good visual match. We recommend therefore, for the purposes of asset exchange, that the parameters be packaged with certain metadata that provides the following missing information:
+
+   - The assumed color space of all the color parameters. If unspecified, following MaterialX [#Smythe2021], by default this color space is assumed to be [ACEScg](https://docs.acescentral.com/specifications/acescg/).
+
+   - The floating point conversion factor from the parameters given in world space length units to meters.
+
+   - The association between texture files and the parameters which they specify, generating spatially varying parameters according to the local UV coordinates of the geometry.
+
+   - The assumed convention for converting the input **`geometry_normal`**, **`geometry_tangent`** and **`geometry_coat_normal`** maps, if present, to the final shading normal of the local surface at each point.
+
+As in practice OpenPBR will be integrated within other transport protocols such as MaterialX and USD, the specific form and content of this metadata is outside the scope of this spec.
+
 !!! Tip
-    TODO: Write these notes (some are quite possibly out of scope so we can ignore, or we can say something very vague)
-
-   - recommendations for integration into a renderer, i.e. light transport and importance sampling
-   - color model / spectral
-   - unit conversions
-   - texturable / non-texturable parameters, normalization issues.
-   - recommendations for smooth/efficient material exchange
-   - normal/displacement maps (what is our policy/recommendation)
-   - policy about surface orientation in thin-wall / non-thin-wall cases
-   - relationship to MaterialX (as our reference implementation will almost certainly be in that form)
-   - what is the default state of the OpenPBR surface, and why
-
-
-!!! Tip
-   Describe how the material is supposed to behave with it consists of a mixture of components. For the individual components of the model, reasonable behavior could be determined from the physical description. However, things get murkier when you have a mixture of different components.
-   For example, what does it mean to hit a surface from the inside if it is 1/4 diffuse, 1/4 metal, 1/4 transparent, and 1/4 subsurface?
-   In ASM, we made diffuse and metal reflect normally from the inside for a few reasons:
-   1. If light got inside a diffuse or metallic object in the first place, then that means the metal and diffuse components probably represent thin coatings on a translucent object (like foil or a sticker).
-   2. A user can model a thin surface (like some foil or a leaf or a ground plane) and get good results without enabling the thin-wall feature. (In an earlier version of ASM, users were confused to see total internal reflection on the back of a plane.)
+   It is still an open question whether some of this metadata, or other metadata, should be specified as part of the OpenPBR model itself.
 
 
 Model
@@ -801,7 +796,7 @@ The characteristic appearance of metal, i.e. conductors, is another form of spec
 
 Metallic reflection is modeled as a GGX microfacet conductor BRDF $f_\mathrm{conductor}$, whose NDF is parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`** (overloading the same parameters used for the dielectric BSDF $f_\mathrm{dielectric}$, as noted in the [Microfacet model](index.html#model/microfacetmodel) section).
 
-The conductor Fresnel reflection curve is parametrized by the colors at normal and near-grazing incidence (**`base_color`** and **`specular_color`** respectively, scaled by the corresponding weights). This allows for achieving a desired look by directly specifying the (texturable) colors at normal and grazing incidence to simulate the dip in reflectivity observed in real metals, or just for artistic effect [#Hoffman2019]. Note that these two color parameters are also used for the non-metallic (i.e. dielectric) specular and diffuse BRDFs, as discussed above.
+The conductor Fresnel reflection curve is parametrized by the colors at normal and near-grazing incidence (**`base_color`** and **`specular_color`** respectively, scaled by the corresponding weights). This allows for art-directable variation in reflectivity toward the grazing edges by directly specifying the (texturable) colors at normal and grazing incidence to simulate the dip in reflectivity observed in real metals, or just for artistic effect [Hoffman2019]. Note that these two color parameters are also used for the non-metallic (i.e. dielectric) specular and diffuse BRDFs, as discussed above.
 
 As noted previously, this non-transmissive metallic base is blended as a statistical mixture with the dielectric base according to the **`base_metalness`** parameter:
 \begin{eqnarray}
@@ -870,7 +865,7 @@ The coat is applied on top of the base substrate, with a coverage weight $\matht
 * +-------------------------------------------------+ *
 *******************************************************
 
-The absorption of the medium $V_\mathrm{coat}$ is parametrized by the observed tint color of the underlying base at normal incidence, **`coat_color`**. In the full light transport this observed color includes contributions due to multiple bounces back and forth inside the coat layer, so a calculation would be needed to map the final observed tint color to the absorption coefficient which achieves this. We leave it up to the implementation to decide what level of approximation to use for this (in the simplest approximation, the **`coat_color`** can just be treated as a transmittance $T$ which is multiplied into the substrate lobes).
+The absorption of the medium $V_\mathrm{coat}$ is parametrized by the observed tint color of the underlying base at normal incidence, **`coat_color`** (note that it does not tint the specular reflection from the coat itself). In the full light transport this observed color includes contributions due to multiple bounces back and forth inside the coat layer, so a calculation would be needed to map the final observed tint color to the absorption coefficient which achieves this. We leave it up to the implementation to decide what level of approximation to use for this (in the simplest approximation, the **`coat_color`** can just be treated as a transmittance $T$ which is multiplied into the substrate lobes).
 
 A number of other physical effects will occur due to the presence of the coat:
       - The observed tint color should vary away from **`coat_color`** as the incidence angle changes, due to the change in path length in the medium.
@@ -879,6 +874,22 @@ A number of other physical effects will occur due to the presence of the coat:
       - The IOR of the coat medium $V_\mathrm{coat}$ will alter the Fresnel factor of the underlying metal or dielectric.
 
 In a full light transport simulation these effects would occur automatically, but in an approximate model they may need to be accounted for by hand.
+
+<!-- Markdeep:
+For example, the Autodesk Standard Surface model modulates the **`base_color`** and **`subsurface_color`**, and the roughnesses of the metal and dielectric BSDFs, according to the
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C
+            base_color       -> pow(base_color,       1.0 + coat)
+            subsurface_color -> pow(subsurface_color, 1.0 + coat)
+            roughness        -> roughness + coat*coat_roughness*(1 - roughness)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+and the roughnesses of the metal and dielectric BSDFs via
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C
+            roughness -> roughness + coat*coat_roughness*(1 - roughness)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In some practical use cases however, it may be desirable for this physical effect to be ignored so that the base color is unaffected by the presence of the coat. For this purpose we provide the **`coat_affect_color`** parameter, which allows
+-->
 
 The **`coat_ior_level`** parameter in [0,1] modulates the coat reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum. This works similarly to the formula for **`specular_ior_level`** in equation [modulated_ior]. In detail, the coat Fresnel reflection factor at normal incidence is given by
 \begin{equation}
@@ -897,22 +908,6 @@ n_\mathrm{coat} = \mathtt{ambient\_ior} \times \mathrm{lerp}(1, \eta^\prime_c, \
 \end{equation}
 The ratio $\eta_s = \mathtt{specular\_ior} / n_\mathrm{coat}$ then determines the specular Fresnel factor, as in equation [modulated_ior].
 
-<!-- Markdeep:
-For example, the Autodesk Standard Surface model modulates the **`base_color`** and **`subsurface_color`**, and the roughnesses of the metal and dielectric BSDFs, according to the
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C
-            base_color       -> pow(base_color,       1.0 + coat)
-            subsurface_color -> pow(subsurface_color, 1.0 + coat)
-            roughness        -> roughness + coat*coat_roughness*(1 - roughness)
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-and the roughnesses of the metal and dielectric BSDFs via
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C
-            roughness -> roughness + coat*coat_roughness*(1 - roughness)
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In some practical use cases however, it may be desirable for this physical effect to be ignored so that the base color is unaffected by the presence of the coat. For this purpose we provide the **`coat_affect_color`** parameter, which allows
--->
-
 Coat params                 | Label            | Type     | Range        | Default         | Description
 ----------------------------|------------------|----------|:------------:|:---------------:|----------------------------------------------
 **`coat_weight`**           | Weight           | `float`  | $ [0, 1]   $ | 0.0             | Coverage weight of coat slab
@@ -927,6 +922,17 @@ Coat params                 | Label            | Type     | Range        | Defau
 **`coat_affect_color`**     | Affect Color     | `float`  | $ [0, 1]   $ | 1.0             | How much to prevent the coat from affecting the brightness and saturation of layers below
 **`coat_affect_roughness`** | Affect Roughness | `float`  | $ [0, 1]   $ | 1.0             | How much to prevent the coat from affecting the roughness of layers below
 **`coat_affect_ior`**       | Affect IOR       | `float`  | $ [0, 1]   $ | 1.0             | How much to prevent the coat from affecting the relative IOR of layers below
+ -->
+
+ <!-- Markdeep:
+ `coat_affect_color`
+ : Whether the coat color does affect the color of the surface beneath or not (0 = no effect, 1 = full effect). Although in the physical world, a coat color always affects the perceived appearance of the color of the surface beneath, this parameter is useful to have the flexibility to bend those rules.
+
+ `coat_affect_roughness`
+ : Whether the coat roughness does affect the roughness of the surface beneath or not (0 = no effect, 1 = full effect). Although in the physical world, a coat roughness always affects the perceived appearance of the roughness of the surface beneath, this parameter is useful to have the flexibility to bend those rules.
+
+ `coat_affect_ior`
+ : Whether the coat specular IOR does affect the specular IOR of the surface beneath or not (0 = no effect, 1 = full effect). Although in the physical world, a coat specular IOR always affects the perceived appearance of the specular IOR of the surface beneath, this parameter is useful to have the flexibility to bend those rules.
  -->
 
 ![](images/coat_0.png width=90% align=right) ![](images/coat_1.png width=90% align=left)
@@ -1021,7 +1027,7 @@ That is:
 \begin{equation}
 \mathrm{PBR} = \mathrm{\mathbf{mix}}(\mathrm{ambient\; medium}, \mathrm{surface}, \mathtt{geometry\_opacity})
 \end{equation}
-where **`geometry_opacity`** is then effectively a linear "alpha" blend.
+where **`geometry_opacity`** is the presence weight of the entire surface, thus functionally effectively as a linear "alpha" blend.
 
 ****************************************************************************************************
 *                                                 1 - geometry_opacity       geometry_opacity      *
@@ -1055,6 +1061,20 @@ The total transmittance can thus be approximated as [^lerp]
 \mathbf{T}_\mathrm{pbr} &=& \mathrm{lerp}(1,  w_\mathrm{dielectric} \mathbf{T}_\mathrm{dielectric},  \mathtt{geometry\_opacity}) \nonumber \\
                         &=& 1 - \mathtt{geometry\_opacity} \left(1 - w_\mathrm{dielectric} \mathbf{T}_\mathrm{dielectric}\right) \ .
 \end{eqnarray}
+
+
+Normal maps
+-------------------------------------
+
+The geometry of the surface is assumed to be given externally to the model, defining a local unperturbed shading normal and tangent space frame.
+
+However we allow for normal mapping, which (optionally) alters this unperturbed shading frame, as a part of the material model, as this alters the light transport and appearance fundamentally.
+
+There are assumed to be separate normal inputs **`geometry_normal`**, **`geometry_coat_normal`** defining the perturbation of the shading normal for the base and coat BSDF models. Separately perturbing the coat normal allows for the appearance of a finite thickness coat on top of the base.
+
+The **`geometry_tangent`** may also be specified, which controls the direction of microfacet anisotropy, for effects such as brushed metal. The base and coat are assumed to share the tangent, which is orthonormalized accordingly.
+
+The perturbed normals and tangent will of course be specified by input textures (or possibly procedurally). As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
 
 
 
@@ -1175,6 +1195,8 @@ References
 
 [#Kelemen2001]: Csaba Kelemen and Laszlo Szirmay-Kalos. *A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling*, Eurographics (2001).
 
+[#Kettner2015]: Lutz Kettner, Matthias Raab, Daniel Seibert, Jan Jordan, Alexander Keller. *The Material Definition Language*, Eurographics (2015).
+
 [#Kulla2017]: Christopher Kulla and Alejandro Conty Estevez. *Revisiting Physically Based Shading at Imageworks*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2017).
 
 [#Kutz2021]: Peter Kutz, Miloš Hašan, Paul Edmondson. *Novel aspects of the Adobe Standard Material*, Adobe white paper (2021).
@@ -1194,6 +1216,8 @@ References
 
 [#Schott2023]: SCHOTT. *Interactive Abbe Diagram* https://www.schott.com/en-gb/interactive-abbe-diagram (2023).
 
+[#Smythe2021]: Doug Smythe and Jonathan Stone. *MaterialX: An Open Standard for Network-Based CG Object Looks*, https://materialx.org
+
 [#Turquin2019]: Emmanuel Turquin. *Practical multiple scattering compensation for microfacet models.*, Industrial Light & Magic white paper (2019).
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
@@ -1201,8 +1225,6 @@ References
 [#Zeltner2018]: Tizian Zeltner and Wenzel Jakob. *The Layer Laboratory: A Calculus for Additive and Subtractive Composition of Anisotropic Surface Reflectance*, ACM Transactions on Graphics (2018).
 
 [#Zeltner2022]: Tizian Zeltner, Brent Burley, and Matt Jen-Yuan Chiang. *Practical Multiple-Scattering Sheen Using Linearly Transformed Cosines*, ACM SIGGRAPH Talks (2022).
-
-
 
 
 
