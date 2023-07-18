@@ -52,11 +52,6 @@ Since the model is simply a physical description of this material structure, in 
 However we want this material model to be renderable on a wide range of platforms, from off-line path tracers all the way to real-time game engines on mobile devices.
 Enforcing a particular implementation would make the use of the material model impractical for certain classes of renderers, and ultimately make the model less useful. For this reason we consider the choice of a specific implementation to be outside the scope of this specification. For convenience and efficiency, at present it is most likely to be mapped (as outlined in the Layering section and Mixing section below) to a model consisting of a mixture of BSDF lobes similar to the Autodesk Standard Surface shader [#Georgiev2019].
 
-!!! WARNING
-      The question of a reference renderer is still pending. It is quite possible that the MaterialX implementation may become the reference one.
-      There is also the question of possibly wanting a renderer to document its set of supported features.
-
-
 When a particular implementation of some aspect is widely adopted we suggest it, and when an accurate solution can be prohibitively costly we also suggest alternative approximations. But in the end, it is up to the developer to choose the appropriate implementation for their use case, based on their practical constraints and the level of visual quality they are aiming for.
 
 Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that a given renderer may not support accurate subsurface scattering for example, or that anisotropic coating may be too expensive for VR, etc. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't. For example, a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect.
@@ -299,6 +294,11 @@ In this fashion the abstract mix and layer operations can be mapped to a more co
    In practice we will most likely defer to the MaterialX implementation of the OpenPBR Surface model to define exactly how this mapping to a mixture model is done.
    There is work to do to properly motivate and describe how the correspondence is made from this spec to MaterialX. This may require adding new functionality to MaterialX.
 
+!!! WARNING
+   The question of a reference renderer is still pending. It is quite possible that the MaterialX implementation may become the reference one.
+   There is also the question of possibly wanting a renderer to document its set of supported features.
+
+
 Emission model
 -------------------------------------
 
@@ -388,6 +388,12 @@ Which are composed to build the material structure, denoted $\textrm{PBR}$ below
 \end{eqnarray}
 
 Below we describe the individual slabs in detail, working from the base upwards. We first discuss the general form of the BSDFs of the interfaces in the structure.
+
+!!! WARNING
+   We currently say little about how this layer and mix structure is intended to be mapped to some representation which can be used within a renderer (apart from what is said above in the Mixing section). Presumably this representation will be in the form of a mixture model of sub-BSDFs.
+
+   It is likely that eventually MaterialX will provide (at least one example of) this mapping. It would be ideal if this spec can eventually present a full derivation of this. This should also include recommendations for efficient evaluation and sampling of the mixture model thus obtained.
+
 
 Microfacet model
 -------------------------------------
