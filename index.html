@@ -313,7 +313,9 @@ However the parameters of the physical model that we describe do not specify all
 
    - The floating point conversion factor from the parameters given in world space length units to meters.
 
-   - The association between texture files and the parameters which they specify, generating spatially varying parameters according to the local UV coordinates of the geometry.
+   - The association between any supplied texture files and the parameters which they specify, generating spatially varying parameters according to the local UV coordinates of the geometry.
+
+   - Any shader networks which drive the parameters of the model.
 
    - The assumed convention for converting the input **`geometry_normal`**, **`geometry_tangent`** and **`geometry_coat_normal`** maps, if present, to the final shading normal of the local surface at each point.
 
