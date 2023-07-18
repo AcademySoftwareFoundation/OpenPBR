@@ -17,7 +17,7 @@ Historical background and objectives
 
 Interchange of computer graphics scene assets between different facilities remains a significant problem today, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem and is a topic of active scientific research. However, there is a strong need today for the industry to find a standardized material model that covers the most common use cases in day-to-day workflows and is easy to use.
 
-Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX [#Smythe2021], Material Definition Language (MDL) [#Kettner2015], and Open Shading Language (OSL) [#Gritz2010], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users who should not be expected to build surface shaders from the ground up for day-to-day tasks. There is a need for a standard über-shader parametrization, i.e. a single monolithic definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials. In this proposal we aim to fill this gap.
+Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX [#Smythe2016], Material Definition Language (MDL) [#Kettner2015], and Open Shading Language (OSL) [#Gritz2010], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users who should not be expected to build surface shaders from the ground up for day-to-day tasks. There is a need for a standard über-shader parametrization, i.e. a single monolithic definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials. In this proposal we aim to fill this gap.
 
 Our proposed model follows closely the Autodesk Standard Surface shader [#Georgiev2019], which has strong spiritual predecessors in Anders Langlands' alSurface [#Langlands2014] and Autodesk 3ds Max's Physical Material [#Andersson2016]. It also incorporates many elements of the Adobe Standard Material [#Kutz2021], based heavily on Allegorithmic's PBR shading model [#McDermott2018]. 3ds Max's Physical Material in turn has been strongly inspired by Allegorithmic's model, Disney's Principled Shader [Burley2012], and general industry trends in several real-time 3D engines, and has been production proven with support by all major render engines for 3ds Max.
 
@@ -310,7 +310,7 @@ This specification is designed to facilitate exchange of assets between faciliti
 
 However the parameters of the physical model that we describe do not specify all of the assumptions that would be needed to obtain a good visual match. We recommend therefore, for the purposes of asset exchange, that the parameters be packaged with certain metadata that provides the following missing information:
 
-   - The assumed color space of all the color parameters. If unspecified, following MaterialX [#Smythe2021], by default this color space is assumed to be [ACEScg](https://docs.acescentral.com/specifications/acescg/).
+   - The assumed color space of all the color parameters. If unspecified, following MaterialX [#Smythe2016], by default this color space is assumed to be [ACEScg](https://docs.acescentral.com/specifications/acescg/).
 
    - The floating point conversion factor from the parameters given in world space length units to meters.
 
@@ -1216,7 +1216,7 @@ References
 
 [#Schott2023]: SCHOTT. *Interactive Abbe Diagram* https://www.schott.com/en-gb/interactive-abbe-diagram (2023).
 
-[#Smythe2021]: Doug Smythe and Jonathan Stone. *MaterialX: An Open Standard for Network-Based CG Object Looks*, https://materialx.org
+[#Smythe2016]: Doug Smythe and Jonathan Stone. *MaterialX: An Open Standard for Network-Based CG Object Looks*, https://materialx.org
 
 [#Turquin2019]: Emmanuel Turquin. *Practical multiple scattering compensation for microfacet models.*, Industrial Light & Magic white paper (2019).
 
