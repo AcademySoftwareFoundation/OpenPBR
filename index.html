@@ -327,8 +327,8 @@ As in practice OpenPBR will be integrated within other transport protocols such 
 Model
 ============================================
 
-Using the operator formalism and parametrization described, we now specify the structure of the OpenPBR surface model. The structure differs fundamentally depending on whether it is considered to be "thin-walled" or a "bulk". We describe first the case of a bulk, where the material structure informally looks informally like the following diagram:
-
+Using the operator formalism and parametrization described, we now specify the structure of the OpenPBR surface model.
+We describe first the non-thin-walled case (in the [thin-walled case](index.html#model/thin-walledcase) the structure differs), where the material structure informally looks informally like the following diagram:
 ************************************************************************************************************
 *                                                                         emission                         *
 *                                                                             ^                            *
@@ -345,11 +345,8 @@ Using the operator formalism and parametrization described, we now specify the s
 * |  ambient  |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
 * |  medium   |░░░░░░░░░░░░░░░░░░░░░|                     |                |░░░░░░░░░░░░░░░|               *
 * +-----------+ - - - - - - - - - - +- - - - - - - - - - -+ - - - - - - - -+ - - - - - - - +               *
-*                                                                                                          *
 *                                                          <--------- opaque base -------->                *
-*                                                                                                          *
 *                                    <------------------ dielectric base ----------------->                *
-*                                                                                                          *
 *              <---------------------------------- base ---------------------------------->                *
 ************************************************************************************************************
 
@@ -569,7 +566,7 @@ Similarly the RGB single-scattering albedo $\boldsymbol{\alpha}$ is approximatel
 \end{equation}
 The physical RGB scattering coefficient is then given by $\boldsymbol{\mu}_s = \boldsymbol{\alpha}\,\boldsymbol{\mu}_t$.
 
-This relationship was derived (via fitting) in the isotropic $g=0$ case. To account for anisotropy, "similarity theory" [#d'Eon2021] says that a medium with anisotropy $g$ will have approximately similar light transport to an isotropic medium provided that the scattering coefficient is remapped to $\bar{\boldsymbol{\mu}}_s = \boldsymbol{\mu}_s / (1 - g)$, while keeping the absorption coefficient the same. Applying this, the net result is that the remapped single-scattering albedo $\bar{\boldsymbol{\alpha}}$ is given by
+This relationship was derived (via fitting) in the isotropic $g=0$ case. To account for anisotropy, "similarity theory" [#d'Eon2021] says that a medium with anisotropy $g$ will have approximately similar overall light transport to an isotropic medium (while still exhibiting noticeably different directional effects, especially in low-order scattering) provided that the scattering coefficient is remapped to $\bar{\boldsymbol{\mu}}_s = \boldsymbol{\mu}_s / (1 - g)$, while keeping the absorption coefficient the same. Applying this, the net result is that the remapped single-scattering albedo $\bar{\boldsymbol{\alpha}}$ is given by
 \begin{equation}
 \bar{\boldsymbol{\alpha}} = \frac{\boldsymbol{\alpha}} {1  - g (1 - \boldsymbol{\alpha})} \ ,
 \end{equation}
@@ -646,14 +643,14 @@ Dispersion is parametrized by the _Abbe number_ $V_d$, which is the ratio betwee
 \begin{equation}
 V_d = \frac{n_{\mathrm{medium}} - 1}{n_{\mathrm{short}} - n_{\mathrm{long}}} \ ,
 \end{equation}
-where in the standard definition $n_{\mathrm{short}} = n_C$, $n_{\mathrm{medium}} = n_d$ and $n_{\mathrm{long}} = n_F$ are the IORs of the material at the wavelengths of the Fraunhofer C, d, and F spectral lines (at $\lambda_C$=486.1 nm, $\lambda_d$=587.56 nm, and $\lambda_F$=656.3 nm respectively). The amount of dispersion (i.e. angular separation of colors) is roughly proportional to the reciprocal of the Abbe number. The IOR at any wavelength can be determined from the Cauchy empirical formula:
+where in the standard modern definition $n_{\mathrm{long}} = n_C$, $n_{\mathrm{medium}} = n_d$ and $n_{\mathrm{short}} = n_F$ are the IORs of the material at the wavelengths of the Fraunhofer C, d, and F spectral lines (at $\lambda_C$=656.3 nm, $\lambda_d$=587.6 nm, and $\lambda_F$=486.1 nm respectively). The amount of dispersion (i.e. angular separation of colors) is roughly proportional to the reciprocal of the Abbe number. The IOR at any wavelength can be determined from the Cauchy empirical formula:
 \begin{equation}
-n(\lambda) = B + \frac{C}{\lambda^2} \ .
+n(\lambda) = A + \frac{B}{\lambda^2} \ .
 \end{equation}
-It follows that if the Abbe number $V_d$, and IOR $n(\lambda_d)$ is given, the coefficients in the Cauchy formula are given by
+It follows that if the Abbe number $V_d$ and IOR $n_d = n(\lambda_d)$ are given, the coefficients in the Cauchy formula are given by
 \begin{eqnarray}
-C &=& \frac{n(\lambda_d) - 1}{V_d} \; \frac{(\lambda_F \lambda_C)^2}{\lambda^2_C - \lambda^2_F} \ , \nonumber \\
-B &=& n(\lambda_d) - \frac{C}{\lambda^2_d} \ .
+B &=& \frac{n_d - 1}{V_d \; (\lambda^{-2}_F - \lambda^{-2}_C)} \ , \nonumber \\
+A &=& n_d - \frac{B}{\lambda^2_d} \ .
 \end{eqnarray}
 We assume that **`specular_ior`** (including any modulation via **`specular_ior_level`** as in equation [modulated_ior]) defines $n(\lambda_d)$.
 Thus the IOR $n$ at any wavelength $\lambda$ is determined, given $V_d$. A renderer can use this known $n(\lambda)$ function to model the effect of dispersion, for example by stochastically choosing a wavelength sample and tracing the refracted ray direction according to the corresponding IOR.
@@ -662,7 +659,7 @@ However the Abbe number itself is not very intuitive to work with, as the disper
 \begin{equation}
 V_d = \frac{\mathtt{transmission\_dispersion\_abbe\_number}} {\mathtt{transmission\_dispersion\_scale}} \ .
 \end{equation}
-At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 10. The default 10 was chosen since real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87, while water and diamond both have an Abbe number of about 55-56 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the **`transmission_dispersion_abbe_number`** can be changed.
+At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20. The default 20 was chosen since common real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], water and diamond both have Abbe numbers between 55 and 56, while the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the **`transmission_dispersion_abbe_number`** can be changed.
 
 !!! Tip
    TODO: An image showing dispersion off, low, high.
@@ -675,7 +672,7 @@ Translucent base params                   | Label            | Type     | Range 
 **`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty] $ | 0.0             | Distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
 **`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3    $ | (0.0, 0.0, 0.0) | Scattering albedo of the interior medium
 **`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]    $ | 0.0             | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
-**`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [10, 70)    $ | 20.0            | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in `[0,1]`
+**`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [9, 91]    $ | 20.0            | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in `[0,1]`
 **`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]     $ | 0.0             | Linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
 
 
@@ -1123,15 +1120,44 @@ The perturbed normals and tangent will of course be specified by input textures 
 Thin-walled case
 -------------------------------------
 
-If the **`geometry_thin_walled`** Boolean is enabled, then the surface is assumed to be in a "thin-walled" mode. This has essentially the same structure as the bulk case, but the slabs at the base are assumed to be thin enough that, macroscopically, the material can be treated as a 2d sheet with no interior.
+If the **`geometry_thin_walled`** Boolean is enabled, then the surface is assumed to be in a "thin-walled" mode.
 
-In this case, the base slabs are interpreted as infinitesimally thin sheets, thus their behavour is assumed to change as follows:
+In this case we make the assumption that the surface is essentially the bulk structure but mirrored around the base, with the slabs at the base assumed to be thin enough that macroscopically the material can be treated as a 2d sheet with no interior. This sheet thus appears identical viewed from either side:
+
+***************************************************************************************************************
+*                                                                                      ^ emission             *
+*  +-----------+-----------------------------------------------------------------------|------+               *
+*  |           |                                    fuzz                               |      |               *
+*  |           +-----------------------------------------------------------------------|------+               *
+*  |           |                                    coat                               |      |               *
+*  |           +---------------------+----------------------+----------------+---------+------+ <-- thin-film *
+*  |           |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+*  |           |░░░░░░░ metal ░░░░░░░|   translucent base   |   subsurface   |░glossy-diffuse░|               *
+*  |           |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
+*  |           +---------------------+----------------------+----------------+---------+------+ <-- thin-film *
+*  |           |                                    coat                               |      |               *
+*  |  ambient  +-----------------------------------------------------------------------|------+               *
+*  |  medium   |                                    fuzz                               |      |               *
+*  +-----------+-----------------------------------------------------------------------|------+               *
+*                                                                                      v emission             *
+***************************************************************************************************************
+
+A convenient (though physically implausible) approximation of this is to assume that the surface is automatically oriented so that the incident ray is always entering the surface from the top, so the surface appears the same viewed from above or below. This is physically implausible, but quite convenient as the light transport can always be dealt with as in the bulk case (i.e. incident rays enter top-down).
+
+A more general interpretation would be to allow each side of the thin-wall to be defined by a distinct thin-walled OpenPBR Surface (one associated to the top, in the direction of the normal, and one to the bottom in the opposite direction) so that the thin base slabs meet in the middle. Then if there are different translucent base or subsurface parameters on each side, these need to be resolved somehow (e.g. the parameters could be blended, or the light transport could model the presence of the two distinct thin layers of dielectric). If this is supported, we assume it is dealt with in a renderer-specific fashion by assigning separate shaders to each side.
+
+!!! Tip
+      TODO: It is an open question as to what the best default intepretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
+
+In the thin-wall structure, the base slabs are interpreted as infinitesimally thin sheets, thus their behavior is assumed to change as follows:
+
+   - As noted above, **`geometry_opacity`** makes physical sense as a float value in the thin-walled case (unlike the bulk case), controlling the overall presence weight of the thin wall.
 
    - The $\textrm{metal}$ and $\textrm{glossy-diffuse}$ slabs remain but are considered double-sided, with the top BSDF mirrored to the bottom (and a totally opaque, albeit infinitesimally thin, interior)
 
-   - The $\textrm{translucent-base}$ slab can be considered an infinitesimally thin sheet of dielectric, with the BSDF $f_\mathrm{dielectric}$ on both sides. The specular reflection and transmission is retained, but no refraction occurs. There is no interior volume, but the reflection and transmission colors may be non-physically tinted via **`specular_color`**, and **`transmission_color`**.
+   - The $\textrm{translucent-base}$ slab can be considered an infinitesimally thin sheet of dielectric (absorbing but non-scattering), with the BSDF $f_\mathrm{dielectric}$ on both sides. A ladder of inter-reflections occurs inside this slab producing a reflected lobe and un-deflected refracted lobe. The **`transmission_color`** can be assumed to give the absorption transmittance through the thin sheet at normal incidence. In the smooth case the BRDF and BTDF of this sheet can be solved exactly by summing over a geometrical series of terms containing Fresnel and absorption factors, and this can be extended to a good approximation of the rough case by appropriately roughening the transmission lobe (as described in [#Kulla2017]). This model of thin-walled glass is a cheaper, much more convenient way to render windows than a finite thickness non-thin-walled mesh.
 
-   - The $\textrm{subsurface}$ slab is considered to degenerate into a thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$), which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_anisotropy} \in [-1,1]$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
+   - The $\textrm{subsurface}$ slab is considered to degenerate into an infinitesimally thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$), which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_anisotropy} \in [-1,1]$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
       \begin{eqnarray}
       f^R_\mathrm{diffuse} &=& \frac{1}{2} S (1 - g)\, f_+ \ , \nonumber \\
       f^T_\mathrm{diffuse} &=& \frac{1}{2} S (1 + g)\, f_- \ .
@@ -1141,93 +1167,13 @@ In this case, the base slabs are interpreted as infinitesimally thin sheets, thu
          E_R[f^R_\mathrm{diffuse}] + E_T[f^T_\mathrm{diffuse}] = S \le 1 \ .
       \end{equation}
       At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission.
-      The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this).
-
-   - As noted above, **`geometry_opacity`** makes physical sense as a float value in the thin-walled case (unlike the bulk case), controlling the presence weight of the thin wall.
-
+      The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this). This model is useful for rendering cases such as light scattering through a thin sheet of paper.
 
    ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
    <div class="shifted-caption">
          ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** (right).](dummy)
    </div>
    
-
-There are a number of reasonable options for how to interpret the layer structure of the thin-walled mode for light transport purposes:
-
-   - **Asymmetric**:  The thin wall is oriented according to the local shading normal, so when viewed from below the incident ray encounters the base slab first (Figure [asymmetric-thin-wall]). The appearance of the surface will then be somewhat different when viewed from below instead of above, as then the coat and fuzz layers are not directly visible but occluded by the base.
-
-   - **Asymmetric-but-always-facing**: The same as above, but the thin wall is automatically oriented so that the incident ray is always entering the surface from the top, so the surface appears the same viewed from above or below. This is physically implausible, but quite convenient as the light transport can always be dealt with as in the bulk case (i.e. incident rays enter top-down).
-
-   ***************************************************************************************************************
-   *                                                                                      ^ emission             *
-   *  +-----------+-----------------------------------------------------------------------|------+               *
-   *  |           |                                    fuzz                               |      |               *
-   *  |           +-----------------------------------------------------------------------|------+               *
-   *  |           |                                    coat                               |      |               *
-   *  |           +---------------------+----------------------+----------------+---------+------+ <-- thin-film *
-   *  |           |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
-   *  |  ambient  |░░░░░░░ metal ░░░░░░░|   translucent base   |   subsurface   |░glossy-diffuse░|               *
-   *  |  medium   |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
-   *  +-----------+---------------------+----------------------+----------------+----------------+               *
-   *                                                            <--------- opaque base --------->                *
-   *                                     <------------------ dielectric base ------------------->                *
-   *              <------------------------------------ base ----------------------------------->                *
-   ***************************************************************************************************************
-   <div class="shifted-caption">
-      ![Figure [asymmetric-thin-wall]: Asymmetric interpretation of the thin-walled mode.](dummy)
-  </div>
-
-   - **Symmetric**:  The thin wall structure above the base is mirrored so that it appears identical viewed from either side (Figure [symmetric-thin-wall]). This is a more physically plausible interpretation of a symmetric thin-wall than the Asymmetric-but-always-facing mode, though in the presence of the translucent base or subsurface the light transport will differ as rays will encounter the coat and fuzz layers on both sides.
-
-   **************************************************************************************************************
-   *                                                                                     ^ emission             *
-   *  +----------+-----------------------------------------------------------------------|------+               *
-   *  |          |                                    fuzz                               |      |               *
-   *  |          +-----------------------------------------------------------------------|------+               *
-   *  |          |                                    coat                               |      |               *
-   *  |          +---------------------+----------------------+----------------+---------+------+ <-- thin-film *
-   *  |          |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
-   *  |  ambient |░░░░░░░ metal ░░░░░░░|   translucent base   |   subsurface   |░glossy-diffuse░|               *
-   *  |  medium  |░░░░░░░░░░░░░░░░░░░░░|                      |                |░░░░░░░░░░░░░░░░|               *
-   *  |          +---------------------+----------------------+----------------+---------+------+               *
-   *  |          |                                    coat                               |      |               *
-   *  |          +-----------------------------------------------------------------------|------+               *
-   *  |          |                                    fuzz                               |      |               *
-   *  +----------+-----------------------------------------------------------------------|------+               *
-   *                                                                                     v emission             *
-   **************************************************************************************************************
-   <div class="shifted-caption">
-      ![Figure [symmetric-thin-wall]: Symmetric interpretation of the thin-walled mode.](dummy)
-  </div>
-
-   
-   - **Double-sided**: Each side of the thin-wall is defined by a distinct OpenPBR Surface (one associated to the top, in the direction of the normal, and one to the bottom in the opposite direction). If there are different translucent base or subsurface parameters on each side, then these need to be resolved somehow (e.g. the parameters could be blended, or the light transport could model the presence of the two distinct thin layers of dielectric).
-
-  ******************************************************************************************************************
-  *                                                                                      ^ emission_up         ^   *
-  * +----------+-------------------------------------------------------------------------|-----------+         |   *
-  * |          |                                    fuzz_up                              |           |         up  *
-  * |          +-------------------------------------------------------------------------|-----------+             *
-  * |          |                                    coat_up                              |           |             *
-  * |          +---------------------+-----------------------+-----------------+---------+-----------+ <--thin-film*
-  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|    -up      *
-  * |          |░░░░░░metal_up ░░░░░░|  translucent base up  |  subsurface_up  |░░glossy-diffuse_up░░|             *
-  * |  ambient |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
-  * |  medium  +---------------------+-----------------------+-----------------+---------------------+             *
-  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
-  * |          |░░░░░░metal_down░░░░░| translucent base down | subsurface_down |░glossy-diffuse_down░|             *
-  * |          |░░░░░░░░░░░░░░░░░░░░░|                       |                 |░░░░░░░░░░░░░░░░░░░░░|             *
-  * |          +---------------------+-----------------------+-----------------+---------+-----------+ <--thin-film*
-  * |          |                                    coat_down                            |           |    -down    *
-  * |          +-------------------------------------------------------------------------|-----------+             *
-  * |          |                                    fuzz_down                            |           |         down*
-  * +----------+-------------------------------------------------------------------------|-----------+         |   *
-  *                                                                                      v emission_down       v   *
-  ******************************************************************************************************************
-  <div class="shifted-caption">
-     ![Figure [double-sided-thin-wall]: Double-sided interpretation of the thin-walled mode.](dummy)
- </div>
-
 
 
 (insert parametrization.md.html here)
@@ -1295,19 +1241,21 @@ References
 [#McDermott2018]: Wes McDermott. *The PBR Guide*, Allegorithmic white paper (2018).
 <!-- dead link:  https://www.allegorithmic.com/pbr-guide -->
 
+[#Neubelt13]: David Neubelt, Matt Pettineo. *Crafting a Next-Gen Material Pipeline for The Order: 1886*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2013).
+
+[#Pharr2023]: Matt Pharr, Wenzel Jakob and Greg Humphreys. *Physically Based Rendering (4th edition)* (2023).
+
 [#Polyanskiy2023]: Mikhail N. Polyanskiy. *Refractive Index Database* https://refractiveindex.info/ (2023).
 
-[#Smythe2021]: Doug Smythe and Jonathan Stone. *MaterialX: An Open Standard for Network-Based CG Object Looks*, https://materialx.org
+[#Schott2023]: SCHOTT. *Interactive Abbe Diagram* https://www.schott.com/en-gb/interactive-abbe-diagram (2023).
 
-[#Neubelt13]: David Neubelt, Matt Pettineo. *Crafting a Next-Gen Material Pipeline for The Order: 1886*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2013).
+[#Smythe2021]: Doug Smythe and Jonathan Stone. *MaterialX: An Open Standard for Network-Based CG Object Looks*, https://materialx.org
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
 
 [#Zeltner2018]: Tizian Zeltner and Wenzel Jakob. *The Layer Laboratory: A Calculus for Additive and Subtractive Composition of Anisotropic Surface Reflectance*, ACM Transactions on Graphics (2018).
 
 [#Zeltner2022]: Tizian Zeltner, Brent Burley, and Matt Jen-Yuan Chiang. *Practical Multiple-Scattering Sheen Using Linearly Transformed Cosines*, ACM SIGGRAPH Talks (2022).
-
-[#Pharr2023]: Matt Pharr, Wenzel Jakob and Greg Humphreys. *Physically Based Rendering (4th edition)* (2023).
 
 
 
