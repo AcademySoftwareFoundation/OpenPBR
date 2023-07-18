@@ -55,6 +55,9 @@ Enforcing a particular implementation would make the use of the material model i
 Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that a given renderer may not support accurate subsurface scattering for example, or that anisotropic coating may be too expensive for VR, etc. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't. For example, a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect.
 In both cases, the important consideration is that the implementation respects the intent of the material. To that end, we make our best effort to describe as unambiguously as possible the material model, its physical layout, and the behavior of the parameters that control its properties.
 
+!!! WARNING
+   The question of a reference renderer is still pending. It is quite possible that the MaterialX implementation may become the reference one.
+   There is also the question of possibly wanting a renderer to document its set of supported features.
 
 Formalism
 ============================================
@@ -137,7 +140,7 @@ Layering
 
 The layer operation generates a composite material by depositing a slab $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$ (or composite material), conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$, so that $V_\mathrm{coat}$ becomes the adjacent medium above the microsurface of $S_\mathrm{sub}$. 
 
-The physical act of bringing the two independent slabs $S_\mathrm{sub}$ and $S_\mathrm{coat}$ together and bonding them produces a new, "vertically" heterogeneous composite material $L$ denoted
+The physical act of bringing the two independent slabs $S_\mathrm{sub}$ and $S_\mathrm{coat}$ together and bonding them produces a new composite material $L$ which is "vertically" heterogeneous on the mesoscopic scale, denoted by:
 \begin{equation}
 L = \mathrm{layer}(S_\mathrm{sub}, S_\mathrm{coat}) \ .
 \end{equation}
@@ -205,6 +208,9 @@ where $T_\mathrm{coat}(\omega_i, \omega_o)$ accounts for the total volumetric ab
 
 In general we will not specify particular such approximations which we favor, and instead aim to make it as clear as possible what the underlying basic physical structure is and leave it to each implementation to decide how best to approximate this for its particular use case.
 
+!!! WARNING
+   The more physically accurate layering models of [#Jakob2014], [#Belcour2018], and [#Zeltner2018] could be mentioned here as possible implementations. Though whether any of these is currently practical in the context of production rendering is open to question.
+
 
 Mixing
 -------------------------------------
@@ -212,14 +218,12 @@ Mixing
 Many real-world objects are made of several different materials arranged in patches, e.g. metal and oxide regions on a rusty object, and it is convenient to model the appearance of such objects by texturing the type of each material on their surfaces. While the material transitions are typically abrupt in reality, the ability to continuously mix materials is useful for artistic purposes as well as for anti-aliasing.
 
 The mix operation models this as a linear blend between two materials at the mesoscopic level. The physical picture is that the mesosurface consists of randomly distributed patches of each material in proportion to the blend weight, which thus exhibits heterogeneity in the "horizontal" direction. 
-
 The mix operation of two slabs $S_0$ and $S_1$ with weight $w_1$, generating a new “horizontally” heterogeneous composite material $M$, is denoted:
 \begin{equation}
 M = \mathrm{\mathbf{mix}}(S_0, S_1, w_1)
 \end{equation}
 where the $M \rightarrow S_0$ as $w_1 \rightarrow 0$, and $M \rightarrow S_1$ as $w_1 \rightarrow 1$.
-
-Diagrammatically, we represent the mix as putting the two slabs horizontally adjacent, where the intention is that one should imagine the physical slabs lying adjacent at the same surface level, though randomly distributed in microscopic patches with relative area in proportion to the given mix weight.
+Diagrammatically, we represent the mix as putting the two slabs horizontally adjacent, where the intention is that one should imagine the physical slabs lying adjacent at the same surface level, though randomly distributed in mesoscopic patches with relative area in proportion to the given mix weight.
 
 ************************************************************
 *                1 - w1              w1                    *
@@ -232,15 +236,12 @@ Diagrammatically, we represent the mix as putting the two slabs horizontally adj
 ************************************************************
 
 The mix operation is also used to describe the probability that a particular layer structure exists in the material at a particular point. For example a coating $S_\mathrm{coat}$ may cover the substrate layers $S_\mathrm{sub}$, but be intermittent and applied only to some fraction $w_\mathrm{coat}$ (the coat "presence" or "coverage" weight) of the substrate. This would be specified as
-
 \begin{equation}
 \mathrm{\mathbf{mix}}(S_\mathrm{sub}, \mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}), w_\mathrm{coat}) \ .
 \end{equation}
-
 For convenience this may also be written more concisely as an weighted layer operator which covers a given fraction of the substrate with the coat layer:
-
 \begin{equation}
-\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat})
+\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat}) \ .
 \end{equation}
 
 *******************************************
@@ -263,7 +264,7 @@ The implementation of the mix operation in a renderer depends on how the materia
 f_\mathrm{mix} = (1 - w_1) f_0 + w_1 f_1 \ .
 \end{equation}
 
-In the case of the weighted layer operation, if the BSDFs of the substrate is $f_\mathrm{sub}$ then $\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat})$ maps to
+In the case of the weighted layer operation, if the BSDF of the substrate is $f_\mathrm{sub}$ then $\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat})$ maps to
 \begin{equation}
 f_\mathrm{weighted-layer} = (1 - w_\mathrm{coat}) f_\mathrm{sub} + w_\mathrm{coat} f_\mathrm{layer}
 \end{equation}
@@ -272,7 +273,7 @@ If we use the non-reciprocal albedo scaling approach described in the Layering s
 \begin{equation}
 f_\mathrm{layer} = f_\mathrm{coat} +  T_\mathrm{coat} \left(1 - E_\mathrm{coat}\right) \,f_\mathrm{sub}
 \end{equation}
-where $f_\mathrm{coat}$ is the BSDF of the coat. Thus combining these [^lerp],
+where $f_\mathrm{coat}$ is the BSDF of the coat and $T_\mathrm{coat}$ is its transmittance. Thus combining these [^lerp],
 \begin{equation}
 f_\mathrm{weighted-layer} = w_\mathrm{coat} f_\mathrm{coat} +  \mathrm{lerp}\left(1,  T_\mathrm{coat} (1 - E_\mathrm{coat}),  w_\mathrm{coat}\right) f_\mathrm{sub} \ ,
 \end{equation}
@@ -283,10 +284,6 @@ In this fashion the abstract mix and layer operations can be mapped to a more co
 !!! WARNING
    In practice we will most likely defer to the MaterialX implementation of the OpenPBR Surface model to define exactly how this mapping to a mixture model is done.
    There is work to do to properly motivate and describe how the correspondence is made from this spec to MaterialX. This may require adding new functionality to MaterialX.
-
-!!! WARNING
-   The question of a reference renderer is still pending. It is quite possible that the MaterialX implementation may become the reference one.
-   There is also the question of possibly wanting a renderer to document its set of supported features.
 
 
 Emission model
