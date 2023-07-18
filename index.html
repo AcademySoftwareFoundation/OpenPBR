@@ -11,6 +11,12 @@
 
 This document is a draft specification of a surface shading model: the OpenPBR Surface model. Designed as a über-surface, it aims to be capable of accurately modeling the vast majority of CG materials used in practical visual effects and feature animation productions. The model has been developed as a synthesis of the Autodesk Standard Surface and the Adobe Standard Material models.
 
+!!! WARNING
+   This document is still a work-in-progress. To facilitate discussion, we flag various currently open questions in yellow boxes like this.
+
+!!! Tip
+   These green boxes flag areas where the spec needs more work, where there it is clear what remains to be done.
+
 
 Historical background and objectives
 ============================================
@@ -46,9 +52,9 @@ Since the model is simply a physical description of this material structure, in 
 However we want this material model to be renderable on a wide range of platforms, from offline path tracers all the way to game engines on mobile devices.
 Enforcing a particular implementation would make the use of the material model impractical for certain classes of renderers, and ultimately make the model less useful. For this reason we consider the choice of a specific implementation to be outside the scope of this specification. For convenience and efficiency, at present it is most likely to be mapped (as outlined in the Layering section and Mixing section below) to a model consisting of a mixture of BSDF lobes similar to the Autodesk Standard Surface shader [#Georgiev2019].
 
-!!! Tip
-      TODO: The question of a reference renderer is still pending. It is quite possible that the MaterialX implementation may become the reference one.
-            There is also the question of possibly wanting a renderer to document its set of supported features.
+!!! WARNING
+      The question of a reference renderer is still pending. It is quite possible that the MaterialX implementation may become the reference one.
+      There is also the question of possibly wanting a renderer to document its set of supported features.
 
 
 When a particular implementation of some aspect is widely adopted we suggest it, and when an accurate solution can be prohibitively costly we also suggest alternative approximations. But in the end, it is up to the developer to choose the appropriate implementation for their use case, based on their practical constraints and the level of visual quality they are aiming for.
@@ -289,7 +295,7 @@ which, for example, is the formula used in the Autodesk Standard Surface [#Georg
 
 In this fashion the abstract mix and layer operations can be mapped to a more computationally convenient representation in terms of a weighted sum of BSDF lobes.
 
-!!! Tip
+!!! WARNING
    In practice we will most likely defer to the MaterialX implementation of the OpenPBR Surface model to define exactly how this mapping to a mixture model is done.
 
 
@@ -303,7 +309,7 @@ As for the BSDFs, we remain agnostic about the specific functional form of the E
 
 Emissive properties are expressed in photometric units, since reference values are widely available. The conversion to radiometric units is the responsibility of the renderer. For RGB renderers, a simple approximation is proposed in [#Lagarde2014].
 
-!!! Tip
+!!! WARNING
    There is an ongoing discussion in the [MaterialX](https://github.com/AcademySoftwareFoundation/MaterialX) and [USD](https://github.com/PixarAnimationStudios/OpenUSD) working groups regarding the description of lights and emissive objects. This part of the specification may be subject to change if it doesn't align with those standards.
 
 
@@ -324,7 +330,7 @@ However the parameters of the physical model that we describe do not specify all
 
 As in practice OpenPBR will be integrated within other transport protocols such as MaterialX and USD, the specific form and content of this metadata is outside the scope of this spec.
 
-!!! Tip
+!!! WARNING
    It is still an open question whether some of this metadata, or other metadata, should be specified as part of the OpenPBR model itself.
 
 
@@ -419,7 +425,7 @@ D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \left(\frac{\cos^2\phi_m}{\a
 $$
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 
-!!! Tip
+!!! WARNING
    GGX (originally "Ground Glass unknown" [#Walter2007]) is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed Generalized-Trowbridge-Reitz (GTR) which has an exponent $\gamma$, where GGX is the special case $\gamma=2$. This gives more control over the tail of the NDF. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
 
 The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0,1]$. We sugggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$, to preserve the average roughness regardless of the anisotropy (see Figure [ndf_anisotropy]). A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
@@ -435,7 +441,7 @@ $$
 ![Figure [ndf_anisotropy]: NDF shape as a function of roughness $r$ and anisotropy $a$.](images/anisotropy.png width=60%)
 
 
-!!! Tip
+!!! WARNING
    The exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet, and the formulation described needs validation from artists. Other possible parametrizations are worth considering.
    In some models, modifying the anisotropy has the effect of increasing the roughness along one axis, while reducing it along the other, so the average roughness is preserved. For example, [#Burley2012] propose the mapping
    $$
@@ -587,7 +593,7 @@ Specular params           | Label      | Type     | Range        | Default      
    ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.3, 1.5 (default)](dummy)
 </div>
 
-!!! Tip
+!!! WARNING
    TODO: Include some figure showing the effect of textured **`specular_ior_level`**, versus textured **`specular_weight`**
 
 
@@ -690,8 +696,8 @@ Subsurface params             | Label        | Type      | Range           | Def
 !!! Tip
    TODO: Give example renders of how the blend of diffuse/SSS is important for skin rendering (as in Adobe model docs)
 
-!!! Tip
-   TODO: Technically the anisotropy could be different in each channel, but we don't support this. Rationalize this?
+!!! WARNING
+   TODO: Technically the anisotropy could be different in each channel, but we don't support this.
 
 
 ### Translucent base
@@ -822,9 +828,6 @@ where $\bar{\mu} = \cos(82^\circ)$, and $\mathbf{F}(\bar{\mu})$ is the desired m
 \end{equation}
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of $\mathtt{specular\_weight}$ and $\mathtt{specular\_color}$. Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
-!!! Tip
-   TODO: Though, should we say that the tint can be a soft-max at the upper bound, i.e. $[0,1)$ range, to support "exotic" metals?
-
 Metal params              | Label      | Type     | Range        | Default         | Description
 --------------------------|------------|----------|:------------:|:---------------:|----------------------------------------------
 **`base_weight`**         | Weight     | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to **`base_color`**
@@ -837,11 +840,11 @@ Metal params              | Label      | Type     | Range        | Default      
 
 ![Figure [metal]: Metals produced (in **`base_metalness`=1** mode) by setting the **`base_color`** and **`specular_color`** parameters. From left to right: aluminium, copper, gold.](images/metals.jpg)
 
-!!! Tip
-   TODO: Though, should we say that the tint can be a soft-max at the upper bound, i.e. $[0,1)$ range, to support "exotic" metals?
+!!! WARNING
+   Should we allow the tint to be a soft-max at the upper bound, i.e. $[0,1)$ range, to support "exotic" metals?
 
-!!! Tip
-   TODO: The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately.
+!!! WARNING
+   The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately.
 
 
 
@@ -1111,8 +1114,8 @@ A convenient (though physically implausible) approximation of this is to assume 
 
 A more general interpretation would be to allow each side of the thin-wall to be defined by a distinct thin-walled OpenPBR Surface (one associated to the top, in the direction of the normal, and one to the bottom in the opposite direction) so that the thin base slabs meet in the middle. Then if there are different translucent base or subsurface parameters on each side, these need to be resolved somehow (e.g. the parameters could be blended, or the light transport could model the presence of the two distinct thin layers of dielectric). If this is supported, we assume it is dealt with in a renderer-specific fashion by assigning separate shaders to each side.
 
-!!! Tip
-      TODO: It is an open question as to what the best default intepretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
+!!! WARNING
+      TODO: It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
 
 In the thin-wall structure, the base slabs are interpreted as infinitesimally thin sheets, thus their behavior is assumed to change as follows:
 
