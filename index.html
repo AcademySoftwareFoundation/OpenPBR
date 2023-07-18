@@ -289,7 +289,7 @@ In this fashion the abstract mix and layer operations can be mapped to a more co
 Emission model
 -------------------------------------
 
-Each slab also has an emission distribution function (EDF) that comes along with the surface BSDF, though it corresponds by default to no emission at all. The EDF of the top/bottom surfaces specifies the emitted radiance from the slab into the positive/negative hemispheres. We will generally assume in this model that the emission is uniformly distributed in all directions into the hemisphere. The emission from the structure as a whole is then physically determined (in principle) by the propagation of this emitted light from the emitting slabs through their neighbors into the ambient space. 
+Each slab also has an emission distribution function (EDF) that comes along with the surface BSDF, though it corresponds by default to no emission at all. We will generally assume in this model that the emission is uniformly distributed in all directions into the hemisphere. The emission from the structure as a whole is then physically determined (in principle) by the propagation of this emitted light from the emitting slabs through their neighbors into the ambient space. 
 
 As for the BSDFs, we remain agnostic about the specific functional form of the EDFs, giving enough information from a verbal description combined with parameters to make the implementation reasonably unambiguous.
 
