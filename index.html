@@ -464,11 +464,7 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 
 - **`specular_rotation`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_rotation`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The rotation is normalized from 0° to 360° counterclockwise, with 0° being the original tangent vector direction. Note that the appearance of the specular highlight is identical between $[0, 0.5]$ and $[0.5, 1]$; this allows the preservation of value when converting to/from other models that support directional anisotropy.
 
-
 The single-scattering microfacet BRDF [above](microfacet_brdf_ss) does not conserve energy, as it neglects to account for  multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016], where the multiple bounces are explicitly modelled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
-
-
-
 
 
 Base Substrate
@@ -500,9 +496,9 @@ Thin-film params          | Label     | Type    | Range         | Default | Desc
 **`thin_film_thickness`** | Thickness | `float` | $ [0, 1000) $ | 0.0     | Thickness of the film in nanometers
 **`thin_film_ior`**       | IOR       | `float` | $ [1, 3)    $ | 1.5     | Refractive index of the film
 
-![](images/thin_film1.jpg width=99%) ![](images/thin_film2.jpg width=99%) ![](images/thin_film3.jpg width=99%)
+![](images/thin_film_0nm.png width=99%) ![](images/thin_film_300nm.png width=99%) ![](images/thin_film_600nm.png width=99%)
 <div class="shifted-caption">
-    ![Figure [thinfilm]: The effect of thin-film interference on a surface. From left to right: multi-tone car paint, soap bubbles, and burnt chrome.](dummy)
+   ![Figure [thinfilm]: **`thin_film_thickness`** varying from over 0, 500, 1000 nanometers](dummy)
 </div>
 
 
@@ -622,6 +618,13 @@ Glossy-diffuse params | Label     | Type     | Range        | Default         | 
 **`base_weight`**     | Weight    | `float`  | $ [0, 1]   $ | 1.0             | Scalar multiplier to **`base_color`**
 **`base_color`**      | Color     | `color3` | $ [0, 1)^3 $ | (0.8, 0.8, 0.8) | Reflection albedo color of $f_\mathrm{diffuse}$
 **`base_roughness`**  | Roughness | `float`  | $ [0, 1)   $ | 0.0             | Roughness of the diffuse lobe $f_\mathrm{diffuse}$
+
+
+![](images/glossy_diffuse_diffuseonly.png width=99%) ![](images/glossy_diffuse_speconly.png width=99%) ![](images/glossy_diffuse_sum.png width=99%)
+<div class="shifted-caption">
+    ![Figure [fuzz]: Wood rendered as glossy-diffuse, composed of diffuse lobe (left), spec lobe (middle), and their normalized sum.](dummy)
+</div>
+
 
 !!! Tip
    TODO: Explain why default `base_color` is (0.8,0.8,0.8)
@@ -1013,8 +1016,10 @@ Emission params          | Label     | Type     | Range           | Default     
 **`emission_luminance`** | Luminance | `float`  | $ [0, \infty] $ | 0.0             | Emission luminance, in cd/m^2 (aka. nits)
 **`emission_color`**     | Color     | `color3` | $ [0, 1]^3    $ | (1.0, 1.0, 1.0) | Emission color multiplier
 
-![Figure [emission]: Texture map representing hot lava connected to **`emission_color`**.](images/emission.jpg width=40%)
-
+![](images/emission_under_coat.png width=90% align=left) ![](images/emitting_lava.png width=90% align=right)
+<div class="shifted-caption">
+    ![Figure [coat]: Left: An emitting grid under a coat with absorption driven by the ring colors. Right: A texture map representing hot lava connected to **`emission_color`**.](dummy)
+</div>
 
 Opacity / Transparency
 -------------------------------------
