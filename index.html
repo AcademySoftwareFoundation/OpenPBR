@@ -209,7 +209,9 @@ In general we will not specify particular such approximations which we favor, an
 Mixing
 -------------------------------------
 
-The mix operation linearly blends two materials at the microsurface level. The physical picture is that the microsurface consists of randomly distributed patches of each material in proportion to the blend weight, which thus exhibits heterogeneity in the "horizontal" direction. Many real-world objects are made of several different materials, e.g. metal and plastic, and it is convenient to model the appearance of such objects by texturing the type of each material on their surfaces. While the material transitions are typically abrupt, the ability to continuously mix materials is useful for artistic purposes as well as for anti-aliasing.
+Many real-world objects are made of several different materials arranged in patches, e.g. metal and oxide regions on a rusty object, and it is convenient to model the appearance of such objects by texturing the type of each material on their surfaces. While the material transitions are typically abrupt in reality, the ability to continuously mix materials is useful for artistic purposes as well as for anti-aliasing.
+
+The mix operation models this as a linear blend between two materials at the mesoscopic level. The physical picture is that the mesosurface consists of randomly distributed patches of each material in proportion to the blend weight, which thus exhibits heterogeneity in the "horizontal" direction. 
 
 The mix operation of two slabs $S_0$ and $S_1$ with weight $w_1$, generating a new “horizontally” heterogeneous composite material $M$, is denoted:
 \begin{equation}
