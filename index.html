@@ -595,8 +595,8 @@ Specular params           | Label      | Type     | Range        | Default      
    ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.3, 1.5 (default)](dummy)
 </div>
 
-!!! WARNING
-   TODO: Include some figure showing the effect of textured **`specular_ior_level`**, versus textured **`specular_weight`**
+!!! Tip
+   Include some figure showing the effect of textured **`specular_ior_level`**, versus textured **`specular_weight`**
 
 
 ### Glossy-diffuse
@@ -643,7 +643,7 @@ Glossy-diffuse params | Label     | Type     | Range        | Default         | 
 
 
 !!! Tip
-   TODO: Explain why default `base_color` is (0.8,0.8,0.8)
+   Explain why default `base_color` is (0.8,0.8,0.8)
 
 
 
@@ -694,7 +694,7 @@ Implementations may choose to compute light transport in the subsurface medium e
    The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here are just what is available in the current papers, but make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface. 
 
 !!! WARNING
-   TODO: Technically, the anisotropy could be different in each channel, but we don't support this (also it could be problematic to implement).
+   Technically, the anisotropy could be different in each channel, but we don't support this (also it could be problematic to implement).
 
 
 Subsurface params             | Label        | Type      | Range           | Default         | Description
@@ -711,10 +711,10 @@ Subsurface params             | Label        | Type      | Range           | Def
 </div>
 
 !!! Tip
-   TODO: Renders showing the effect of the parameters with the proposed remapping (particularly the anisotropy).
+   Show renders of the effect of the parameters with the proposed remapping (particularly the anisotropy).
 
 !!! Tip
-   TODO: Give example renders of how the blend of glossy-diffuse and subsurface (via the **`subsurface_weight`**) can be important for skin rendering (as in the Adobe model docs)
+   Give example renders of how the blend of glossy-diffuse and subsurface (via the **`subsurface_weight`**) can be important for skin rendering (as in the Adobe model docs)
 
 
 ### Translucent base
@@ -1156,7 +1156,7 @@ A convenient approximation of this is to assume that the surface is automaticall
 A more general interpretation would be to allow each side of the thin-wall to be defined by a distinct thin-walled OpenPBR Surface (one associated to the top, in the direction of the normal, and one to the bottom in the opposite direction) so that the thin base slabs meet in the middle. Then if there are different translucent base or subsurface parameters on each side, these need to be resolved somehow (e.g. the parameters could be blended, or the light transport could model the presence of the two distinct thin layers of dielectric). If this is supported, we assume it is dealt with in a renderer-specific fashion by assigning separate shaders to each side.
 
 !!! WARNING
-      TODO: It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
+      It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
 
 In the thin-wall structure, the base slabs are interpreted as infinitesimally thin sheets, thus their behavior is assumed to change as follows:
 
