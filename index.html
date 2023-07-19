@@ -1000,7 +1000,7 @@ Conceptually the fibers will cover only some fraction of the surface, which is r
 * +-------------------------------------------------+ *
 *******************************************************
 
-The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution (based for example on [#Kutz2021], [#Zeltner2022]). We assume that this representation has these basic characteristics:
+The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution (based for example on [#Heitz2015], [#Kutz2021], [#Zeltner2022]). We assume that this representation has these basic characteristics:
 
 - has a fixed unit optical thickness (which makes it more practical to do fitting of the multiple-scattering-BRDF to enable efficient evaluation and importance sampling)
 - has microflakes that are perfectly specular and opaque with a single-scattering albedo that produces the **`fuzz_color`** after multiple scattering
@@ -1010,6 +1010,9 @@ One practical model is the approach of [#Estevez2017] where the layer is treated
 
 !!! WARNING
    The specification of unit optical thickness does not map in an obvious way to the microfacet interpretation. A more detailed description of the form of the model, in some approximation, could be helpful. Also, it seems perhaps restrictive to set the transmittance of the layer to a specific value (so that the fuzz layer can never completely occlude the underlying substrate at any point).
+
+!!! WARNING
+   If fuzz is often used to represent a layer of fine dust, it might be useful to have richer control over the NDF/anisotropy representing the shape of the dust grains. (For example via the SGGX microflake model [#Heitz2015]).
 
 Fuzz params          | Label     | Type     | Range        | Default         | Description
 ---------------------|-----------|----------|:------------:|:---------------:|----------------------------------------------
@@ -1191,14 +1194,18 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
       ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** subsurface (right)](dummy)
 </div>
 
-
 !!! Tip
    Show images of the thin wall translucent slab (rough stained glass windows for example).
 
 
 
+<!--
+Parameter reference
+================================================================================
+-->
 
 (insert parametrization.md.html here)
+
 
 
 Conclusion
@@ -1245,6 +1252,8 @@ References
 [#Heitz2014a]: Eric Heitz, Eugene d’Eon. *Importance Sampling Microfacet-Based BSDFs using the Distribution of Visible Normals*, Computer Graphics Forum (2014).
 
 [#Heitz2014b]: Eric Heitz. *Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs*, Journal of Computer Graphics Techniques (2014).
+
+[#Heitz2015]: Eric Heitz, Jonathan Dupuy, Cyril Crassin, Carsten Dachsbacher. *The SGGX microflake distribution*, ACM Transactions on Graphics (2015).
 
 [#Heitz2016]: Eric Heitz, Johannes Hanika, Eugene d’Eon and Carsten Dachsbacher. *Multiple-Scattering Microfacet BSDFs with the Smith Model*, ACM Transactions on Graphics (2016).
 
