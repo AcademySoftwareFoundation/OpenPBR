@@ -52,7 +52,7 @@ Since the model is simply a physical description of this material structure, in 
 However we want this material model to be renderable on a wide range of platforms, from off-line path tracers all the way to real-time game engines on mobile devices.
 Enforcing a particular implementation would make the use of the material model impractical for certain classes of renderers, and ultimately make the model less useful. For this reason we consider the choice of a specific implementation to be outside the scope of this specification. For convenience and efficiency, at present it is most likely to be mapped (as outlined in the Layering section and Mixing section below) to a model consisting of a mixture of BSDF lobes similar to the Autodesk Standard Surface shader [#Georgiev2019]. When a particular implementation of some aspect is widely adopted we suggest it, and when an accurate solution can be prohibitively costly we also suggest alternative approximations. But in the end, it is up to the developer to choose the appropriate implementation for their use case, based on their practical constraints and the level of visual quality they are aiming for.
 
-Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that a given renderer may not support accurate subsurface scattering for example, or that anisotropic coating may be too expensive for VR, etc. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't. For example, a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect.
+Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that a given renderer may not support accurate subsurface scattering for example, or that anisotropic coating may be too expensive for VR (Virtual Reality), etc. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't. For example, a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect.
 In both cases, the important consideration is that the implementation respects the intent of the material. To that end, we make our best effort to describe as unambiguously as possible the material model, its physical layout, and the behavior of the parameters that control its properties.
 
 !!! WARNING
@@ -407,7 +407,7 @@ A microfacet BRDF has the standard form [^Jacobian] ([#Walter2007], [#Pharr2023]
 $$ \label{microfacet_brdf_ss}
 f(\omega_i, \omega_o) \propto F(\omega_i, h) \; D(h) \; G(\omega_i, \omega_o)
 $$
-where $h = (\omega_i+\omega_o)/|(\omega_i+\omega_o|$ is the half-vector, i.e. the micronormal which mirror reflects $\omega_i$ into $\omega_o$. For dielectrics there is also a BTDF, i.e. the portion of the BSDF where the input and output directions lie in opposite rather than the same hemispheres, which has a similar form to the BRDF (except with a modified half-vector and Fresnel factor) [#Walter2007].
+where $h = (\omega_i+\omega_o)/|\omega_i+\omega_o|$ is the half-vector, i.e. the micronormal which mirror reflects $\omega_i$ into $\omega_o$. For dielectrics there is also a BTDF, i.e. the portion of the BSDF where the input and output directions lie in opposite rather than the same hemispheres, which has a similar form to the BRDF (except with a modified half-vector and Fresnel factor) [#Walter2007].
 
 The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metallic base section. The "masking-shadowing" function $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the "Smith" model which determines $G$ given the NDF, and for the GGX NDF (below) the masking-shadowing function then has a well-known form [#Heitz2014b].
 
@@ -433,7 +433,7 @@ which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 !!! WARNING
    GGX (originally "Ground Glass unknown" [#Walter2007]) is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed Generalized-Trowbridge-Reitz (GTR) which has an exponent $\gamma$, where GGX is the special case $\gamma=2$. This gives more control over the tail of the NDF. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
 
-The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0,1]$. We sugggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$, to preserve the average roughness regardless of the anisotropy (see Figure [ndf_anisotropy]). A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
+The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0,1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$, to preserve the average roughness regardless of the anisotropy (see Figure [ndf_anisotropy]). A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
 $$
 \left\{
 \begin{aligned}
@@ -754,7 +754,7 @@ This formulation produces volumetric parameters which reproduce reasonably well 
 !!! WARNING
    The use of **`transmission_depth`** to control the medium extinction is arguably unintuitive, compared to its inverse, the medium density (which is standard in heterogeneous volume rendering). The use of **`transmission_depth`** also requires that depth zero be considered a special case corresponding to zero (rather than infinite) extinction, which is a bit clumsy.
    Also if we used **`transmission_density`** then the volume could be enabled with a single change to this density slider (by making **`transmission_color`** grey), instead of the two changes currently required (i.e. one has to make **`transmission_depth`** non-zero, and then make **`transmission_color`** non-white).
-   However if we used **`transmission_density`** instead, the tinting behaviour in the depth zero case would have to be removed. This tinting behaviour is not physically sensible for a non-thin-walled surface though, so perhaps this is fine to remove.
+   However if we used **`transmission_density`** instead, the tinting behavior in the depth zero case would have to be removed. This tinting behavior is not physically sensible for a non-thin-walled surface though, so perhaps this is fine to remove.
 
 !!! WARNING
    The Henyey-Greenstein phase function is not ideal for representing media with both forward and back scattering lobes (as in the Mie phase function). We might consider a richer model such as a dual-lobe approximation as in Arnold volumes.
@@ -797,7 +797,7 @@ At the default **`transmission_dispersion_scale`** of zero, the Abbe number is i
 </div>
 
 !!! WARNING
-   If the translucent base is entered, and the ray emerges at another point where the metal or glossy-diffuse base is present, then it would be convenient to make the assumption that the opaque base consists of thin "flakes" or "foil" of thin opaque material on top of the dielectric, and reflect the ray accordingly. This would allow for the rendering of e.g. metallic foil on glass, viewed from the back-side of the glass. Presumably the base would be considered to be a mirrored thin-wall, as in the symmetric intepretation of the thin-wall mode.
+   If the translucent base is entered, and the ray emerges at another point where the metal or glossy-diffuse base is present, then it would be convenient to make the assumption that the opaque base consists of thin "flakes" or "foil" of thin opaque material on top of the dielectric, and reflect the ray accordingly. This would allow for the rendering of e.g. metallic foil on glass, viewed from the back-side of the glass. Presumably the base would be considered to be a mirrored thin-wall, as in the symmetric interpretation of the thin-wall mode.
 
 
 !!! WARNING
@@ -1002,7 +1002,7 @@ The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be deri
 - has microflakes that are perfectly specular and opaque with a single-scattering albedo that produces the **`fuzz_color`** after multiple scattering
 - any light not reflected after multiple scattering is assumed to transmit to the lower layers (because the microflake volume has gray extinction, the transmitted light will not be tinted by the fuzz)
 
-One practical model is the approach of [#Estevez2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the unreflected light is assumed to transmit through to the base layers. The form of this is the same as the approximate microflake model of [#Kutz2021].
+One practical model is the approach of [#Estevez2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the light not reflected is assumed to transmit through to the base layers. The form of this is the same as the approximate microflake model of [#Kutz2021].
 
 !!! WARNING
    The specification of unit optical thickness does not map in an obvious way to the microfacet interpretation. A more detailed description of the form of the model, in some approximation, could be helpful. Also, it seems perhaps restrictive to set the transmittance of the layer to a specific value (so that the fuzz layer can never completely occlude the underlying substrate at any point).
@@ -1148,7 +1148,7 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
 
    - As noted above, **`geometry_opacity`** makes physical sense as a fractional value in the thin-walled case (unlike the bulk case), controlling the overall presence weight of the thin wall.
 
-   - The $\textrm{metal}$ and $\textrm{glossy-diffuse}$ slabs remain but are considered double-sided, with the top BSDF mirrored to the bottom (and a totally opaque, albeit infinitesimally thin, interior)
+   - The $\textrm{metal}$ and $\textrm{glossy-diffuse}$ slabs remain but are considered double-sided, with the top BSDF mirrored to the bottom (and a totally opaque, albeit infinitesimally thin, interior).
 
    - The $\textrm{translucent-base}$ slab can be considered an infinitesimally thin sheet of dielectric (absorbing but non-scattering), with the BSDF $f_\mathrm{dielectric}$ on both sides. A ladder of inter-reflections occurs inside this slab producing a reflected lobe and un-deflected refracted lobe. The **`transmission_color`** can be assumed to give the absorption transmittance through the thin sheet at normal incidence. In the smooth case the BRDF and BTDF of this sheet can be solved exactly by summing over a geometrical series of terms containing Fresnel and absorption factors, and this can be extended to a good approximation of the rough case by appropriately roughening the transmission lobe (as described in [#Kulla2017]). This model of thin-walled glass is a cheaper, much more convenient way to render windows than a finite thickness non-thin-walled mesh.
 
