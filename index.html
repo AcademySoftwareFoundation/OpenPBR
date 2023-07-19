@@ -698,6 +698,9 @@ Implementations may choose to compute light transport in the subsurface medium e
    The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here are just what is available in the current papers, but make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface. 
 
 !!! WARNING
+   Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, though we didn't make this explicit.
+
+!!! WARNING
    Technically, the anisotropy could be different in each channel, but we don't support this (also it could be problematic to implement).
 
 
