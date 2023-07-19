@@ -804,6 +804,11 @@ At the default **`transmission_dispersion_scale`** of zero, the Abbe number is i
 !!! Tip
    A discussion of how dispersion is implemented typically, in a non-spectral renderer.
 
+![](images/dispersion_0percent.png width=99%) ![](images/dispersion_25percent.png width=99%) ![](images/dispersion_50percent.png width=99%) ![](images/dispersion_75percent.png width=99%) ![](images/dispersion_100percent.png width=99%)
+<div class="shifted-caption">
+      ![Figure [fuzz]: Increasing the **`transmission_dispersion_scale`** of glass from 0 to 1](dummy)
+</div>
+
 !!! WARNING
    If the translucent base is entered, and the ray emerges at another point where the metal or glossy-diffuse base is present, then it would be convenient to make the assumption that the opaque base consists of thin "flakes" or "foil" of thin opaque material on top of the dielectric, and reflect the ray accordingly. This would allow for the rendering of e.g. metallic foil on glass, viewed from the back-side of the glass. Presumably the base would be considered to be a mirrored thin-wall, as in the symmetric intepretation of the thin-wall mode.
 
@@ -883,7 +888,10 @@ Metal params              | Label      | Type     | Range        | Default      
 !!! Tip
    Show nicer images of the behavior of the F82 model.
 
-![Figure [metal]: Metals produced (in **`base_metalness`=1** mode) by setting the **`base_color`** and **`specular_color`** parameters. From left to right: aluminium, copper, gold.](images/metals.jpg)
+![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
+<div class="shifted-caption">
+![Figure [metal]: Metals produced (in **`base_metalness`=1** mode) by setting only the **`base_color`** parameter (left) compared with metals produced by correctly setting both the **`base_color`** and **`specular_color`** parameters (right)](dummy)
+</div>
 
 
 Coat
