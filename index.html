@@ -1085,7 +1085,7 @@ where **`geometry_opacity`** is the presence weight of the entire surface, thus 
 Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) the opacity has a clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$) like in the leaf render below.
 
 !!! WARNING
-      It is arguable therefore that $\mathtt{geometry\_opacity}$ is only useful in the non-thin-walled case, and could be disabled/removed in the bulk case.
+      It is arguable therefore that $\mathtt{geometry\_opacity}$ is only useful in the thin-walled case, and could be disabled/removed in the bulk case. Though perhaps it is still useful in the bulk case, to do (non-physical) effects that would otherwise require compositing, like a fade-in, a ghost or a holographic display?
 
 We generally leave it as an implementation detail for a renderer to determine how connections to light sources be made through the surface. However a very common approximation used by many renderers is "transparent shadows", where a straight-line connection is made to lights and the contribution of the light determined by the total transmittance along the ray, ignoring any refraction events. We give here a suggested form for this shadow ray transmittance.
 
