@@ -523,6 +523,10 @@ Thin-film params          | Label     | Type    | Range         | Default | Desc
    ![Figure [thinfilm]: **`thin_film_thickness`** varying over 0, 500, 1000 nanometers](dummy)
 </div>
 
+!!! WARNING
+   For the images generally, should we include some more systematic wedges of the parameter effects (perhaps done concisely using grids of shader balls)? Or is it sufficient to just include some limited examples for the purposes of orientation and explanation, as in the current document?
+
+
 
 Dielectric base
 -------------------------------------
@@ -596,8 +600,8 @@ Specular params           | Label      | Type     | Range        | Default      
    ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.3, 1.5 (default)](dummy)
 </div>
 
-!!! WARNING
-   TODO: Include some figure showing the effect of textured **`specular_ior_level`**, versus textured **`specular_weight`**
+!!! Tip
+   Include some figure showing the effect of textured **`specular_ior_level`**, versus textured **`specular_weight`**
 
 
 ### Glossy-diffuse
@@ -644,7 +648,7 @@ Glossy-diffuse params | Label     | Type     | Range        | Default         | 
 
 
 !!! Tip
-   TODO: Explain why default `base_color` is (0.8,0.8,0.8)
+   Explain why default `base_color` is (0.8,0.8,0.8)
 
 
 
@@ -695,7 +699,10 @@ Implementations may choose to compute light transport in the subsurface medium e
    The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here are just what is available in the current papers, but make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface. 
 
 !!! WARNING
-   TODO: Technically, the anisotropy could be different in each channel, but we don't support this (also it could be problematic to implement).
+   Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, though we didn't make this explicit.
+
+!!! WARNING
+   Technically, the anisotropy could be different in each channel, but we don't support this (also it could be problematic to implement).
 
 
 Subsurface params             | Label        | Type      | Range           | Default         | Description
@@ -712,10 +719,10 @@ Subsurface params             | Label        | Type      | Range           | Def
 </div>
 
 !!! Tip
-   TODO: Renders showing the effect of the parameters with the proposed remapping (particularly the anisotropy).
+   Show renders of the effect of the parameters with the proposed remapping (particularly the anisotropy).
 
 !!! Tip
-   TODO: Give example renders of how the blend of glossy-diffuse and subsurface (via the **`subsurface_weight`**) can be important for skin rendering (as in the Adobe model docs)
+   Give example renders of how the blend of glossy-diffuse and subsurface (via the **`subsurface_weight`**) can be important for skin rendering (as in the Adobe model docs)
 
 
 ### Translucent base
@@ -997,7 +1004,7 @@ Conceptually the fibers will cover only some fraction of the surface, which is r
 * +-------------------------------------------------+ *
 *******************************************************
 
-The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution (based for example on [#Kutz2021], [#Zeltner2022]). We assume that this representation has these basic characteristics:
+The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution (based for example on [#Heitz2015], [#Kutz2021], [#Zeltner2022]). We assume that this representation has these basic characteristics:
 
 - has a fixed unit optical thickness (which makes it more practical to do fitting of the multiple-scattering-BRDF to enable efficient evaluation and importance sampling)
 - has microflakes that are perfectly specular and opaque with a single-scattering albedo that produces the **`fuzz_color`** after multiple scattering
@@ -1007,6 +1014,9 @@ One practical model is the approach of [#Estevez2017] where the layer is treated
 
 !!! WARNING
    The specification of unit optical thickness does not map in an obvious way to the microfacet interpretation. A more detailed description of the form of the model, in some approximation, could be helpful. Also, it seems perhaps restrictive to set the transmittance of the layer to a specific value (so that the fuzz layer can never completely occlude the underlying substrate at any point).
+
+!!! WARNING
+   If fuzz is often used to represent a layer of fine dust, it might be useful to have richer control over the NDF/anisotropy representing the shape of the dust grains. (For example via the SGGX microflake model [#Heitz2015]).
 
 Fuzz params          | Label     | Type     | Range        | Default         | Description
 ---------------------|-----------|----------|:------------:|:---------------:|----------------------------------------------
@@ -1018,6 +1028,9 @@ Fuzz params          | Label     | Type     | Range        | Default         | D
 <div class="shifted-caption">
     ![Figure [fuzz]: Various textiles rendered using fuzz.](dummy)
 </div>
+
+!!! Tip
+   Show some images of the fuzz layer being used to represent "dust".
 
 
 Emission
@@ -1076,6 +1089,9 @@ where **`geometry_opacity`** is the presence weight of the entire surface, thus 
 
 Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) the opacity has a clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$) like in the leaf render below.
 
+!!! WARNING
+      It is arguable therefore that $\mathtt{geometry\_opacity}$ is only useful in the thin-walled case, and could be disabled/removed in the bulk case. Though perhaps it is still useful in the bulk case, to do (non-physical) effects that would otherwise require compositing, like a fade-in, a ghost or a holographic display?
+
 We generally leave it as an implementation detail for a renderer to determine how connections to light sources be made through the surface. However a very common approximation used by many renderers is "transparent shadows", where a straight-line connection is made to lights and the contribution of the light determined by the total transmittance along the ray, ignoring any refraction events. We give here a suggested form for this shadow ray transmittance.
 
 The computed transmittance should take into account the presence weight of the entire geometry (**`geometry_opacity`**), and the transmittance through the geometry if present. The latter is the transmittance through the base dielectric only (as the metal is opaque), denoted $\mathbf{T}_\mathrm{dielectric}$, which should take into account the Fresnel factor of the dielectric interface and the extinction in the volumetric media  (in general a statistical mixture of the subsurface medium $V^\infty_\mathrm{subsurface}$ and translucent base medium $V^\infty_\mathrm{dielectric}$).
@@ -1112,6 +1128,14 @@ The **`geometry_tangent`** may also be specified, which controls the direction o
 
 The perturbed normals and tangent will of course be specified by input textures (or possibly procedurally). As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
 
+!!! WARNING:
+   An alternative representation to normal maps is bump maps (i.e. heightfields). Should this be explicitly supported, or is it sufficient to assume that bump maps are converted into normals before passing to the shader?
+
+!!! WARNING:
+   How the base and coat normal maps are composed is not specified, but perhaps it needs to be?
+
+!!! Tip
+   Some images to show the effect of the base and coat normals (separately and together) would be helpful.
 
 
 Thin-walled case
@@ -1144,7 +1168,7 @@ A convenient approximation of this is to assume that the surface is automaticall
 A more general interpretation would be to allow each side of the thin-wall to be defined by a distinct thin-walled OpenPBR Surface (one associated to the top, in the direction of the normal, and one to the bottom in the opposite direction) so that the thin base slabs meet in the middle. Then if there are different translucent base or subsurface parameters on each side, these need to be resolved somehow (e.g. the parameters could be blended, or the light transport could model the presence of the two distinct thin layers of dielectric). If this is supported, we assume it is dealt with in a renderer-specific fashion by assigning separate shaders to each side.
 
 !!! WARNING
-      TODO: It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
+      It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
 
 In the thin-wall structure, the base slabs are interpreted as infinitesimally thin sheets, thus their behavior is assumed to change as follows:
 
@@ -1175,9 +1199,18 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
       ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** subsurface (right)](dummy)
 </div>
 
+!!! Tip
+   Show images of the thin wall translucent slab (rough stained glass windows for example).
 
+
+
+<!--
+Parameter reference
+================================================================================
+-->
 
 (insert parametrization.md.html here)
+
 
 
 Conclusion
@@ -1224,6 +1257,8 @@ References
 [#Heitz2014a]: Eric Heitz, Eugene d’Eon. *Importance Sampling Microfacet-Based BSDFs using the Distribution of Visible Normals*, Computer Graphics Forum (2014).
 
 [#Heitz2014b]: Eric Heitz. *Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs*, Journal of Computer Graphics Techniques (2014).
+
+[#Heitz2015]: Eric Heitz, Jonathan Dupuy, Cyril Crassin, Carsten Dachsbacher. *The SGGX microflake distribution*, ACM Transactions on Graphics (2015).
 
 [#Heitz2016]: Eric Heitz, Johannes Hanika, Eugene d’Eon and Carsten Dachsbacher. *Multiple-Scattering Microfacet BSDFs with the Smith Model*, ACM Transactions on Graphics (2016).
 
