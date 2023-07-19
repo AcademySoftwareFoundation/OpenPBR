@@ -1018,6 +1018,9 @@ Fuzz params          | Label     | Type     | Range        | Default         | D
     ![Figure [fuzz]: Various textiles rendered using fuzz.](dummy)
 </div>
 
+!!! Tip
+   Show some images of the fuzz layer being used to represent "dust".
+
 
 Emission
 -------------------------------------
@@ -1074,6 +1077,9 @@ where **`geometry_opacity`** is the presence weight of the entire surface, thus 
 
 Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) the opacity has a clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$) like in the leaf render below.
 
+!!! WARNING
+      It is arguable therefore that $\mathtt{geometry\_opacity}$ is only useful in the non-thin-walled case, and could be disabled/removed in the bulk case.
+
 We generally leave it as an implementation detail for a renderer to determine how connections to light sources be made through the surface. However a very common approximation used by many renderers is "transparent shadows", where a straight-line connection is made to lights and the contribution of the light determined by the total transmittance along the ray, ignoring any refraction events. We give here a suggested form for this shadow ray transmittance.
 
 The computed transmittance should take into account the presence weight of the entire geometry (**`geometry_opacity`**), and the transmittance through the geometry if present. The latter is the transmittance through the base dielectric only (as the metal is opaque), denoted $\mathbf{T}_\mathrm{dielectric}$, which should take into account the Fresnel factor of the dielectric interface and the extinction in the volumetric media  (in general a statistical mixture of the subsurface medium $V^\infty_\mathrm{subsurface}$ and translucent base medium $V^\infty_\mathrm{dielectric}$).
@@ -1110,6 +1116,14 @@ The **`geometry_tangent`** may also be specified, which controls the direction o
 
 The perturbed normals and tangent will of course be specified by input textures (or possibly procedurally). As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
 
+!!! WARNING:
+   An alternative representation to normal maps is bump maps (i.e. heightfields). Should this be explicitly supported, or is it sufficient to assume that bump maps are converted into normals before passing to the shader?
+
+!!! WARNING:
+   How the base and coat normal maps are composed is not specified, but perhaps it needs to be?
+
+!!! Tip
+   Some images to show the effect of the base and coat normals (separately and together) would be helpful.
 
 
 Thin-walled case
@@ -1172,6 +1186,11 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
 <div class="shifted-caption">
       ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** subsurface (right)](dummy)
 </div>
+
+
+!!! Tip
+   Show images of the thin wall translucent slab (rough stained glass windows for example).
+
 
 
 
