@@ -1049,10 +1049,11 @@ Emission params          | Label     | Type     | Range           | Default     
 **`emission_luminance`** | Luminance | `float`  | $ [0, \infty] $ | 0.0             | Emission luminance, in cd/m^2 (aka. nits)
 **`emission_color`**     | Color     | `color3` | $ [0, 1]^3    $ | (1.0, 1.0, 1.0) | Emission color multiplier
 
-![](images/emission_under_coat.png width=90% align=left) ![](images/emitting_lava.png width=90% align=right)
+![](images/emitting_lava.png width=90% align=left) ![](images/emission_under_coat.png width=90% align=right)
 <div class="shifted-caption">
-    ![Figure [coat]: Left: An emitting grid under a coat with absorption driven by the ring colors. Right: A texture map representing hot lava connected to **`emission_color`**.](dummy)
+    ![Figure [coat]: Left: A texture map representing hot lava connected to **`emission_color`**. Right: Emission from under an absorbing coat (driven by **`coat_color`**) acting like a dark mask with colored inserts.](dummy)
 </div>
+
 
 Opacity / Transparency
 -------------------------------------
