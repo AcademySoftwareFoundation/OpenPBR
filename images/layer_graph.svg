@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="112.57425mm"
+   height="115.72508mm"
+   viewBox="0 0 112.57425 115.72508"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="layer_graph.svg"
+   inkscape:export-filename="layer_graph.png"
+   inkscape:export-xdpi="500"
+   inkscape:export-ydpi="500"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="2.587745"
+     inkscape:cx="71.490817"
+     inkscape:cy="224.51981"
+     inkscape:window-width="2255"
+     inkscape:window-height="1479"
+     inkscape:window-x="515"
+     inkscape:window-y="1675"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <rect
+       x="295.38553"
+       y="389.65753"
+       width="19.674152"
+       height="12.023093"
+       id="rect7994" />
+    <rect
+       x="297.02505"
+       y="389.11102"
+       width="30.057734"
+       height="11.476589"
+       id="rect7916" />
+    <rect
+       x="216.41566"
+       y="223.79349"
+       width="65.307259"
+       height="19.4009"
+       id="rect3346" />
+    <rect
+       x="216.41566"
+       y="223.79349"
+       width="65.307259"
+       height="19.4009"
+       id="rect3346-1" />
+    <rect
+       x="216.41566"
+       y="223.79349"
+       width="65.307259"
+       height="19.4009"
+       id="rect3346-1-4" />
+    <rect
+       x="216.41566"
+       y="223.79349"
+       width="65.307259"
+       height="19.4009"
+       id="rect3346-7" />
+    <rect
+       x="216.41566"
+       y="223.79349"
+       width="65.307259"
+       height="19.4009"
+       id="rect3346-7-0" />
+    <rect
+       x="216.41566"
+       y="223.79349"
+       width="65.307259"
+       height="19.4009"
+       id="rect3346-7-0-6" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-49.518459,-6.0664569)">
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.264999;stroke-dasharray:none;stroke-opacity:1"
+       d="M 80.539922,67.743183 C 142.86076,117.55647 142.86076,117.55647 142.86076,117.55647"
+       id="path10419" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.264999;stroke-dasharray:none;stroke-opacity:1"
+       d="m 101.43403,20.749513 c 43.66796,31.377311 43.66796,31.377311 43.66796,31.377311"
+       id="path10421" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.264999;stroke-dasharray:none;stroke-opacity:1"
+       d="M 57.693768,85.311587 C 123.12342,36.293573 123.12342,36.293573 123.12342,36.293573"
+       id="path10417" />
+    <path
+       style="fill:#280b0b;stroke:#000000;stroke-width:0.265;stroke-dasharray:none;stroke-opacity:1"
+       d="m 101.76488,52.820543 22.34007,18.291382"
+       id="path3837-0-5-7"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:#280b0b;stroke:#000000;stroke-width:0.265;stroke-dasharray:none;stroke-opacity:1"
+       d="m 101.72322,21.038705 20.96641,14.965677"
+       id="path3837"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:#280b0b;stroke:#000000;stroke-width:0.265;stroke-dasharray:none;stroke-opacity:1"
+       d="M 101.69257,21.154039 77.689655,37.782569"
+       id="path3837-0-5-7-0"
+       sodipodi:nodetypes="cc" />
+    <g
+       id="g3515"
+       transform="translate(-4.771665,-33.401655)">
+      <circle
+         style="fill:#ffffff;fill-opacity:1;stroke:#03af00;stroke-width:0.465;stroke-opacity:1"
+         id="path1516"
+         cx="106.38644"
+         cy="54.331913"
+         r="4.8801117" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.17905376,0,0,0.19031662,65.250033,9.8333494)"
+         id="text3344"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
+           x="216.41602"
+           y="237.06633"
+           id="tspan17684"><tspan
+             style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
+             id="tspan17682">mix</tspan></tspan></text>
+    </g>
+    <path
+       style="fill:#280b0b;stroke:#000000;stroke-width:0.265;stroke-dasharray:none;stroke-opacity:1"
+       d="M 101.56755,84.877175 80.962633,103.16856"
+       id="path3837-0-5-7-0-5-9-1"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:#280b0b;stroke:#000000;stroke-width:0.265;stroke-dasharray:none;stroke-opacity:1"
+       d="m 122.89544,100.85502 -18.58057,17.42381"
+       id="path3837-0-5-7-0-5-9-1-4"
+       sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-size:18.3449px;fill:none;stroke:#03af00;stroke-width:3.75783;stroke-opacity:1"
+       x="102.17906"
+       y="81.936356"
+       id="text1676"
+       transform="scale(1.2209454,0.81903745)"><tspan
+         sodipodi:role="line"
+         id="tspan1674"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.3449px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';stroke:none;stroke-width:3.75783"
+         x="102.17906"
+         y="81.936356">mix</tspan></text>
+    <g
+       id="g3515-6"
+       transform="translate(-25.701918,13.422477)">
+      <circle
+         style="fill:#ffffff;fill-opacity:1;stroke:#03af00;stroke-width:0.465;stroke-opacity:1"
+         id="path1516-8"
+         cx="106.38644"
+         cy="54.331913"
+         r="4.8801117" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.17905376,0,0,0.19031662,65.250033,9.8333494)"
+         id="text3344-7"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346-7);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
+           x="216.41602"
+           y="237.06633"
+           id="tspan17688"><tspan
+             style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
+             id="tspan17686">mix</tspan></tspan></text>
+    </g>
+    <g
+       id="g3515-6-1"
+       transform="translate(-4.7355112,30.051012)">
+      <circle
+         style="fill:#ffffff;fill-opacity:1;stroke:#03af00;stroke-width:0.465;stroke-opacity:1"
+         id="path1516-8-5"
+         cx="106.38644"
+         cy="54.331913"
+         r="4.8801117" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.17905376,0,0,0.19031662,65.250033,9.8333494)"
+         id="text3344-7-7"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346-7-0);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
+           x="216.41602"
+           y="237.06633"
+           id="tspan17692"><tspan
+             style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
+             id="tspan17690">mix</tspan></tspan></text>
+    </g>
+    <g
+       id="g3515-6-1-2"
+       transform="translate(16.520087,46.303129)">
+      <circle
+         style="fill:#ffffff;fill-opacity:1;stroke:#03af00;stroke-width:0.465;stroke-opacity:1"
+         id="path1516-8-5-6"
+         cx="106.38644"
+         cy="54.331913"
+         r="4.8801117" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.17905376,0,0,0.19031662,65.250033,9.8333494)"
+         id="text3344-7-7-7"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346-7-0-6);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
+           x="216.41602"
+           y="237.06633"
+           id="tspan17696"><tspan
+             style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
+             id="tspan17694">mix</tspan></tspan></text>
+    </g>
+    <g
+       id="g3520"
+       transform="translate(4.4101753,-17.785297)">
+      <circle
+         style="fill:#ffffff;fill-opacity:1;stroke:#00beee;stroke-width:0.465;stroke-opacity:1"
+         id="path1516-5"
+         cx="118.49635"
+         cy="53.861977"
+         r="4.8801117" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.1729835,0,0,0.18386453,78.052315,11.087127)"
+         id="text3344-0"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346-1);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
+           x="216.41602"
+           y="237.06633"
+           id="tspan17700"><tspan
+             style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
+             id="tspan17698">layer</tspan></tspan></text>
+    </g>
+    <g
+       id="g3520-6"
+       transform="translate(-16.917726,-1.2178531)">
+      <circle
+         style="fill:#ffffff;fill-opacity:1;stroke:#00beee;stroke-width:0.465;stroke-opacity:1"
+         id="path1516-5-5"
+         cx="118.49635"
+         cy="53.861977"
+         r="4.8801117" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.1729835,0,0,0.18386453,78.052315,11.087127)"
+         id="text3344-0-5"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346-1-4);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
+           x="216.41602"
+           y="237.06633"
+           id="tspan17704"><tspan
+             style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
+             id="tspan17702">layer</tspan></tspan></text>
+    </g>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#cecece;stroke-width:0.5;stroke-dasharray:0.5, 0.5;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect5195"
+       width="16.139805"
+       height="6.8133698"
+       x="66.071655"
+       y="32.453098" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="73.779449"
+       y="35.136806"
+       id="text5303"><tspan
+         sodipodi:role="line"
+         id="tspan5301"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="73.779449"
+         y="35.136806">ambient</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="73.779449"
+         y="37.782642"
+         id="tspan5382">medium</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="87.647789"
+       y="27.938749"
+       id="text5303-5"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="87.647789"
+         y="27.938749"
+         id="tspan5382-1">1-O</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="112.96603"
+       y="27.878569"
+       id="text5303-5-6"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="112.96603"
+         y="27.878569"
+         id="tspan5382-1-4">O</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;line-height:1;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';text-align:center;text-anchor:middle;white-space:pre;inline-size:54.3519;display:inline;fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="144.81108"
+       y="12.756994"
+       id="text5303-5-6-0"
+       transform="translate(2.5304288,-5.3500487)"><tspan
+         x="144.81108"
+         y="12.756994"
+         id="tspan17708"><tspan
+           dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.042333063"
+           style="font-size:2.11667px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start;fill:#280b0b;stroke:none;stroke-width:0.365"
+           id="tspan17706">O = geometry_opacity
+</tspan></tspan><tspan
+         x="144.81108"
+         y="16.284774"
+         id="tspan17712"><tspan
+           dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364 0 0 0 0 0 0 0 0 0 0 0.042333063"
+           style="font-size:2.11667px;text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start"
+           id="tspan17710">F = fuzz_weight
+</tspan></tspan><tspan
+         x="144.81108"
+         y="19.812555"
+         id="tspan17716"><tspan
+           dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364 0 0 0 0 0 0 0 0 0 0 0.042333063"
+           style="font-size:2.11667px;text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start"
+           id="tspan17714">C = coat_weight
+</tspan></tspan><tspan
+         x="144.81108"
+         y="23.340335"
+         id="tspan17720"><tspan
+           dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04233497"
+           style="font-size:2.11667px;text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start"
+           id="tspan17718">M = base_metalness
+</tspan></tspan><tspan
+         x="144.81108"
+         y="26.868116"
+         id="tspan17724"><tspan
+           dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.042333063"
+           style="font-size:2.11667px;text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start"
+           id="tspan17722">T = transmission_weight
+</tspan></tspan><tspan
+         x="144.81108"
+         y="30.395896"
+         id="tspan17730"><tspan
+           dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364"
+           style="font-size:2.11667px;text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start"
+           id="tspan17726">S = subsurface_weight</tspan><tspan
+           style="font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#280b0b;stroke:none;stroke-width:0.365"
+           id="tspan17728"></tspan><tspan
+           y="30.395896"
+           id="tspan17732"> </tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="134.14731"
+       y="42.543957"
+       id="text5303-5-6-6"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="134.14731"
+         y="42.543957"
+         id="tspan5382-1-4-4">F</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="111.92046"
+       y="59.349777"
+       id="text5303-5-6-6-8"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="111.92046"
+         y="59.349777"
+         id="tspan5382-1-4-4-6">C</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="68.442322"
+       y="75.237938"
+       id="text5303-5-6-6-8-5"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="68.442322"
+         y="75.237938"
+         id="tspan5382-1-4-4-6-4">M</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="93.817741"
+       y="75.165642"
+       id="text5303-5-6-6-8-5-4"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="93.817741"
+         y="75.165642"
+         id="tspan5382-1-4-4-6-4-6">1-M</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="116.14906"
+       y="93.13813"
+       id="text5303-5-6-6-8-5-4-4"
+       inkscape:transform-center-x="5.4189717"
+       inkscape:transform-center-y="-1.4314265"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="116.14906"
+         y="93.13813"
+         id="tspan5382-1-4-4-6-4-6-0">1-T</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="90.221939"
+       y="93.065834"
+       id="text5303-5-6-6-8-5-4-4-1"
+       inkscape:transform-center-x="5.4189717"
+       inkscape:transform-center-y="-1.4314265"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="90.221939"
+         y="93.065834"
+         id="tspan5382-1-4-4-6-4-6-0-6">T</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="111.94211"
+       y="108.65443"
+       id="text5303-5-6-6-8-5-4-4-1-1"
+       inkscape:transform-center-x="5.4189717"
+       inkscape:transform-center-y="-1.4314265"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="111.94211"
+         y="108.65443"
+         id="tspan5382-1-4-4-6-4-6-0-6-7">S</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="135.78409"
+       y="108.65444"
+       id="text5303-5-6-6-8-5-4-4-1-1-3"
+       inkscape:transform-center-x="5.4189717"
+       inkscape:transform-center-y="-1.4314265"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="135.78409"
+         y="108.65444"
+         id="tspan5382-1-4-4-6-4-6-0-6-7-1">1-S</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#81452f;stroke-width:0.5;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5195-37"
+       width="16.139805"
+       height="6.8133698"
+       x="49.768459"
+       y="81.832603" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="54.404202"
+       y="85.817673"
+       id="text5303-0"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="54.404202"
+         y="85.817673"
+         id="tspan5382-2">metal</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#cecece;stroke-width:0.5;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5195-37-7"
+       width="16.139805"
+       height="6.8133698"
+       x="68.927422"
+       y="98.099648" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="76.865921"
+       y="100.85565"
+       id="text5303-0-9"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="76.865921"
+         y="100.85565"
+         id="tspan5382-2-7">translucent</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="76.865921"
+         y="103.50149"
+         id="tspan7912">base</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#81452f;stroke-width:0.5;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5195-37-7-6"
+       width="16.139805"
+       height="6.8133698"
+       x="96.183746"
+       y="114.72817" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="104.10822"
+       y="118.76073"
+       id="text5303-0-9-1"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="104.10822"
+         y="118.76073"
+         id="tspan5382-2-7-9">subsurface</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="151.84616"
+       y="82.067734"
+       id="text5303-0-9-1-6"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="151.84616"
+         y="82.067734"
+         id="tspan5382-2-7-9-6">opaque</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#81452f;stroke-width:0.5;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5195-37-7-6-1"
+       width="16.139805"
+       height="6.8133698"
+       x="135.08638"
+       y="114.72816" />
+    <rect
+       style="fill:#81452f;fill-opacity:1;stroke:#81452f;stroke-width:0.107839;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5195-37-7-6-1-9"
+       width="11.184046"
+       height="0.45737711"
+       x="135.34676"
+       y="81.362633" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="153.99008"
+       y="85.770508"
+       id="text5303-0-9-1-6-3"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="153.99008"
+         y="85.770508"
+         id="tspan5382-2-7-9-6-5">transparent</tspan></text>
+    <rect
+       style="fill:#cecece;fill-opacity:1;stroke:none;stroke-width:0.107839;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5195-37-7-6-1-9-8"
+       width="11.184046"
+       height="0.45737711"
+       x="135.37404"
+       y="85.065407" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="142.98033"
+       y="117.49657"
+       id="text5303-0-9-1-0"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="142.98033"
+         y="117.49657"
+         id="tspan5382-2-7-9-4">glossy</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';text-align:center;text-anchor:middle;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="142.98033"
+         y="120.1424"
+         id="tspan8182">diffuse</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#cecece;stroke-width:0.5;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5195-3"
+       width="16.139805"
+       height="6.8133698"
+       x="135.15234"
+       y="48.792439" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="140.87256"
+       y="52.705208"
+       id="text5303-6"
+       inkscape:transform-center-x="0.43378773"
+       inkscape:transform-center-y="-0.36148978"><tspan
+         sodipodi:role="line"
+         id="tspan5301-7"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="140.87256"
+         y="52.705208">fuzz</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="140.87256"
+         y="55.351044"
+         id="tspan5382-8" /></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#cecece;stroke-width:0.5;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5195-3-5"
+       width="16.139805"
+       height="6.8133698"
+       x="113.89675"
+       y="64.625694" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
+       x="119.61696"
+       y="68.466171"
+       id="text5303-6-4"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:0.365;stroke-opacity:1"
+         x="119.61696"
+         y="68.466171"
+         id="tspan5382-8-8">coat</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text7914"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect7916);display:inline;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:1.37953;stroke-dasharray:none;stroke-opacity:1" />
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text7992"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect7994);display:inline;fill:#280b0b;fill-opacity:1;stroke:none;stroke-width:1.37953;stroke-dasharray:none;stroke-opacity:1" />
+  </g>
+</svg>
