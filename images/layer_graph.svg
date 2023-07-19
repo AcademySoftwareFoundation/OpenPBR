@@ -29,11 +29,11 @@
      showgrid="false"
      inkscape:zoom="2.587745"
      inkscape:cx="71.490817"
-     inkscape:cy="225.4859"
+     inkscape:cy="224.51981"
      inkscape:window-width="2255"
      inkscape:window-height="1479"
      inkscape:window-x="515"
-     inkscape:window-y="1681"
+     inkscape:window-y="1675"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1" />
   <defs
@@ -135,9 +135,9 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
            x="216.41602"
            y="237.06633"
-           id="tspan17350"><tspan
+           id="tspan17684"><tspan
              style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
-             id="tspan17348">mix</tspan></tspan></text>
+             id="tspan17682">mix</tspan></tspan></text>
     </g>
     <path
        style="fill:#280b0b;stroke:#000000;stroke-width:0.265;stroke-dasharray:none;stroke-opacity:1"
@@ -177,9 +177,9 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346-7);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
            x="216.41602"
            y="237.06633"
-           id="tspan17354"><tspan
+           id="tspan17688"><tspan
              style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
-             id="tspan17352">mix</tspan></tspan></text>
+             id="tspan17686">mix</tspan></tspan></text>
     </g>
     <g
        id="g3515-6-1"
@@ -197,9 +197,9 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346-7-0);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
            x="216.41602"
            y="237.06633"
-           id="tspan17358"><tspan
+           id="tspan17692"><tspan
              style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
-             id="tspan17356">mix</tspan></tspan></text>
+             id="tspan17690">mix</tspan></tspan></text>
     </g>
     <g
        id="g3515-6-1-2"
@@ -217,9 +217,9 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346-7-0-6);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
            x="216.41602"
            y="237.06633"
-           id="tspan17362"><tspan
+           id="tspan17696"><tspan
              style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
-             id="tspan17360">mix</tspan></tspan></text>
+             id="tspan17694">mix</tspan></tspan></text>
     </g>
     <g
        id="g3520"
@@ -237,9 +237,9 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346-1);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
            x="216.41602"
            y="237.06633"
-           id="tspan17366"><tspan
+           id="tspan17700"><tspan
              style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
-             id="tspan17364">layer</tspan></tspan></text>
+             id="tspan17698">layer</tspan></tspan></text>
     </g>
     <g
        id="g3520-6"
@@ -257,9 +257,9 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc';white-space:pre;shape-inside:url(#rect3346-1-4);display:inline;fill:#280b0b;stroke:none;stroke-width:1.75748;stroke-opacity:1"><tspan
            x="216.41602"
            y="237.06633"
-           id="tspan17370"><tspan
+           id="tspan17704"><tspan
              style="font-weight:bold;-inkscape-font-specification:'Artifakt ElementOfc Bold'"
-             id="tspan17368">layer</tspan></tspan></text>
+             id="tspan17702">layer</tspan></tspan></text>
     </g>
     <rect
        style="fill:#ffffff;fill-opacity:1;stroke:#cecece;stroke-width:0.5;stroke-dasharray:0.5, 0.5;stroke-dashoffset:0;stroke-opacity:1"
@@ -315,49 +315,49 @@
        transform="translate(2.5304288,-5.3500487)"><tspan
          x="144.81108"
          y="12.756994"
-         id="tspan17374"><tspan
+         id="tspan17708"><tspan
            dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.042333063"
            style="font-size:2.11667px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start;fill:#280b0b;stroke:none;stroke-width:0.365"
-           id="tspan17372">O = geometry_opacity
+           id="tspan17706">O = geometry_opacity
 </tspan></tspan><tspan
          x="144.81108"
          y="16.284774"
-         id="tspan17378"><tspan
+         id="tspan17712"><tspan
            dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364 0 0 0 0 0 0 0 0 0 0 0.042333063"
            style="font-size:2.11667px;text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start"
-           id="tspan17376">F = fuzz_weight
+           id="tspan17710">F = fuzz_weight
 </tspan></tspan><tspan
          x="144.81108"
          y="19.812555"
-         id="tspan17382"><tspan
+         id="tspan17716"><tspan
            dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364 0 0 0 0 0 0 0 0 0 0 0.042333063"
            style="font-size:2.11667px;text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start"
-           id="tspan17380">C = coat_weight
+           id="tspan17714">C = coat_weight
 </tspan></tspan><tspan
          x="144.81108"
          y="23.340335"
-         id="tspan17386"><tspan
+         id="tspan17720"><tspan
            dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04233497"
            style="font-size:2.11667px;text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start"
-           id="tspan17384">M = base_metalness
+           id="tspan17718">M = base_metalness
 </tspan></tspan><tspan
          x="144.81108"
          y="26.868116"
-         id="tspan17390"><tspan
+         id="tspan17724"><tspan
            dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.042333063"
            style="font-size:2.11667px;text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start"
-           id="tspan17388">T = transmission_weight
+           id="tspan17722">T = transmission_weight
 </tspan></tspan><tspan
          x="144.81108"
          y="30.395896"
-         id="tspan17396"><tspan
+         id="tspan17730"><tspan
            dx="0 0.042333301 -0.042333364 0.042333301 -0.042333364"
            style="font-size:2.11667px;text-align:start;letter-spacing:0px;word-spacing:-0.0423333px;text-anchor:start"
-           id="tspan17392">S = subsurface_weight</tspan><tspan
+           id="tspan17726">S = subsurface_weight</tspan><tspan
            style="font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#280b0b;stroke:none;stroke-width:0.365"
-           id="tspan17394"></tspan><tspan
+           id="tspan17728"></tspan><tspan
            y="30.395896"
-           id="tspan17398"> </tspan></tspan></text>
+           id="tspan17732"> </tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Artifakt ElementOfc';-inkscape-font-specification:'Artifakt ElementOfc Bold';fill:none;stroke:#d97d38;stroke-width:0.365001;stroke-dasharray:none;stroke-opacity:1"
@@ -496,7 +496,7 @@
          y="103.50149"
          id="tspan7912">base</tspan></text>
     <rect
-       style="fill:#ffffff;fill-opacity:1;stroke:#cecece;stroke-width:0.5;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#ffffff;fill-opacity:1;stroke:#81452f;stroke-width:0.5;stroke-dasharray:none;stroke-opacity:1"
        id="rect5195-37-7-6"
        width="16.139805"
        height="6.8133698"
