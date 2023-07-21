@@ -513,10 +513,10 @@ In practice, these effects are most easily incorporated directly into the microf
    It may be useful to have a more artist-friendly dial of the "iridescence".
 
 
-Thin-film params          | Label     | Type    | Range         | Default | Description
---------------------------|-----------|---------|:-------------:|:-------:|----------------------------------------------
-**`thin_film_thickness`** | Thickness | `float` | $ [0, 1000] $ | $ 0   $ | Thickness of the film in nanometers
-**`thin_film_ior`**       | IOR       | `float` | $ [1, 3]    $ | $ 1.5 $ | Refractive index of the film
+Thin-film params          | Label     | Type    | Range             | Default | Description
+--------------------------|-----------|---------|:-----------------:|:-------:|----------------------------------------------
+**`thin_film_thickness`** | Thickness | `float` | $ [0, \ge 1000] $ | $ 0   $ | Thickness of the film in nanometers
+**`thin_film_ior`**       | IOR       | `float` | $ [1, \ge 3]    $ | $ 1.5 $ | Refractive index of the film
 
 ![](images/thin_film_0nm.png width=99%) ![](images/thin_film_300nm.png width=99%) ![](images/thin_film_600nm.png width=99%)
 <div class="shifted-caption">
@@ -585,15 +585,15 @@ This Fresnel factor is then modulated by multiplying by twice the **`specular_io
 \end{equation}
 Note there is a constraint $\xi_s < 1/(2 F_s)$ since the scaled reflection coefficient cannot exceed $1$. So the range of $\xi_s$ needs to be clamped: $\xi_s \in [0, \mathrm{min}(1, 1/(2 F_s)]$. Applying this modulated IOR ratio $\eta^\prime_s$ in the dielectric Fresnel factor then produces the desired reflectivity modulation at any incident angle (according to the standard formula for the dielectric Fresnel factor, assuming unpolarized light).
 
-Specular params           | Label      | Type     | Range        | Default       | Description
---------------------------|------------|----------|:------------:|:-------------:|----------------------------------------------
-**`specular_weight`**     | Weight     | `float`  | $ [0, 1]   $ | $ 1         $ | Scalar multiplier to the dielectric Fresnel factor
-**`specular_color`**      | Color      | `color3` | $ [0, 1]^3 $ | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
-**`specular_roughness`**  | Roughness  | `float`  | $ [0, 1]   $ | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_ior`**        | IOR        | `float`  | $ [1, 3]   $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
-**`specular_ior_level`**  | IOR level  | `float`  | $ [0, 1]   $ | $ 0.5       $ | Modulates the dielectric reflectivity at normal incidence between zero and double the original
-**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]   $ | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]   $ | $ 0         $ | Orientation of roughness anisotropy
+Specular params           | Label      | Type     | Range            | Default       | Description
+--------------------------|------------|----------|:----------------:|:-------------:|----------------------------------------------
+**`specular_weight`**     | Weight     | `float`  | $ [0, 1]       $ | $ 1         $ | Scalar multiplier to the dielectric Fresnel factor
+**`specular_color`**      | Color      | `color3` | $ [0, \ge 1]^3 $ | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
+**`specular_roughness`**  | Roughness  | `float`  | $ [0, \ge 1]   $ | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_ior`**        | IOR        | `float`  | $ [1, \ge 3]   $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
+**`specular_ior_level`**  | IOR level  | `float`  | $ [0, 1]       $ | $ 0.5       $ | Modulates the dielectric reflectivity at normal incidence between zero and double the original
+**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]       $ | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]       $ | $ 0         $ | Orientation of roughness anisotropy
 
 ![](images/spec_ior1.png width=95%) ![](images/spec_ior2.png width=95%) ![](images/spec_ior3.png width=95%)
 <div class="shifted-caption">
@@ -634,11 +634,11 @@ For example if the diffuse lobe is Lambertian i.e. $f_\mathrm{diffuse} = \rho_d/
 \end{equation}
  -->
 
-Glossy-diffuse params | Label     | Type     | Range        | Default             | Description
-----------------------|-----------|----------|:------------:|:-------------------:|----------------------------------------------
-**`base_weight`**     | Weight    | `float`  | $ [0, 1]   $ | $ 1               $ | Scalar multiplier to **`base_color`**
-**`base_color`**      | Color     | `color3` | $ [0, 1]^3 $ | $ (0.8, 0.8, 0.8) $ | Reflection albedo color of $f_\mathrm{diffuse}$
-**`base_roughness`**  | Roughness | `float`  | $ [0, 1]   $ | $ 0               $ | Roughness of the diffuse lobe $f_\mathrm{diffuse}$
+Glossy-diffuse params | Label     | Type     | Range            | Default             | Description
+----------------------|-----------|----------|:----------------:|:-------------------:|----------------------------------------------
+**`base_weight`**     | Weight    | `float`  | $ [0, 1]       $ | $ 1               $ | Scalar multiplier to **`base_color`**
+**`base_color`**      | Color     | `color3` | $ [0, \ge 1]^3 $ | $ (0.8, 0.8, 0.8) $ | Reflection albedo color of $f_\mathrm{diffuse}$
+**`base_roughness`**  | Roughness | `float`  | $ [0, \ge 1]   $ | $ 0               $ | Roughness of the diffuse lobe $f_\mathrm{diffuse}$
 
 
 ![](images/glossy_diffuse_diffuseonly.png width=99%) ![](images/glossy_diffuse_speconly.png width=99%) ![](images/glossy_diffuse_sum.png width=99%)
@@ -705,13 +705,13 @@ Implementations may choose to compute light transport in the subsurface medium e
    Technically, the anisotropy could be different in each channel, but we don't support this (also it could be problematic to implement).
 
 
-Subsurface params             | Label        | Type      | Range           | Default       | Description
-------------------------------|--------------|-----------|:---------------:|:-------------:|----------------------------------------------
-**`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]      $ | $ 0         $ | Mix weight between subsurface and diffuse slabs
-**`subsurface_color`**        | Color        | `color3`  | $ [0, 1]^3    $ | $ (1, 1, 1) $ | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
-**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty] $ | $ 1         $ | Subsurface radii, i.e. average distance light travels along the surface per color channel
-**`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3    $ | $ (1, 1, 1) $ | Scalar scale for **`subsurface_radius`**
-**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1,1]      $ | $ 0         $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
+Subsurface params             | Label        | Type      | Range               | Default       | Description
+------------------------------|--------------|-----------|:-------------------:|:-------------:|----------------------------------------------
+**`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]          $ | $ 0         $ | Mix weight between subsurface and diffuse slabs
+**`subsurface_color`**        | Color        | `color3`  | $ [0, \ge 1]^3    $ | $ (1, 1, 1) $ | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
+**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty]     $ | $ 1         $ | Subsurface radii, i.e. average distance light travels along the surface per color channel
+**`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3        $ | $ (1, 1, 1) $ | Scalar scale for **`subsurface_radius`**
+**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1,1]          $ | $ 0         $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
 
 ![](images/subsurface1.jpg width=99%) ![](images/subsurface2.jpg width=99%) ![](images/subsurface3.jpg width=99%)
 <div class="shifted-caption">
@@ -817,15 +817,15 @@ At the default **`transmission_dispersion_scale`** of zero, the Abbe number is i
    If **`​transmission_extra_roughness`** is restored, should it also apply to the interface of the subsurface-scattering substrate?
 
 
-Translucent base params                   | Label            | Type     | Range           | Default       | Description
-------------------------------------------|------------------|----------|:---------------:|:-------------:|----------------------------------------------
-**`transmission_weight`**                 | Weight           | `float`  | $ [0, 1]      $ | $ 0         $ | Mix weight between translucent and opaque base slabs
-**`transmission_color`**                  | Color            | `color3` | $ [0, 1]^3    $ | $ (1, 1, 1) $ | Transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
-**`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty] $ | $ 0         $ | Distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
-**`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3    $ | $ (0, 0, 0) $ | Scattering coefficient of the interior medium
-**`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]    $ | $ 0         $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
-**`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [9, 91]     $ | $ 20        $ | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in $[0, 1]$
-**`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]     $ | $ 0         $ | Linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
+Translucent base params                   | Label            | Type     | Range               | Default       | Description
+------------------------------------------|------------------|----------|:-------------------:|:-------------:|----------------------------------------------
+**`transmission_weight`**                 | Weight           | `float`  | $ [0, 1]          $ | $ 0         $ | Mix weight between translucent and opaque base slabs
+**`transmission_color`**                  | Color            | `color3` | $ [0, \ge 1]^3    $ | $ (1, 1, 1) $ | Transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
+**`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty]     $ | $ 0         $ | Distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
+**`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3        $ | $ (0, 0, 0) $ | Scattering coefficient of the interior medium
+**`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]        $ | $ 0         $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
+**`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [\le 9, \ge 91] $ | $ 20        $ | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in $[0, 1]$
+**`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]         $ | $ 0         $ | Linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
 
 
 
@@ -868,15 +868,15 @@ This formulation has the useful property that it reduces to the regular Schlick 
    The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately. (Is this a defect of the models based on a fitted modification to the Schlick formula?).
 
 
-Metal params              | Label      | Type     | Range        | Default             | Description
---------------------------|------------|----------|:------------:|:-------------------:|----------------------------------------------
-**`base_weight`**         | Weight     | `float`  | $ [0, 1]   $ | $ 1               $ | Scalar multiplier to **`base_color`**
-**`base_color`**          | Color      | `color3` | $ [0, 1]^3 $ | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
-**`specular_weight`**     | Weight     | `float`  | $ [0, 1]   $ | $ 1               $ | Scalar multiplier to **`specular_color`**
-**`specular_color`**      | Color      | `color3` | $ [0, 1]^3 $ | $ (1, 1, 1)       $ | Tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
-**`specular_roughness`**  | Roughness  | `float`  | $ [0, 1]   $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
-**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]   $ | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
-**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]   $ | $ 0               $ | Orientation of roughness anisotropy
+Metal params              | Label      | Type     | Range            | Default             | Description
+--------------------------|------------|----------|:----------------:|:-------------------:|----------------------------------------------
+**`base_weight`**         | Weight     | `float`  | $ [0, 1]       $ | $ 1               $ | Scalar multiplier to **`base_color`**
+**`base_color`**          | Color      | `color3` | $ [0, \ge 1]^3 $ | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
+**`specular_weight`**     | Weight     | `float`  | $ [0, 1]       $ | $ 1               $ | Scalar multiplier to **`specular_color`**
+**`specular_color`**      | Color      | `color3` | $ [0, \ge 1]^3 $ | $ (1, 1, 1)       $ | Tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_roughness`**  | Roughness  | `float`  | $ [0, \ge 1]   $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]       $ | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]       $ | $ 0               $ | Orientation of roughness anisotropy
 
 !!! Tip
    Show nicer images of the behavior of the F82 model.
@@ -960,15 +960,15 @@ The ratio $\eta_s = \mathtt{specular\_ior} / n_\mathrm{coat}$ then determines th
 
    These controls were set to 0 by default, since the effects they enabled were implemented in a rather simplistic way, and enabling them by default was considered problematic. However in this spec, it is difficult to describe how these parameters should work since they turn off certain light transport effects which should automatically happen (though we don't give currently give details of their implementation), so to implement them would require violating the physical light transport in some non-obvious ways. It is also an open question whether it is ever desirable for an artist to turn off these effects (or if they want to, can that be implemented in some more physical way). It would be convenient for example if a coat automatically darkens the base, as this simulates e.g. the darkening of materials when covered with a layer of varnish or water.
 
-Coat params                 | Label            | Type     | Range        | Default       | Description
-----------------------------|------------------|----------|:------------:|:-------------:|----------------------------------------------
-**`coat_weight`**           | Weight           | `float`  | $ [0, 1]   $ | $ 0         $ | Coverage weight of coat slab
-**`coat_color`**            | Color            | `color3` | $ [0, 1]^3 $ | $ (1, 1, 1) $ | Overall color due to absorption of $V_\mathrm{coat}$
-**`coat_roughness`**        | Roughness        | `float`  | $ [0, 1]   $ | $ 0         $ | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
-**`coat_ior`**              | IOR              | `float`  | $ [1, 3]   $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
-**`coat_ior_level`**        | IOR level        | `float`  | $ [0, 1]   $ | $ 0.5       $ | Modulates the coat reflectivity at normal incidence between zero and double the original
-**`coat_anisotropy`**       | Anisotropy       | `float`  | $ [0, 1]   $ | $ 0         $ | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
-**`coat_rotation`**         | Rotation         | `float`  | $ [0, 1]   $ | $ 0         $ | Orientation of roughness anisotropy
+Coat params                 | Label            | Type     | Range            | Default       | Description
+----------------------------|------------------|----------|:----------------:|:-------------:|----------------------------------------------
+**`coat_weight`**           | Weight           | `float`  | $ [0, 1]       $ | $ 0         $ | Coverage weight of coat slab
+**`coat_color`**            | Color            | `color3` | $ [0, \ge 1]^3 $ | $ (1, 1, 1) $ | Overall color due to absorption of $V_\mathrm{coat}$
+**`coat_roughness`**        | Roughness        | `float`  | $ [0, \ge 1]   $ | $ 0         $ | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
+**`coat_ior`**              | IOR              | `float`  | $ [1, \ge 3]   $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
+**`coat_ior_level`**        | IOR level        | `float`  | $ [0, 1]       $ | $ 0.5       $ | Modulates the coat reflectivity at normal incidence between zero and double the original
+**`coat_anisotropy`**       | Anisotropy       | `float`  | $ [0, 1]       $ | $ 0         $ | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
+**`coat_rotation`**         | Rotation         | `float`  | $ [0, 1]       $ | $ 0         $ | Orientation of roughness anisotropy
 
 <!-- Markdeep:
 **`coat_affect_color`**     | Affect Color     | `float`  | $ [0, 1]   $ | $ 1         $ | How much to prevent the coat from affecting the brightness and saturation of layers below
@@ -1018,11 +1018,11 @@ One practical model is the approach of [#Estevez2017] where the layer is treated
 !!! WARNING
    If fuzz is often used to represent a layer of fine dust, it might be useful to have richer control over the NDF/anisotropy representing the shape of the dust grains. (For example via the SGGX microflake model [#Heitz2015]).
 
-Fuzz params          | Label     | Type     | Range        | Default       | Description
----------------------|-----------|----------|:------------:|:-------------:|----------------------------------------------
-**`fuzz_weight`**    | Weight    | `float`  | $ [0, 1]   $ | $ 0         $ | Coverage weight of fuzz slab
-**`fuzz_color`**     | Color     | `color3` | $ [0, 1]^3 $ | $ (1, 1, 1) $ | Reflection albedo color of $f_\mathrm{fuzz}$
-**`fuzz_roughness`** | Roughness | `float`  | $ [0, 1]   $ | $ 0.5       $ | Reflection roughness of $f_\mathrm{fuzz}$
+Fuzz params          | Label     | Type     | Range            | Default       | Description
+---------------------|-----------|----------|:----------------:|:-------------:|----------------------------------------------
+**`fuzz_weight`**    | Weight    | `float`  | $ [0, 1]       $ | $ 0         $ | Coverage weight of fuzz slab
+**`fuzz_color`**     | Color     | `color3` | $ [0, \ge 1]^3 $ | $ (1, 1, 1) $ | Reflection albedo color of $f_\mathrm{fuzz}$
+**`fuzz_roughness`** | Roughness | `float`  | $ [0, 1]       $ | $ 0.5       $ | Reflection roughness of $f_\mathrm{fuzz}$
 
 ![](images/fuzz1.jpg width=99%) ![](images/fuzz2.jpg width=99%) ![](images/fuzz3.jpg width=99%)
 <div class="shifted-caption">

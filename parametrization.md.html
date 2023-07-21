@@ -11,8 +11,8 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 - **Label**: a suggested, non-unique UI name, where parameter grouping for UI purposes can be inferred based on the common identifier prefix.
 - **Type**: one of `float`, `boolean`, `color3`, `vector3`. A `color3` value is associated with a color space ([ACEScg](https://docs.acescentral.com/specifications/acescg/) by default), while a `vector3` value is a raw 3-component vector.
 - **Range**: the allowed value range for scalar parameters (per-channel for color and vector parameters).
-  - Square brackets `[]` indicate a range the value must be within.
-  - Round brackets `()` indicate the range the value is expected to be within to remain physically plausible, but going beyond may still be possible.
+  - Square brackets $[]$ indicate a range the value must be within.
+  - The notation $[ \le a, \ge b ]$ indicates a range the value is expected to be within to remain physically plausible, while leaving open to possibility to go beyond that range. For example, a **`base_color`** greater than $1$ might be used to imitate fluorescence.
   - Curly brackets `{}` indicate a discrete set of possible values.
 - **Default**: the suggested default value.
 - **Unit**: where relevant, otherwise assumed to be dimensionless. Note that lengths (other than `thin_film_thickness`) can be assumed to be in the world space units of the scene.
@@ -21,63 +21,63 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
    It would be good to rationalize the choices for all the default values (probably in the relevant section).
 
 
-| Identifier                            | Label               | Type      | Range           | Default              | Unit       |
-|---------------------------------------|---------------------|-----------|:---------------:|:--------------------:|------------|
-| **Base**                                                                                                         |            |
-| `base_weight`                         | Weight              | `float`   | $ [0, 1]      $ | $ 1                $ |            |
-| `base_color`                          | Color               | `color3`  | $ [0, 1]^3    $ | $ (0.8, 0.8, 0.8)  $ |            |
-| `base_roughness`                      | Roughness           | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| `base_metalness`                      | Metalness           | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| **Specular**                                                                                                     |            |
-| `specular_weight`                     | Weight              | `float`   | $ [0, 1]      $ | $ 1                $ |            |
-| `specular_color`                      | Color               | `color3`  | $ [0, 1]^3    $ | $ (1, 1, 1)        $ |            |
-| `specular_roughness`                  | Roughness           | `float`   | $ [0, 1]      $ | $ 0.3              $ |            |
-| `specular_ior`                        | IOR                 | `float`   | $ [1, 3]      $ | $ 1.5              $ |            |
-| `specular_ior_level`                  | IOR level           | `float`   | $ [0, 1]      $ | $ 0.5              $ |            |
-| `specular_anisotropy`                 | Anisotropy          | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| `specular_rotation`                   | Rotation            | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| **Transmission**                                                                                                 |            |
-| `transmission_weight`                 | Weight              | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| `transmission_color`                  | Color               | `color3`  | $ [0, 1]^3    $ | $ (1, 1, 1)        $ |            |
-| `transmission_depth`                  | Depth               | `float`   | $ [0, \infty] $ | $ 0                $ | length     |
-| `transmission_scatter`                | Scatter             | `color3`  | $ [0, 1]^3    $ | $ (0, 0, 0)        $ |            |
-| `transmission_scatter_anisotropy`     | Anisotropy          | `float`   | $ [-1,  1]    $ | $ 0                $ |            |
-| `transmission_dispersion_abbe_number` | Abbe number         | `float`   | $ [9, 91]     $ | $ 20               $ |            |
-| `transmission_dispersion_scale`       | Dispersion scale    | `float`   | $ [0,  1]     $ | $ 0                $ |            |
-| **Subsurface**                                                                                                   |            |
-| `subsurface_weight`                   | Weight              | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| `subsurface_color`                    | Color               | `color3`  | $ [0, 1]^3    $ | $ (1, 1, 1)        $ |            |
-| `subsurface_radius`                   | Radius              | `float`   | $ [0, \infty] $ | $ 1                $ | length     |
-| `subsurface_radius_scale`             | Radius scale        | `vector3` | $ [0, 1]^3    $ | $ (1, 1, 1)        $ |            |
-| `subsurface_anisotropy`               | Anisotropy          | `float`   | $ [-1,1]      $ | $ 0                $ |            |
-| **Coat**                                                                                                         |            |
-| `coat_weight`                         | Weight              | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| `coat_color`                          | Color               | `color3`  | $ [0, 1]^3    $ | $ (1, 1, 1)        $ |            |
-| `coat_roughness`                      | Roughness           | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| `coat_ior`                            | IOR                 | `float`   | $ [1, 3]      $ | $ 1.6              $ |            |
-| `coat_ior_level`                      | IOR level           | `float`   | $ [0, 1]      $ | $ 0.5              $ |            |
-| `coat_anisotropy`                     | Anisotropy          | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| `coat_rotation`                       | Rotation            | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| **Fuzz**                                                                                                         |            |
-| `fuzz_weight`                         | Weight              | `float`   | $ [0, 1]      $ | $ 0                $ |            |
-| `fuzz_color`                          | Color               | `color3`  | $ [0, 1]^3    $ | $ (1, 1, 1)        $ |            |
-| `fuzz_roughness`                      | Roughness           | `float`   | $ [0, 1]      $ | $ 0.5              $ |            |
-| **Emission**                                                                                                     |            |
-| `emission_luminance`                  | Luminance           | `float`   | $ [0, \infty] $ | $ 0                $ | nits       |
-| `emission_color`                      | Color               | `color3`  | $ [0, 1]^3    $ | $ (1, 1, 1)        $ |            |
-| **Thin-film**                                                                                                    |            |
-| `thin_film_thickness`                 | Thickness           | `float`   | $ [0, 1000]   $ | $ 0                $ | nanometers |
-| `thin_film_ior`                       | IOR                 | `float`   | $ [1, 3]      $ | $ 1.5              $ |            |
-| **Geometry**                                                                                                     |            |
-| `geometry_opacity`                    | Opacity             | `float`   | $ [0, 1]      $ | $ 1                $ |            |
-| `geometry_thin_walled`                | Thin walled         | `boolean` | {false, true}   | false                |            |
-| `geometry_normal`                     | Normal              | `vector3` | N/A             | unperturbed normal   |            |
-| `geometry_tangent`                    | Tangent             | `vector3` | N/A             | unperturbed tangent  |            |
-| `geometry_coat_normal`                | Coat Normal         | `vector3` | N/A             | unperturbed normal   |    
-<!
-| `coat_affect_color`                   | Affect Color        | `float`   | $ [0, 1]      $ | 1.0                  |            |
-| `coat_affect_roughness`               | Affect Roughness    | `float`   | $ [0, 1]      $ | 1.0                  |            |
-| `coat_affect_ior`                     | Affect IOR          | `float`   | $ [0, 1]      $ | 1.0                  |            |
+| Identifier                            | Label               | Type      | Range               | Default              | Unit       |
+|---------------------------------------|---------------------|-----------|:-------------------:|:--------------------:|------------|
+| **Base**                                                                                                             |            |
+| `base_weight`                         | Weight              | `float`   | $ [0, 1]          $ | $ 1                $ |            |
+| `base_color`                          | Color               | `color3`  | $ [0, \ge 1]^3    $ | $ (0.8, 0.8, 0.8)  $ |            |
+| `base_roughness`                      | Roughness           | `float`   | $ [0, \ge 1]      $ | $ 0                $ |            |
+| `base_metalness`                      | Metalness           | `float`   | $ [0, 1]          $ | $ 0                $ |            |
+| **Specular**                                                                                                         |            |
+| `specular_weight`                     | Weight              | `float`   | $ [0, 1]          $ | $ 1                $ |            |
+| `specular_color`                      | Color               | `color3`  | $ [0, \ge 1]^3    $ | $ (1, 1, 1)        $ |            |
+| `specular_roughness`                  | Roughness           | `float`   | $ [0, \ge 1]      $ | $ 0.3              $ |            |
+| `specular_ior`                        | IOR                 | `float`   | $ [1, \ge 3]      $ | $ 1.5              $ |            |
+| `specular_ior_level`                  | IOR level           | `float`   | $ [0, 1]          $ | $ 0.5              $ |            |
+| `specular_anisotropy`                 | Anisotropy          | `float`   | $ [0, 1]          $ | $ 0                $ |            |
+| `specular_rotation`                   | Rotation            | `float`   | $ [0, 1]          $ | $ 0                $ |            |
+| **Transmission**                                                                                                     |            |
+| `transmission_weight`                 | Weight              | `float`   | $ [0, 1]          $ | $ 0                $ |            |
+| `transmission_color`                  | Color               | `color3`  | $ [0, 1]^3        $ | $ (1, 1, 1)        $ |            |
+| `transmission_depth`                  | Depth               | `float`   | $ [0, \infty]     $ | $ 0                $ | length     |
+| `transmission_scatter`                | Scatter             | `color3`  | $ [0, 1]^3        $ | $ (0, 0, 0)        $ |            |
+| `transmission_scatter_anisotropy`     | Anisotropy          | `float`   | $ [-1,  1]        $ | $ 0                $ |            |
+| `transmission_dispersion_abbe_number` | Abbe number         | `float`   | $ [\le 9, \ge 91] $ | $ 20               $ |            |
+| `transmission_dispersion_scale`       | Dispersion scale    | `float`   | $ [0,  1]         $ | $ 0                $ |            |
+| **Subsurface**                                                                                                       |            |
+| `subsurface_weight`                   | Weight              | `float`   | $ [0, 1]          $ | $ 0                $ |            |
+| `subsurface_color`                    | Color               | `color3`  | $ [0, \ge 1]^3    $ | $ (1, 1, 1)        $ |            |
+| `subsurface_radius`                   | Radius              | `float`   | $ [0, \infty]     $ | $ 1                $ | length     |
+| `subsurface_radius_scale`             | Radius scale        | `vector3` | $ [0, 1]^3        $ | $ (1, 1, 1)        $ |            |
+| `subsurface_anisotropy`               | Anisotropy          | `float`   | $ [-1,1]          $ | $ 0                $ |            |
+| **Coat**                                                                                                             |            |
+| `coat_weight`                         | Weight              | `float`   | $ [0, 1]          $ | $ 0                $ |            |
+| `coat_color`                          | Color               | `color3`  | $ [0, \ge 1]^3    $ | $ (1, 1, 1)        $ |            |
+| `coat_roughness`                      | Roughness           | `float`   | $ [0, \ge 1]      $ | $ 0                $ |            |
+| `coat_ior`                            | IOR                 | `float`   | $ [1, \ge 3]      $ | $ 1.6              $ |            |
+| `coat_ior_level`                      | IOR level           | `float`   | $ [0, 1]          $ | $ 0.5              $ |            |
+| `coat_anisotropy`                     | Anisotropy          | `float`   | $ [0, 1]          $ | $ 0                $ |            |
+| `coat_rotation`                       | Rotation            | `float`   | $ [0, 1]          $ | $ 0                $ |            |
+| **Fuzz**                                                                                                             |            |
+| `fuzz_weight`                         | Weight              | `float`   | $ [0, 1]          $ | $ 0                $ |            |
+| `fuzz_color`                          | Color               | `color3`  | $ [0, \ge 1]^3    $ | $ (1, 1, 1)        $ |            |
+| `fuzz_roughness`                      | Roughness           | `float`   | $ [0, 1]          $ | $ 0.5              $ |            |
+| **Emission**                                                                                                         |            |
+| `emission_luminance`                  | Luminance           | `float`   | $ [0, \infty]     $ | $ 0                $ | nits       |
+| `emission_color`                      | Color               | `color3`  | $ [0, 1]^3        $ | $ (1, 1, 1)        $ |            |
+| **Thin-film**                                                                                                        |            |
+| `thin_film_thickness`                 | Thickness           | `float`   | $ [0, \ge 1000]   $ | $ 0                $ | nanometers |
+| `thin_film_ior`                       | IOR                 | `float`   | $ [1, \ge 3]      $ | $ 1.5              $ |            |
+| **Geometry**                                                                                                         |            |
+| `geometry_opacity`                    | Opacity             | `float`   | $ [0, 1]          $ | $ 1                $ |            |
+| `geometry_thin_walled`                | Thin walled         | `boolean` | {false, true}       | false                |            |
+| `geometry_normal`                     | Normal              | `vector3` | N/A                 | unperturbed normal   |            |
+| `geometry_tangent`                    | Tangent             | `vector3` | N/A                 | unperturbed tangent  |            |
+| `geometry_coat_normal`                | Coat Normal         | `vector3` | N/A                 | unperturbed normal   |            |
+<!--
+| `coat_affect_color`                   | Affect Color        | `float`   | $ [0, 1]          $ | 1.0                  |            |
+| `coat_affect_roughness`               | Affect Roughness    | `float`   | $ [0, 1]          $ | 1.0                  |            |
+| `coat_affect_ior`                     | Affect IOR          | `float`   | $ [0, 1]          $ | 1.0                  |            |
 -->
 
 <!-- Markdeep: -->
