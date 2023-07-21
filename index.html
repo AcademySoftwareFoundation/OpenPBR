@@ -417,7 +417,7 @@ A popular form of NDF which well-approximates the roughness of real materials is
 $$
 D_\mathrm{GGX}(m) \propto \left( 1 + \frac{\tan^2\theta_m}{\alpha^2} \right)^{-2}
 $$
-where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, and the parameter $\alpha \in [0, \infty]$ controls the roughness of the surface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ i.e. flat microfacets, while as $\alpha \rightarrow \infty$ microfacets of all orientations are equally prevalent.
+where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, and the parameter $\alpha \in [0, \infty)$ controls the roughness of the surface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ i.e. flat microfacets, while as $\alpha \rightarrow \infty$ microfacets of all orientations are equally prevalent.
 Following [#Burley2012], we set
 $$
 \alpha = r^2 \ ,
@@ -709,7 +709,7 @@ Subsurface params             | Label        | Type      | Range               |
 ------------------------------|--------------|-----------|:-------------------:|:-------------:|----------------------------------------------
 **`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]          $ | $ 0         $ | Mix weight between subsurface and diffuse slabs
 **`subsurface_color`**        | Color        | `color3`  | $ [0, \ge 1]^3    $ | $ (1, 1, 1) $ | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
-**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty]     $ | $ 1         $ | Subsurface radii, i.e. average distance light travels along the surface per color channel
+**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty)     $ | $ 1         $ | Subsurface radii, i.e. average distance light travels along the surface per color channel
 **`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3        $ | $ (1, 1, 1) $ | Scalar scale for **`subsurface_radius`**
 **`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1,1]          $ | $ 0         $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
 
@@ -821,7 +821,7 @@ Translucent base params                   | Label            | Type     | Range 
 ------------------------------------------|------------------|----------|:-------------------:|:-------------:|----------------------------------------------
 **`transmission_weight`**                 | Weight           | `float`  | $ [0, 1]          $ | $ 0         $ | Mix weight between translucent and opaque base slabs
 **`transmission_color`**                  | Color            | `color3` | $ [0, \ge 1]^3    $ | $ (1, 1, 1) $ | Transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
-**`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty]     $ | $ 0         $ | Distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
+**`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty)     $ | $ 0         $ | Distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
 **`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3        $ | $ (0, 0, 0) $ | Scattering coefficient of the interior medium
 **`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]        $ | $ 0         $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
 **`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [\le 9, \ge 91] $ | $ 20        $ | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in $[0, 1]$
@@ -1060,7 +1060,7 @@ The intensity of the EDF is controlled by a luminance and a color multiplier. Th
 
 Emission params          | Label     | Type     | Range           | Default       | Description
 -------------------------|-----------|----------|:---------------:|:-------------:|----------------------------------------------
-**`emission_luminance`** | Luminance | `float`  | $ [0, \infty] $ | $ 0         $ | Emission luminance, in cd/m^2 (aka. nits)
+**`emission_luminance`** | Luminance | `float`  | $ [0, \infty) $ | $ 0         $ | Emission luminance, in cd/m^2 (aka. nits)
 **`emission_color`**     | Color     | `color3` | $ [0, 1]^3    $ | $ (1, 1, 1) $ | Emission color multiplier
 
 ![](images/emitting_lava.png width=90% align=left) ![](images/emission_under_coat.png width=90% align=right)
