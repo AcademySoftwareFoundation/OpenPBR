@@ -1010,7 +1010,7 @@ The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be deri
 - has microflakes that are perfectly specular and opaque with a single-scattering albedo that produces the **`fuzz_color`** after multiple scattering
 - any light not reflected after multiple scattering is assumed to transmit to the lower layers (because the microflake volume has gray extinction, the transmitted light will not be tinted by the fuzz)
 
-One practical model is the approach of [#Estevez2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the light not reflected is assumed to transmit through to the base layers. The form of this is the same as the approximate microflake model of [#Kutz2021].
+One practical model is the approach of [#Conty2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the light not reflected is assumed to transmit through to the base layers. The form of this is the same as the approximate microflake model of [#Kutz2021].
 
 !!! WARNING
    The specification of unit optical thickness does not map in an obvious way to the microfacet interpretation. A more detailed description of the form of the model, in some approximation, could be helpful. Also, it seems perhaps restrictive to set the transmittance of the layer to a specific value (so that the fuzz layer can never completely occlude the underlying substrate at any point).
@@ -1248,7 +1248,7 @@ References
 
 [#d'Eon2021]: Eugene d’Eon. *A Hitchhiker’s guide to multiple scattering: Exact Analytic, Monte Carlo and Approximate Solutions in Transport Theory* (2022).
 
-[#Estevez2017]: Alejandro Conty Estevez and Christopher Kulla *Production Friendly Microfacet Sheen BRDF*, Sony Pictures Imageworks technical report (2017).
+[#Conty2017]: Alejandro Conty Estevez and Christopher Kulla *Production Friendly Microfacet Sheen BRDF*, Sony Pictures Imageworks technical report (2017).
 
 [#Georgiev2019]: Iliyan Georgiev, Jamie Portsmouth, Zap Andersson, Adrien Herubel, Alan King, Shinji Ogaki, and Frederic Servant. *Autodesk Standard Surface*, Autodesk white paper (2019).
 
