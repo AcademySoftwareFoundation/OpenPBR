@@ -21,14 +21,14 @@ This document is a draft specification of a surface shading model: the OpenPBR S
 Historical background and objectives
 ============================================
 
-Interchange of computer graphics scene assets remains a significant problem today, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines which are not easily interoperable. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem and is a topic of active scientific research. Despite this, there is a strong need today for industries engaged in physically based rendering (both off-line and real-time) to find a standardized material model that covers the most common use cases in day-to-day workflows.
+Interchange of computer graphics scene assets remains a significant problem today, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines which are not easily interoperable. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem and is a topic of active scientific research. Despite this, there is a strong need today for industries engaged in physically based rendering (both offline and real-time) to find a standardized material model that covers the most common use cases in day-to-day workflows.
 
-Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX [#Smythe2016], Open Shading Language (OSL) [#Gritz2010], and Material Definition Language (MDL) [#Kettner2015], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users, who should not be expected to build complex surface shaders from the ground up for day-to-day tasks. Instead it is much more convenient in practice for them to work with a standard über-shader parametrization, i.e. a single monolithic material definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials.
+Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light-transport simulation in the scene. Such general frameworks include MaterialX [#Smythe2016], Open Shading Language (OSL) [#Gritz2010], and Material Definition Language (MDL) [#Kettner2015], which allow specifying the material as a combination of primitive surface-reflectance models. These frameworks alone however are not sufficient for look development by end users, who should not be expected to build complex surface shaders from the ground up for day-to-day tasks. Instead it is much more convenient in practice for them to work with a standard über-shader parametrization, i.e. a single monolithic material definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials.
 
 There have been various previous proposals for such an über-shader, such as Disney's Principled Shader [#Burley2012], Allegorithmic's PBR shading model [#McDermott2018], and most recently the Autodesk Standard Surface shader [#Georgiev2019] and the Adobe Standard Material [#Kutz2021]. 
 Autodesk Standard Surface has strong spiritual predecessors in Anders Langlands' alSurface [#Langlands2014] and Autodesk 3ds Max's Physical Material [#Andersson2016]. 3ds Max's Physical Material in turn was strongly inspired by Allegorithmic's model, Disney's Principled Shader, and general industry trends in several real-time 3D engines.
 
-However each of these models originated from a single company and was designed primarily for the needs of that company's particular software products and customers. There is thus a need for a specification which is developed as a collaboration between all the significant players in the industry, as an open standard, which is flexible enough to accommodate the common use cases industry-wide.  It should incorporate the experience of artists, software developers, and product managers as to what is genuinely useful in production. To this end, the model defined in this spec has been developed as a collaboration between Autodesk and Adobe, with input from multiple other industry partners. It is an open standard hosted by the Academy Software Foundation (ASWF).
+However each of these models originated from a single company and was designed primarily for the needs of that company's particular software products and customers. There is thus a need for a specification which is developed as a collaboration between all the significant players in the industry, as an open standard, which is flexible enough to accommodate the common use cases industry-wide. It should incorporate the experience of artists, software developers, and product managers as to what is genuinely useful in production. To this end, the model defined in this spec has been developed as a collaboration between Autodesk and Adobe, with input from multiple other industry partners. It is an open standard hosted by the Academy Software Foundation (ASWF).
 
 In this proposal, rather than providing parameters for every conceivable case, we intentionally try to boil the set of parameters down to only those that are most useful in practice. The parameters are designed to be intuitive but also to ensure that the users work within the bounds of what is physically plausible as much as possible. We express the model as an explicit physical material structure (which can be implemented in a variety of ways), thus the model is physically based by default, though with the ability to go "off-rails" if needed in well-defined ways.
 
@@ -36,10 +36,10 @@ We aim for the overall behavior to be simple, logical, intuitive, and understand
 We thus adopt a material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]). With each component of the structure, we also define a set of parameters with names, valid ranges and default values, and describe how the component should be affected by the parameters.
 
 In outline the structure consists of:
-   - A [base substrate](index.html#model/basesubstrate) made of a mixture of [metal](index.html#model/metallicbase) or [dielectric](index.html#model/dielectricbase). The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric-base represents either of three components, that can be statistically mixed:
-        1. [Glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse): dielectric with opaque "diffuse" internal media, for example mud, wood, dense rock, and concrete.
-        2. [Subsurface](index.html#model/dielectricbase/subsurface): dielectric with dense highly scattering internal media, for example marble, plastic, skin, and vegetation.
-        3. [Translucent-base](index.html#model/dielectricbase/translucentbase) dielectric with translucent internal media, for example glass, crystals, and liquids.
+   - A [base substrate](index.html#model/basesubstrate) made of a mixture of [metal](index.html#model/metallicbase) or [dielectric](index.html#model/dielectricbase). The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric base represents either of three components, that can be statistically mixed:
+        1. [Glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse): dielectric with opaque "diffuse" internal media, for example wood, granite, concrete, cardboard, and wall paint.
+        2. [Subsurface](index.html#model/dielectricbase/subsurface): dielectric with dense highly scattering internal media, for example plastic, marble, skin, vegetation, and food.
+        3. [Translucent base](index.html#model/dielectricbase/translucentbase) dielectric with translucent internal media, for example glass, crystals, and liquids.
    - [Coat](index.html#model/coat): An optional layer of dielectric, which may have an absorbing medium, acting as a coating on top of the base substrate.
      The dielectric interface of this coat layer provides a secondary specular lobe.
    - [Fuzz](index.html#model/fuzz): An optional layer representing the reflection from micro-fibers (such as fine hair, peach fuzz, textile strands, and dust grains) on top of everything else.
@@ -49,7 +49,7 @@ In outline the structure consists of:
 
 Since the model is simply a physical description of this material structure, in principle it would be amenable to solution via accurate methods such as those developed in [#Jakob2014], [#Belcour2018], and [#Zeltner2018], which attempt to compute all the various modes of reflection and transmission through the whole stack of layers, generating a final bidirectional scattering distribution function (BSDF) which is not necessarily a simple linear combination of the individual interface BSDFs.
 
-However we want this material model to be renderable on a wide range of platforms, from off-line path tracers all the way to real-time game engines on mobile devices.
+However we want this material model to be renderable on a wide range of platforms, from offline path tracers all the way to real-time game engines on mobile devices.
 Enforcing a particular implementation would make the use of the material model impractical for certain classes of renderers, and ultimately make the model less useful. For this reason we consider the choice of a specific implementation to be outside the scope of this specification. For convenience and efficiency, at present it is most likely to be mapped to a model consisting of a mixture of BSDF lobes similar to the Autodesk Standard Surface shader [#Georgiev2019]. An example derivation of derivation of such a model is provided in the ["Reduction to a mixture of lobes"](index.html#model/reductiontoamixtureoflobes) section below.
 
 When a particular implementation of some aspect is widely adopted we suggest it, and when an accurate solution can be prohibitively costly we also suggest alternative approximations. But ultimately it is up to the developer to choose the appropriate implementation for their use case, based on their practical constraints and the level of visual quality they are aiming for. Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that a given renderer may not support accurate subsurface scattering for example, or that anisotropic coating may be too expensive for VR (Virtual Reality), etc. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't. For example, a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect.
@@ -62,7 +62,7 @@ In both cases, the important consideration is that the implementation respects t
 Formalism
 ============================================
 
-Our goal is to create a surface shading model that is able to faithfully represent a wide variety of real-world materials. The light scattering characteristics at the surfaces of basic materials like metal, glass, or wall paint are well studied and can be accurately represented via simple analytical models. Other materials, such as finished wood, cloth, or skin, comprise semi-transparent layers of matter stacked on top of each other. The more intricate behavior of such materials is the result of light scattering at the interfaces between these layers and propagating through them, and each such scattering interface can typically be represented by an analytical model. Materials are also heterogeneous across the surface, for example a rusty metal surface has regions with bare specular metal and dull iron oxide, and the transition between these may be abrupt or smooth.
+Our goal is to create a surface-shading model that is able to faithfully represent a wide variety of real-world materials. The light scattering characteristics at the surfaces of basic materials like metal, glass, or wall paint are well studied and can be accurately represented via simple analytical models. Other materials, such as finished wood, cloth, or skin, comprise semi-transparent layers of matter stacked on top of each other. The more intricate behavior of such materials is the result of light scattering at the interfaces between these layers and propagating through them, and each such scattering interface can typically be represented by an analytical model. Materials are also heterogeneous across the surface, for example a rusty metal surface has regions with bare specular metal and dull iron oxide, and the transition between these may be abrupt or smooth.
 
 Two basic operations — layering and mixing — provide a language for building a model of a composite heterogeneous material consisting of vertically layered slabs with structure varying horizontally over the surface. Unlike previous models such as Autodesk Standard Surface [#Georgiev2019], we define the model by describing the physical structure as unambiguously as possible, rather than by specifying a particular form of implementation such as a BSDF mixture model.
 
@@ -93,7 +93,7 @@ Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ a
 
 If the slab is completely opaque (e.g. conducting or diffuse) we need only specify the surface BSDF $f$, as the interior medium is irrelevant for light transport. If the slab is non-opaque, i.e. translucent, the interior medium $V$ of the slab is taken to be a homogeneous dielectric which optionally contains a specified homogeneous volumetric medium (or "VDF"). By VDF we mean the set of quantities (in general spatially varying fields) which define a volumetric optical medium, i.e.
 
-   - the normalized phase function parameters
+   - the normalized phase-function parameters
    - the absorption and scattering coefficients (alternatively, extinction coefficient and scattering albedo)
    - the index of refraction (IOR) and dispersion of the embedding dielectric medium
 
@@ -101,7 +101,7 @@ We assume that the renderer is aware that the volumetric properties may vary fro
 
 It is understood that in principle the medium $V$ specifies its own depth, which can also be unbounded denoting a semi-infinite "bulk" medium with no substrate. We denote such an unbounded semi-infinite volumetric medium as $V^\infty$. This is an abstraction of course, where we understand that such a semi-infinite medium actually just represents the bottom layer of the material structure and the medium will most likely terminate somewhere (but remote from the surface on the mesoscopic scale). Such a slab with a semi-infinite medium does not need to supply a base BSDF (it can be just omitted). Note that the BSDF of the bottom interface (if the depth is finite) does not need to be specified as it will be derivable from the BSDF of the underlying slab if present (in combination with the properties of the medium VDF).
 
-If the bounding BSDFs of a slab are completely non-transmissive and opaque (e.g. metallic), the internal medium is irrelevant for light transport purposes. For convenience, it can be omitted:
+If the bounding BSDFs of a slab are completely non-transmissive and opaque (e.g. metallic), the internal medium is irrelevant for light-transport purposes. For convenience, it can be omitted:
 \begin{equation}
 S_\mathrm{opaque} = \mathrm{Slab}(f) \ .
 \end{equation}
@@ -202,7 +202,7 @@ f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + C 
 where to ensure the energy conservation the normalization constant $C$ involves an integral over the albedo times the substrate BSDF (see [#Kelemen2001]). Depending on the form of the substrate BSDF this may require more elaborate tabulation.
 
 Note though that this albedo-scaling approximation does not correctly take into account the effect of multiple light bounces back and forth between the interfaces, or absorption and scattering in the volumetric medium of the coat $V_\mathrm{coat}$. In general the resulting BSDF lobe shape will not be a simple linear combination of the interface BSDFs.
-To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric transmittance through the coat in the incident and output directions could be approximately modelled as
+To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric transmittance through the coat in the incident and output directions could be approximately modeled as
 \begin{equation} \label{non-reciprocal-albedo-scaling-with-T}
 f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  +  T_\mathrm{coat}(\omega_i, \omega_o) \bigl(1 - E_\mathrm{coat}(\omega_o)\bigr) \,f_\mathrm{sub}(\omega_i, \omega_o) \ .
 \end{equation}
@@ -318,7 +318,7 @@ However the parameters of the physical model that we describe do not specify all
 
    - The assumed color space of all the color parameters. If unspecified, following MaterialX [#Smythe2016], by default this color space is assumed to be [ACEScg](https://docs.acescentral.com/specifications/acescg/).
 
-   - The floating point conversion factor from the parameters given in world space length units to meters.
+   - The floating-point conversion factor from the parameters given in world space length units to meters.
 
    - The association between any supplied texture files and the parameters which they specify, generating spatially varying parameters according to the local UV coordinates of the geometry.
 
@@ -406,9 +406,9 @@ The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$ and $f_\mathrm{coat}$ 
 
 The other interfaces are not standard microfacet models, but strongly related:
 
-   - The [glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse) BRDF $f_\textrm{glossy-diffuse}$ is the combination of a microfacet dielectric BRDF and a diffuse lobe, normalized to be energy-conserving.
+   - The [glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse) BRDF $f_\textrm{glossy-diffuse}$ is the combination of a microfacet dielectric BRDF and a diffuse lobe, normalized to be energy conserving.
 
-   - The [fuzz](index.html#model/fuzz) BSDF $f_\mathrm{fuzz}$ can be modelled as a microfacet BRDF with a special NDF designed to peak for micronormals in grazing orientations.
+   - The [fuzz](index.html#model/fuzz) BSDF $f_\mathrm{fuzz}$ can be modeled as a microfacet BRDF with a special NDF designed to peak for micronormals in grazing orientations.
 
 A microfacet BRDF has the standard form [^Jacobian] ([#Walter2007], [#Pharr2023]) in the single-scattering approximation:
 \begin{equation}
@@ -487,7 +487,7 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 
 - **`specular_rotation`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_rotation`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The rotation is normalized to $[0, 1]$ representing angles from 0° to 360° counterclockwise, with 0° being the original tangent vector direction. Note that the appearance of the specular highlight is identical for rotations between $[0, 0.5]$ and $[0.5, 1]$; this allows the preservation of value when converting to/from other models that support directional anisotropy.
 
-The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for  multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016], where the multiple bounces are explicitly modelled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
+The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016], where the multiple bounces are explicitly modelled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
 
 
 Base Substrate
@@ -817,7 +817,7 @@ At the default **`transmission_dispersion_scale`** of zero, the Abbe number is i
 !!! WARNING
    Consider restoring non-physical control **`​transmission_extra_roughness`**, i.e. additional (positive or negative) roughness on top of **`specular_roughness`**
 
-   However, **`​transmission_extra_roughness`** is inconvenient to implement because it requires an extra microfacet model evaluation. Without it, one microfacet model can be used for both reflection and refraction.
+   However, **`​transmission_extra_roughness`** is inconvenient to implement because it requires an extra microfacet-model evaluation. Without it, one microfacet model can be used for both reflection and refraction.
    Instead of using **`​transmission_extra_roughness`,** why not use rough transmission and then add a coat (with the coat's effect on the underlying roughness disabled)?
 
    If **`​transmission_extra_roughness`** is restored, should it also apply to the interface of the subsurface-scattering substrate?
@@ -872,7 +872,7 @@ This formulation has the useful property that it reduces to the regular Schlick 
    Should we allow the tint to be a soft-max at the upper bound, i.e. $[0, 1)$ range, to support "exotic" metals?
 
 !!! WARNING
-   The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately. (Is this a defect of the models based on a fitted modification to the Schlick formula?).
+   The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately. (Is this a defect of the models based on a fitted modification to the Schlick formula?) (Is the visual impact noticeable or negligible?)
 
 
 Metal params              | Label      | Type     | Range           |  Norm      | Default             | Description
@@ -886,7 +886,7 @@ Metal params              | Label      | Type     | Range           |  Norm     
 **`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0               $ | Orientation of roughness anisotropy
 
 !!! Tip
-   Show nicer images of the behavior of the F82 model.
+   Show images where the behavior of the F82 model is more obvious (such as closeups of metals or materials with art-directed colors).
 
 ![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
 <div class="shifted-caption">
@@ -1215,7 +1215,7 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
 
 ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
 <div class="shifted-caption">
-      ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`thin_walled`** subsurface (right)](dummy)
+      ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`geometry_thin_walled`** subsurface (right)](dummy)
 </div>
 
 !!! Tip
