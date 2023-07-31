@@ -1019,7 +1019,7 @@ The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be deri
 - has an apparent surface roughness parametrized by **`fuzz_roughness`**
 - any light not reflected after multiple scattering is assumed to transmit to the lower layers (because the microflake volume has gray extinction, the transmitted light will not be tinted by the fuzz)
 
-One practical model is the approach of [#Estevez2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the light not reflected is assumed to transmit through to the base layers. The form of this is the same as the approximate microflake model of [#Kutz2021].
+One practical model is the approach of [#Conty2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the light not reflected is assumed to transmit through to the base layers. The form of this is the same as the approximate microflake model of [#Kutz2021].
 
 If using the albedo-scaling interpretation of layering, a reasonable approximation of the reflection from the colored fibers combined with the gray extinction is to take (with $\mathtt{F}$ = **`fuzz_weight`**):
 \begin{eqnarray}
@@ -1363,7 +1363,7 @@ We hope this proposal serves as a useful basis for an industry standard surface 
 Acknowledgements
 ================================================================================
 
-The authors would like to thank Jonathan Stone, Guido Quaroni, Miloš Hašan, Iliyan Georgiev, Michael Nickelsky, Henrik Edstrom, Niklas Harrysson, Nikie Monteleone and Lee Griggs for their useful input and feedback.
+The authors would like to thank Jonathan Stone, Guido Quaroni, Anthony Salvi, François Beaune, Miloš Hašan, Iliyan Georgiev, Michael Nickelsky, Henrik Edstrom, Niklas Harrysson, Nikie Monteleone and Lee Griggs for their useful input and feedback.
 
 
 
@@ -1386,7 +1386,7 @@ References
 
 [#d'Eon2021]: Eugene d’Eon. *A Hitchhiker’s guide to multiple scattering: Exact Analytic, Monte Carlo and Approximate Solutions in Transport Theory* (2022).
 
-[#Estevez2017]: Alejandro Conty Estevez and Christopher Kulla *Production Friendly Microfacet Sheen BRDF*, Sony Pictures Imageworks technical report (2017).
+[#Conty2017]: Alejandro Conty Estevez and Christopher Kulla *Production Friendly Microfacet Sheen BRDF*, Sony Pictures Imageworks technical report (2017).
 
 [#Georgiev2019]: Iliyan Georgiev, Jamie Portsmouth, Zap Andersson, Adrien Herubel, Alan King, Shinji Ogaki, and Frederic Servant. *Autodesk Standard Surface*, Autodesk white paper (2019).
 
