@@ -540,12 +540,10 @@ Dielectric-base
 The dielectric-base is assumed to have a surface BSDF described by a rough GGX dielectric [microfacet model](index.html#model/microfacetmodel) [#Walter2007], and a bulk volumetric medium supporting absorption and scattering (whether physically due to the inherent molecular properties of the dielectric as in water, or e.g. a dispersion of embedded particles or flakes as in paint).
 
 However we distinguish between a separate "translucent" dielectric bulk and "opaque" dielectric bulk, which are placed in a statistical mix:
-
 \begin{equation}
 M_\textrm{dielectric-base} = \mathrm{\mathbf{mix}}(M_\textrm{opaque-base}, S_\textrm{translucent-base}, \mathtt{T})
 \end{equation}
-
-where $\mathtt{T} = \mathtt{transmission\_weight}$. This mirrors the usual workflow of artists where they are typically either modelling an opaque surface potentially with some specularity and dense subsurface scattering (such as rock, plastic, skin etc.), or a translucent material with some limited amount of volumetric absorption and scattering (such as glass, liquids, organic matter etc.). These use cases require different parametrizations to effectively control, so are convenient to split into separate slabs.
+where $\mathtt{T} = \mathtt{transmission\_weight}$.
 
 ****************************************************************************************************
 *                                               1 - transmission_weight     transmission_weight    *
@@ -556,13 +554,15 @@ where $\mathtt{T} = \mathtt{transmission\_weight}$. This mirrors the usual workf
 * +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
 ****************************************************************************************************
 
+This mirrors the usual workflow of artists where they are typically either modelling an opaque surface potentially with some specularity and dense subsurface scattering (such as rock, plastic, skin etc.), or a translucent material with some limited amount of volumetric absorption and scattering (such as glass, liquids, organic matter etc.). These use cases require different parametrizations to effectively control, so are convenient to split into separate slabs.
+
 The translucent-base is described in the Translucent base section, while the opaque-base is further broken down below (into [Glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse) and [Subsurface](index.html#model/dielectricbase/subsurface)). The **`transmission_weight`** parameter selects between these models. Note that technically a mix weight between 0 and 1 produces a physically ambiguous state (since there are then superimposed bulk media with different properties), so we expect that normally this weight acts as a Boolean selector.
 
-The opaque-base substrate is assumed to be a dielectric with dense subsurface volumetric absorption and scattering, which tends to an idealized "glossy-diffuse" BSDF in the limit of infinite density medium. In some cases a blend of subsurface and completely opaque glossy-diffuse scattering is desired, for example in skin rendering where the diffuse component provides the surface details of the skin (freckles, blemishes, makeup, etc.) and the subsurface component provides the color detail of the underlying veins and tissue. To support this, we make the opaque-base substrate be a statistical mix of glossy-diffuse and subsurface models (described in the Glossy-diffuse section and the Subsurface section respectively) controlled via **`subsurface_weight`**:
-
+The opaque-base substrate is assumed to be a dielectric with dense subsurface volumetric absorption and scattering, which tends to an idealized "glossy-diffuse" BSDF in the limit of infinite density medium. In some cases a blend of subsurface and completely opaque glossy-diffuse scattering is desired, for example in skin rendering where the diffuse component provides the surface details of the skin (freckles, blemishes, makeup, etc.) and the subsurface component provides the color detail of the underlying veins and tissue. To support this, we make the opaque-base substrate be a statistical mix of glossy-diffuse and subsurface models (described in the Glossy-diffuse section and the Subsurface section respectively):
 \begin{eqnarray}
-M_\textrm{opaque-base}  &=& \mathrm{\mathbf{mix}}(S_\textrm{glossy-diffuse}, S_\mathrm{subsurface}, \mathtt{subsurface\_weight})    \ .
+M_\textrm{opaque-base}  &=& \mathrm{\mathbf{mix}}(S_\textrm{glossy-diffuse}, S_\mathrm{subsurface}, \mathtt{S})
 \end{eqnarray}
+where $\mathtt{S} = \mathtt{subsurface\_weight}$.
 
 ****************************************************************************************************
 *                                                1 - subsurface_weight      subsurface_weight      *
@@ -584,9 +584,9 @@ Both the opaque and translucent dielectric-base share the same dielectric interf
 The formula for the specular IOR modulation is as follows. Given the existing **`specular_ior`**, the ratio $\eta_s$ of this to the IOR of the surrounding medium is computed (which should take into account the presence of the coat, according to equation [effective_coat_ior] in the Coat section).
 Given this ratio, the dielectric Fresnel reflection factor of $f_\mathrm{dielectric}$ at normal incidence is given by
 \begin{equation}
-F_s = \frac{|1 - \eta_s|^2}{(1 + \eta_s)^2} \ .
+F_s = \frac{|\eta_s - 1|^2}{(\eta_s + 1)^2} \ .
 \end{equation}
-This Fresnel factor is then modulated by multiplying by twice the **`specular_ior_level`** denoted $\xi_s$. Thus solving for the new IOR ratio $\eta^\prime_s$ after the modulation:
+This Fresnel factor is then modulated by multiplying by twice $\xi_s = \mathtt{specular\_ior\_level}$. Thus solving for the new IOR ratio $\eta^\prime_s$ after the modulation:
 \begin{equation} \label{modulated_ior}
 \eta^\prime_s = \frac{1 + \mathrm{sgn}(\eta_s-1)\sqrt{2\,\xi_s F_s}} {1 - \mathrm{sgn}(\eta_s-1)\sqrt{2\, \xi_s F_s}} \ .
 \end{equation}
@@ -620,15 +620,15 @@ S_\textrm{glossy-diffuse}       &=& \mathrm{Slab}(f_\textrm{glossy-diffuse})    
 \end{eqnarray}
 
 In the limit of very high density material, $f_\textrm{glossy-diffuse}$ can reasonably be represented as the sum of a "glossy" specular lobe and a diffuse lobe, with factors designed to ensure that the combination conserves energy. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete.
-This form of BRDF model is classic in computer graphics and typically termed the "Ashikhmin-Shirley" model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]), which has the basic form of equation [reciprocal-albedo-scaling]:
+This form of BRDF model is classic in computer graphics and typically termed the Ashikhmin-Shirley or Kelemen model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]), which has the basic form of equation [reciprocal-albedo-scaling]:
 \begin{equation}
-f_\textrm{glossy-diffuse}(\omega_i, \omega_o) = f_\mathrm{dielectric}(\omega_i, \omega_o)  + C \left(1 - E_\mathrm{dielectric}(\omega_i)\right) \, \left(1 - E_\mathrm{dielectric}(\omega_o)\right) \,f_\mathrm{diffuse}(\omega_i, \omega_o)
+f_\textrm{glossy-diffuse}(\omega_i, \omega_o) = f_\mathrm{dielectric}(\omega_i, \omega_o)  + C \bigl(1 - E_\mathrm{dielectric}(\omega_i)\bigr) \, \bigl(1 - E_\mathrm{dielectric}(\omega_o)\bigr) \,f_\mathrm{diffuse}(\omega_i, \omega_o)
 \end{equation}
 where $f_\mathrm{dielectric}$ is the rough dielectric microfacet BSDF as parametrized in the Dielectric base section and $f_\mathrm{diffuse}(\omega_i, \omega_o)$ is a diffuse lobe.
 
 The normalization factor $C$ to ensure energy conservation (so that if $f_\mathrm{diffuse}$ has white albedo, the total BRDF passes the furnace test) will depend on the form of the diffuse lobe, and may require tabulation or fitting. If the non-reciprocal albedo scaling approximation of equation [non-reciprocal-albedo-scaling] is taken, then instead we can express the BRDF as
 \begin{equation}
-f_\textrm{glossy-diffuse}(\omega_i, \omega_o) = f_\mathrm{dielectric}(\omega_i, \omega_o)  +  \left(1 - E_\mathrm{dielectric}(\omega_o)\right) \,f_\mathrm{diffuse}(\omega_i, \omega_o)
+f_\textrm{glossy-diffuse}(\omega_i, \omega_o) = f_\mathrm{dielectric}(\omega_i, \omega_o)  +  \bigl(1 - E_\mathrm{dielectric}(\omega_o)\bigr) \,f_\mathrm{diffuse}(\omega_i, \omega_o)
 \end{equation}
 which can be evaluated more cheaply e.g. by [Monte Carlo](https://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions#Application:EstimatingReflectance) estimation of $E_\mathrm{dielectric}(\omega_o)$.
 
@@ -944,10 +944,10 @@ In some practical use cases however, it may be desirable for this physical effec
 
 The **`coat_ior_level`** parameter in [0,1] modulates the coat reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum. This works similarly to the formula for **`specular_ior_level`** in equation [modulated_ior]. In detail, the coat Fresnel reflection factor at normal incidence is given by
 \begin{equation}
-F_c = \frac{|1 - \eta_c|^2}{(1 + \eta_c)^2} \ .
+F_c = \frac{|\eta_c - 1|^2}{(\eta_c + 1)^2} \ .
 \end{equation}
-where (with $n_\mathrm{coat} = \mathtt{coat\_ior}$ and $n_\mathrm{ambient}$ = $\mathtt{ambient\_ior}$) $\eta_c = n_\mathrm{coat} / n_\mathrm{ambient}$.
-The factor $F_c$ is then modulated by multiplying by twice the **`coat_ior_level`** denoted $\xi_c$, giving the new IOR ratio $\eta^\prime_c$ after the modulation:
+where $\eta_c = n_\mathrm{coat} / n_\mathrm{ambient}$ (with $n_\mathrm{coat} = \mathtt{coat\_ior}$, $n_\mathrm{ambient}$ = $\mathtt{ambient\_ior}$).
+The factor $F_c$ is then modulated by multiplying by twice $\xi_c = \mathtt{coat\_ior\_level}$, giving the new IOR ratio $\eta^\prime_c$ after the modulation:
 \begin{equation}  \label{modulated_coat_ior}
 \eta^\prime_c = \frac{1 + \mathrm{sgn}(\eta_c-1)\sqrt{2\, \xi_c F_c}}{1 - \mathrm{sgn}(\eta_c-1)\sqrt{2\, \xi_c F_c}} \ ,
 \end{equation}
@@ -955,7 +955,7 @@ where the range of $\xi_c$ is clamped according to $\xi_c \in [0, \mathrm{min}(1
 
 If there is a fractional $\mathtt{coat\_weight}$ $\mathtt{C}$, then the surrounding IOR of the base dielectric or metal varies statistically across the surface depending on whether the coat is locally present (the fuzz layer can be assumed to have the ambient IOR $n_\mathrm{ambient}$). A reasonable approximation of this is to take the surrounding effective coat IOR to be a linear blend [^lerp] between the ambient and modulated coat IORs according to the coat weight:
 \begin{equation} \label{effective_coat_ior}
-n_\mathrm{coat} = n_\mathrm{ambient} \times \mathrm{lerp}(1, \eta^\prime_c, \mathtt{C}) \ .
+n_\mathrm{coat} = n_\mathrm{ambient} \; \mathrm{lerp}(1, \eta^\prime_c, \mathtt{C}) \ .
 \end{equation}
 
 The ratio between the specular IOR ($n_\mathrm{specular} = \mathtt{specular\_ior}$) and the coat IOR, $\eta_s = n_\mathrm{specular} / n_\mathrm{coat}$ then determines the specular Fresnel factor, as in equation [modulated_ior].
@@ -1092,9 +1092,9 @@ Opacity / Transparency
 
 The final surface is defined as a mix of the entire $\mathrm{surface}$ bulk with the ambient medium:
 \begin{equation}
-M_\mathrm{PBR} = \mathrm{\mathbf{mix}}(S_\mathrm{ambient\; medium}, M_\mathrm{surface}, \mathtt{geometry\_opacity})
+M_\mathrm{PBR} = \mathrm{\mathbf{mix}}(S_\mathrm{ambient\; medium}, M_\mathrm{surface}, \mathtt{\alpha})
 \end{equation}
-where **`geometry_opacity`** is the presence weight of the entire surface, thus functioning effectively as a linear "alpha" blend.
+where $\mathtt{\alpha} = \mathtt{geometry\_opacity}$ is the presence weight of the entire surface, thus functioning effectively as a linear "alpha" blend.
 
 ****************************************************************************************************
 *                                                 1 - geometry_opacity       geometry_opacity      *
@@ -1105,7 +1105,7 @@ where **`geometry_opacity`** is the presence weight of the entire surface, thus 
 * +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
 ****************************************************************************************************
 
-Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) the opacity has a clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{geometry\_opacity} = 0$) like in the leaf render below.
+Note that in the case of a non-thin-walled material, $\mathtt{\alpha} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) the opacity has a clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{\alpha} = 0$) like in the leaf render below.
 
 !!! WARNING
       It is arguable therefore that $\mathtt{geometry\_opacity}$ is only useful in the thin-walled case, and could be disabled/removed in the bulk case. Though perhaps it is still useful in the bulk case, to do (non-physical) effects that would otherwise require compositing, like a fade-in, a ghost or a holographic display?
@@ -1113,14 +1113,11 @@ Note that in the case of a non-thin-walled material, $\mathtt{geometry\_opacity}
 We generally leave it as an implementation detail for a renderer to determine how connections to light sources be made through the surface. However a very common approximation used by many renderers is "transparent shadows", where a straight-line connection is made to lights and the contribution of the light determined by the total transmittance along the ray, ignoring any refraction events. We give here a suggested form for this shadow ray transmittance.
 
 The computed transmittance should take into account the presence weight of the entire geometry (**`geometry_opacity`**), and the transmittance through the geometry if present. The latter is the transmittance through the base dielectric only (as the metal is opaque), denoted $\mathbf{T}_\mathrm{dielectric}$, which should take into account the Fresnel factor of the dielectric interface and the extinction in the volumetric media  (in general a statistical mixture of the subsurface medium $V^\infty_\mathrm{subsurface}$ and translucent-base medium $V^\infty_\mathrm{dielectric}$).
-The mix weight of the base dielectric is
-\begin{equation}
-w_\mathrm{dielectric} = 1 - \mathtt{base\_metalness} \ .
-\end{equation}
+The mix weight of the base dielectric is $w_\mathrm{dielectric} = 1 - \mathtt{M}$ where $\mathtt{M} = \mathtt{base\_metalness}$.
 The total transmittance can thus be approximated as [^lerp]
 \begin{eqnarray}
-\mathbf{T}_\mathrm{pbr} &=& \mathrm{lerp}(1,  w_\mathrm{dielectric} \mathbf{T}_\mathrm{dielectric},  \mathtt{geometry\_opacity}) \nonumber \\
-                        &=& 1 - \mathtt{geometry\_opacity} \left(1 - w_\mathrm{dielectric} \mathbf{T}_\mathrm{dielectric}\right) \ .
+\mathbf{T}_\mathrm{pbr} &=& \mathrm{lerp}(1,  w_\mathrm{dielectric} \mathbf{T}_\mathrm{dielectric}, \mathtt{\alpha}) \nonumber \\
+                        &=& 1 - \mathtt{\alpha} \bigl(1 - (1 - M) \mathbf{T}_\mathrm{dielectric}\bigr) \ .
 \end{eqnarray}
 
 Opacity params         | Label   | Type    | Range      | Default  | Description
