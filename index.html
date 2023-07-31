@@ -186,25 +186,25 @@ A common approximation is to use so-called "albedo scaling" where the total BSDF
 
 A simple, albeit non-reciprocal, form of albedo scaling is thus to take the substrate weight factor to be one minus the directional reflectance of the coat, intuitively meaning that the energy not reflected by the coat is assumed to transmit through to the substrate:
 \begin{equation} \label{non-reciprocal-albedo-scaling}
-f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o) + \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o)
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o) + \bigl(1 - E_\mathrm{coat}(\omega_o)\bigr) \,f_\mathrm{sub}(\omega_i, \omega_o)
 \end{equation}
 where the directional albedo integral $E_\mathrm{coat}(\omega_o)$ can be either precomputed and tabulated, or computed on-the-fly via [Monte Carlo](https://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions#Application:EstimatingReflectance) sampling of the BSDF.
 This form ensures that if the directional albedos of the coat and substrate BSDFs are "weakly" energy conserving (i.e. $E_\mathrm{coat}(\omega_o) \le 1$, $E_\mathrm{sub}(\omega_o) \le 1$), then the combined BSDF is also weakly energy conserving, since
 \begin{equation}
-E_\mathrm{layer}(\omega_o) \,=\, E_\mathrm{coat}(\omega_o)  +  \left(1 - E_\mathrm{coat}(\omega_o)\right) \,E_\mathrm{sub}(\omega_o) \;\; \le \, 1  \ .
+E_\mathrm{layer}(\omega_o) \,=\, E_\mathrm{coat}(\omega_o)  +  \bigl(1 - E_\mathrm{coat}(\omega_o)\bigr) \,E_\mathrm{sub}(\omega_o) \;\; \le \, 1  \ .
 \end{equation}
 It also ensures that if the substrate BSDF perfectly preserves energy (i.e. $E_\mathrm{sub}(\omega_o) = 1$, also termed "strongly energy conserving"), then the layer BSDF does also, ensuring that a "white furnace" test would pass. The Autodesk Standard Surface model [#Georgiev2019] uses this formulation for its layering.
 
 A form of albedo-scaling which additionally satisfies reciprocity is
 \begin{equation} \label{reciprocal-albedo-scaling}
-f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + C \left(1 - E_\mathrm{coat}(\omega_i)\right) \, \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o)
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + C \bigl(1 - E_\mathrm{coat}(\omega_i)\bigr) \, \bigl(1 - E_\mathrm{coat}(\omega_o)\bigr) \,f_\mathrm{sub}(\omega_i, \omega_o)
 \end{equation}
 where to ensure the energy conservation the normalization constant $C$ involves an integral over the albedo times the substrate BSDF (see [#Kelemen2001]). Depending on the form of the substrate BSDF this may require more elaborate tabulation.
 
 Note though that this albedo-scaling approximation does not correctly take into account the effect of multiple light bounces back and forth between the interfaces, or absorption and scattering in the volumetric medium of the coat $V_\mathrm{coat}$. In general the resulting BSDF lobe shape will not be a simple linear combination of the interface BSDFs.
 To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric transmittance through the coat in the incident and output directions could be approximately modelled as
 \begin{equation} \label{non-reciprocal-albedo-scaling-with-T}
-f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  +  T_\mathrm{coat}(\omega_i, \omega_o) \left(1 - E_\mathrm{coat}(\omega_o)\right) \,f_\mathrm{sub}(\omega_i, \omega_o) \ .
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  +  T_\mathrm{coat}(\omega_i, \omega_o) \bigl(1 - E_\mathrm{coat}(\omega_o)\bigr) \,f_\mathrm{sub}(\omega_i, \omega_o) \ .
 \end{equation}
 where $T_\mathrm{coat}(\omega_i, \omega_o)$ accounts for the total volumetric absorption of the coat along the input and output rays. Similarly if the coat is rough this will effectively roughen the substrate BSDF lobe also, which can be accounted for approximately via various heuristics.
 
@@ -277,7 +277,7 @@ f_\mathrm{layer} = f_\mathrm{coat} +  T_\mathrm{coat} \left(1 - E_\mathrm{coat}\
 \end{equation}
 where $f_\mathrm{coat}$ is the BSDF of the coat and $T_\mathrm{coat}$ is its transmittance. Thus combining these [^lerp],
 \begin{equation} \label{coat_layering_formula_with_albedo_scaling}
-f_\mathrm{weighted-layer} = w_\mathrm{coat} f_\mathrm{coat} +  \mathrm{lerp}\left(1,  T_\mathrm{coat} (1 - E_\mathrm{coat}),  w_\mathrm{coat}\right) f_\mathrm{sub} \ ,
+f_\mathrm{weighted-layer} = w_\mathrm{coat} f_\mathrm{coat} +  \mathrm{lerp}\bigl(1,  T_\mathrm{coat} (1 - E_\mathrm{coat}),  w_\mathrm{coat}\bigr) f_\mathrm{sub} \ ,
 \end{equation}
 which, for example, is the formula used in the Autodesk Standard Surface [#Georgiev2019] coat layer.
 
