@@ -1023,7 +1023,7 @@ One practical model is the approach of [#Conty2017] where the layer is treated a
 
 If using the albedo-scaling interpretation of layering, a reasonable approximation of the reflection from the colored fibers combined with the gray extinction is to take (with $\mathtt{F}$ = **`fuzz_weight`**):
 \begin{eqnarray}
-\mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S+\mathrm{fuzz}, \mathtt{F}) &\rightarrow&   \mathtt{F} \,f_\mathrm{fuzz} +  \bigl(1 - \mathtt{F} \,E[\overline{f_\mathrm{fuzz}}] \bigr) \,f_\textrm{coated-base}               \nonumber \\
+\mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}, \mathtt{F}) &\rightarrow&   \mathtt{F} \,f_\mathrm{fuzz} +  \bigl(1 - \mathtt{F} \,E[\overline{f_\mathrm{fuzz}}] \bigr) \,f_\textrm{coated-base}               \nonumber \\
                                                                              &=&             \mathtt{F} \,f_\mathrm{fuzz} +  \mathrm{lerp}\bigl(1, 1 - E[\overline{f_\mathrm{fuzz}}], \mathtt{F}\bigr) \,f_\textrm{coated-base} \ , \label{fuzz-layering-approx}
 \end{eqnarray}
 where $\overline{f_\mathrm{fuzz}}$ corresponds to $f_\mathrm{fuzz}$ with a white **`fuzz_color`**.
