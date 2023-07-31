@@ -281,7 +281,7 @@ f_\mathrm{weighted-layer} = w_\mathrm{coat} f_\mathrm{coat} +  \mathrm{lerp}\lef
 \end{equation}
 which, for example, is the formula used in the Autodesk Standard Surface [#Georgiev2019] coat layer.
 
-In this fashion the abstract mix and layer operations can be mapped to a more computationally convenient representation in terms of a weighted sum of BSDF lobes.
+In this fashion the abstract mix and layer operations can be mapped to a more computationally convenient representation in terms of a weighted sum of BSDF lobes (see the Reduction to a mixture of lobes section for more details).
 
 !!! WARNING
    In practice we will most likely defer to the MaterialX implementation of the OpenPBR Surface model to define exactly how this mapping to a mixture model is done.
@@ -1226,7 +1226,7 @@ Reduction to a mixture of lobes
 
 In various practical models such as Disney's Principled Shader [#Burley2012], Autodesk 3ds Max's Physical Material [#Andersson2016] and Autodesk Standard Surface [#Georgiev2019], the model is defined as a linear combination of BSDF/BSSRDFs corresponding to the constituent BSDF lobes of the reflection and transmission. Given such a representation, the integration into a renderer is relatively straightforward as the individual lobes can be importance sampled and combined with direct lighting estimates via standard techniques such as multiple importance sampling (MIS) [#Veach1997].
 
-As an example, we give here a derivation of a mixture model representation similar to Autodesk Standard Surface, from the stated material structure of OpenPBR.
+As an example, we give here a brief derivation of a mixture model representation analogous to Autodesk Standard Surface, from the stated material structure of OpenPBR.
 Following Autodesk Standard Surface, we assume here that layering is implemented via the non-reciprocal albedo-scaling of equation [non-reciprocal-albedo-scaling].
 
 Consider first the non-thin-walled case (i.e. **`geometry_thin_walled`** is false).
