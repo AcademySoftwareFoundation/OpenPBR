@@ -1221,10 +1221,9 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
 Reduction to a mixture of lobes
 --------------------------------
 
-In various practical models such as Disney's Principled Shader [#Burley2012], Autodesk 3ds Max's Physical Material [#Andersson2016] and Autodesk Standard Surface [#Georgiev2019], the model is defined as a linear combination of BSDF/BSSRDFs corresponding to the constituent BSDF lobes of the reflection and transmission. Given such a representation, the integration into a renderer is relatively straightforward as the individual lobes can be importance sampled and combined with direct lighting estimates via standard techniques such as multiple importance sampling (MIS) [#Veach1997].
+In various practical models such as Disney's Principled Shader [#Burley2012], Autodesk 3ds Max's Physical Material [#Andersson2016] and Autodesk Standard Surface [#Georgiev2019], the model is defined as a mixture (i.e. linear combination) of BSDF/BSSRDFs corresponding to the constituent BSDF lobes of the reflection and transmission. The light transport between the layers and overall energy balance is approximated via the mix weights. Given such a representation, the integration into a renderer is relatively straightforward as the individual lobes can be importance sampled and combined with direct lighting estimates via standard techniques such as multiple importance sampling (MIS) [#Veach1997].
 
-As an example, we give here a brief derivation of a mixture model representation analogous to Autodesk Standard Surface, from the stated material structure of OpenPBR.
-Following Autodesk Standard Surface, we assume here that layering is implemented via the non-reciprocal albedo-scaling of equation [non-reciprocal-albedo-scaling].
+As an example, we give here a brief derivation of a mixture model representation analogous to Autodesk Standard Surface, from the stated material structure of OpenPBR. Following Autodesk Standard Surface, we assume here that layering is implemented via the non-reciprocal albedo-scaling of equation [non-reciprocal-albedo-scaling].
 
 Consider first the non-thin-walled case (i.e. **`geometry_thin_walled`** is false).
 For brevity, in the following we suppress all the direction arguments, and use the notation of the tree diagram in the Model section for the weight factors i.e.:
@@ -1256,10 +1255,12 @@ f_\textrm{translucent-base} &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!
 f_\textrm{subsurface}       &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!\!\!\!\!\!\!\! &(1 - E[\color{darkblue}{f^R_\textrm{specular}}]) &\,\color{darkblue}{f_\textrm{SSS}}            \ , \nonumber \\
 f_\textrm{glossy-diffuse}   &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!\!\!\!\!\!\!\! &(1 - E[\color{darkblue}{f^R_\textrm{specular}}]) &\,\color{darkblue}{f_\mathrm{diffuse}}        \ .
 \end{align}
-where, as described in the Layering section, $E[f_X]$ denotes the directional albedo of $f_X$. Here the substrate lobes $\color{darkblue}{f^T_\textrm{specular}}$ and $\color{darkblue}{f_\textrm{SSS}}$ are technically BSSRDFs, which model the entry into the internal medium via the dielectric interface, transport of light from entry point to exit points including absorption and scattering processes, and exit from the medium back though the interface, generating both a reflection and transmission component. (This sum of BSDF and BSSRDF can be justified mathematically by interpreting a BSDF as the special case of a BSSRDF restricted to equal exit and entry points).
-The "specular BTDF/BSSRDF" $\color{darkblue}{f^T_\textrm{specular}}$ corresponds to transmission into the medium parametrized in the Translucent base section, and BSSRDF $\color{darkblue}{f_\textrm{SSS}}$ corresponds to transmission into  medium parametrized in the Subsurface section. In the case of $f_\textrm{glossy-diffuse}$, the BSSRDF degenerates into the BRDF $\color{darkblue}{f_\mathrm{diffuse}}$ as described in the Glossy-diffuse section.
+where, as described in the Layering section, $E[f_X]$ denotes the directional albedo of $f_X$.
 
-Note that in this albedo scaling approximation, the transmission Fresnel factor associated with $\color{darkblue}{f^T_\textrm{specular}}$ and $f_\textrm{SSS}$ can be omitted as the energy conservation of the dielectric BSDF as a whole is maintained automatically, even without explicit multiple scattering compensation or in the presence of modifications to the reflection Fresnel factor via **`specular_weight`** and **`specular_color`**.
+Here the substrate lobes $\color{darkblue}{f^T_\textrm{specular}}$ and $\color{darkblue}{f_\textrm{SSS}}$ are technically BSSRDFs, which model the entry into the internal medium via the dielectric interface, transport of light from entry point to exit points including absorption and scattering processes, and exit from the medium back though the interface, generating both a reflection and transmission component. [^BSDF_BSSRDF_sum]
+The "specular" BTDF/BSSRDF $\color{darkblue}{f^T_\textrm{specular}}$ corresponds to transmission into the medium parametrized in the Translucent-base section, and BSSRDF $\color{darkblue}{f_\textrm{SSS}}$ corresponds to transmission into the medium parametrized in the Subsurface section. In the case of $f_\textrm{glossy-diffuse}$, the BSSRDF degenerates into the BRDF $\color{darkblue}{f_\mathrm{diffuse}}$ as described in the Glossy-diffuse section.
+
+Note that in this albedo scaling approximation, the transmission Fresnel factor associated with $\color{darkblue}{f^T_\textrm{specular}}$ and $f_\textrm{SSS}$ can be *omitted* as the energy conservation of the dielectric BSDF as a whole is maintained automatically, even without explicit multiple scattering compensation or in the presence of modifications to the reflection Fresnel factor via **`specular_weight`** and **`specular_color`**.
 
 Since $\color{darkblue}{f^R_\textrm{specular}}$ appears in each of the three components slab of the dielectric-base, it follows that on collecting terms, $f_\textrm{dielectric-base}$ reduces to:
 \begin{equation}
@@ -1453,6 +1454,7 @@ References
 
 [^normalization]:  Omitting normalization factors.
 
+[^BSDF_BSSRDF_sum]: This sum of BSDF and BSSRDF can be justified mathematically by interpreting a BSDF as the special case of a BSSRDF restricted to equal exit and entry points.
 
 <!--
 [^average-albedo]: Also termed the *hemispherical-hemispherical* reflectance.
