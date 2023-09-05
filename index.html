@@ -715,7 +715,7 @@ Implementations may choose to compute light transport in the subsurface medium e
 Subsurface params             | Label        | Type      | Range           | Default         | Description
 ------------------------------|--------------|-----------|:---------------:|:---------------:|----------------------------------------------
 **`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]      $ | 0.0             | Mix weight between subsurface and diffuse slabs
-**`subsurface_color`**        | Color        | `color3`  | $ [0, 1]^3    $ | (1.0, 1.0, 1.0) | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
+**`subsurface_color`**        | Color        | `color3`  | $ [0, 1]^3    $ | (0.8, 0.8, 0.8) | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
 **`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty] $ | 1.0             | Length scale of diffusion along the surface
 **`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3    $ | (1.0, 1.0, 1.0) | RGB multiplier to **`subsurface_radius`**, giving the per-channel diffusion length
 **`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1,1]      $ | 0.0             | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
@@ -862,7 +862,7 @@ To better approximate the actual Fresnel curve of metals, in the F82-tint model 
 \begin{equation}
 \mathbf{F}_{82}(\mu) = \mathbf{F}_{\mathrm{Schlick}}(\mu) - \frac{\mu (1 - \mu)^6}{\bar{\mu}(1 - \bar{\mu})^6} \Bigl(\mathbf{F}_{\mathrm{Schlick}}(\bar{\mu}) - \mathbf{F}(\bar{\mu})\Bigr) \ .
 \end{equation}
-where $\bar{\mu} = \cos(82^\circ)$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at that "grazing edge" angle cosine (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, i.e.
+where $\bar{\mu} = 1/7$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at that "grazing edge" angle cosine corresponding roughly to $82^\circ$ (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, i.e.
 \begin{equation}
 \mathbf{F}(\bar{\mu}) = \mathtt{specular\_weight} * \mathtt{specular\_color} * \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
 \end{equation}
