@@ -41,7 +41,7 @@
            doc="Additional roughness on top of specular roughness. Positive values blur refractions more than reflections, and negative values blur refractions less." />
     <input name="subsurface_weight" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Subsurface" uifolder="Subsurface Weight" uiadvanced="true"
            doc="The blend between diffuse reflection and subsurface scattering. A value of 1.0 indicates full subsurface scattering and a value 0 for diffuse reflection only." />
-    <input name="subsurface_color" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Color" uifolder="Subsurface" uiadvanced="true"
+    <input name="subsurface_color" type="color3" value="0.8, 0.8, 0.8" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Color" uifolder="Subsurface" uiadvanced="true"
            doc="The color of the subsurface scattering effect." />
     <input name="subsurface_radius" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Radius" uifolder="Subsurface" uiadvanced="true"
            doc="The mean free path. The distance which light can travel before being scattered inside the surface." />
