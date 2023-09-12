@@ -376,7 +376,7 @@
       <input name="base" type="BSDF" nodename="coat_substrate_attenuated" />
     </layer>
 
-  <!-- Fuzz Layer -->
+    <!-- Fuzz Layer -->
     <!-- TODO: Add a new BSDF node for the selected fuzz model in OpenPBR -->
     <sheen_bsdf name="fuzz_bsdf" type="BSDF">
       <input name="weight" type="float" interfacename="fuzz_weight" />
