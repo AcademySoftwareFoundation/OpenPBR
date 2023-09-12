@@ -67,7 +67,7 @@
            doc="The rotation of the anisotropic effect of the clear-coat layer." />
     <input name="coat_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Coat Index of Refraction" uifolder="Coat"
            doc="The index of refraction of the clear-coat layer." />
-    <input name="coat_normal" type="vector3" defaultgeomprop="Nworld" uiname="Coat normal" uifolder="Coat"
+    <input name="geometry_coat_normal" type="vector3" defaultgeomprop="Nworld" uiname="Coat normal" uifolder="Coat"
            doc="Input normal for clear-coat layer" />
     <input name="coat_affect_color" type="float" value="0" uimin="0" uimax="1" uiname="Coat Affect Color" uifolder="Coat" uiadvanced="true"
            doc="Controls the saturation of diffuse reflection and subsurface scattering below the clear-coat." />
@@ -81,13 +81,13 @@
            doc="The amount of emitted incandescent light." />
     <input name="emission_color" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Emission Color" uifolder="Emission"
            doc="The color of the emitted light." />
-    <input name="opacity" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Opacity" uifolder="Geometry"
+    <input name="geometry_opacity" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Opacity" uifolder="Geometry"
            doc="The opacity of the entire material." />
-    <input name="thin_walled" type="boolean" value="false" uiname="Thin Walled" uifolder="Geometry" uiadvanced="true"
+    <input name="geometry_thin_walled" type="boolean" value="false" uiname="Thin Walled" uifolder="Geometry" uiadvanced="true"
            doc="If true the surface is double-sided and represents an infinitely thin shell. Suitable for thin objects such as tree leaves or paper." />
-    <input name="normal" type="vector3" defaultgeomprop="Nworld" uiname="Normal" uifolder="Geometry"
+    <input name="geometry_normal" type="vector3" defaultgeomprop="Nworld" uiname="Normal" uifolder="Geometry"
            doc="Input geometric normal" />
-    <input name="tangent" type="vector3" defaultgeomprop="Tworld" uiname="Tangent Input" uifolder="Geometry"
+    <input name="geometry_tangent" type="vector3" defaultgeomprop="Tworld" uiname="Tangent Input" uifolder="Geometry"
            doc="Input geometric tangent" />
     <output name="out" type="surfaceshader" />
   </nodedef>
@@ -140,9 +140,9 @@
       <input name="in2" type="float" value="360" />
     </multiply>
     <rotate3d name="tangent_rotate" type="vector3">
-      <input name="in" type="vector3" interfacename="tangent" />
+      <input name="in" type="vector3" interfacename="geometry_tangent" />
       <input name="amount" type="float" nodename="tangent_rotate_degree" />
-      <input name="axis" type="vector3" interfacename="normal" />
+      <input name="axis" type="vector3" interfacename="geometry_normal" />
     </rotate3d>
     <normalize name="tangent_rotate_normalize" type="vector3">
       <input name="in" type="vector3" nodename="tangent_rotate" />
@@ -151,7 +151,7 @@
       <input name="value1" type="float" interfacename="specular_anisotropy" />
       <input name="value2" type="float" value="0.0" />
       <input name="in1" type="vector3" nodename="tangent_rotate_normalize" />
-      <input name="in2" type="vector3" interfacename="tangent" />
+      <input name="in2" type="vector3" interfacename="geometry_tangent" />
     </ifgreater>
 
     <!-- Coat tangent rotation -->
@@ -160,9 +160,9 @@
       <input name="in2" type="float" value="360" />
     </multiply>
     <rotate3d name="coat_tangent_rotate" type="vector3">
-      <input name="in" type="vector3" interfacename="tangent" />
+      <input name="in" type="vector3" interfacename="geometry_tangent" />
       <input name="amount" type="float" nodename="coat_tangent_rotate_degree" />
-      <input name="axis" type="vector3" interfacename="coat_normal" />
+      <input name="axis" type="vector3" interfacename="geometry_coat_normal" />
     </rotate3d>
     <normalize name="coat_tangent_rotate_normalize" type="vector3">
       <input name="in" type="vector3" nodename="coat_tangent_rotate" />
@@ -171,7 +171,7 @@
       <input name="value1" type="float" interfacename="coat_anisotropy" />
       <input name="value2" type="float" value="0.0" />
       <input name="in1" type="vector3" nodename="coat_tangent_rotate_normalize" />
-      <input name="in2" type="vector3" interfacename="tangent" />
+      <input name="in2" type="vector3" interfacename="geometry_tangent" />
     </ifgreater>
 
     <!-- Colors influenced by coat ("coat gamma") -->
@@ -208,12 +208,12 @@
       <input name="weight" type="float" interfacename="base_weight" />
       <input name="color" type="color3" nodename="coat_affected_diffuse_color" />
       <input name="roughness" type="float" interfacename="base_roughness" />
-      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
     </oren_nayar_diffuse_bsdf>
     <translucent_bsdf name="translucent_bsdf" type="BSDF">
       <input name="weight" type="float" value="1.0" />
       <input name="color" type="color3" nodename="coat_affected_subsurface_color" />
-      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
     </translucent_bsdf>
     <convert name="subsurface_radius_vector" type="vector3">
       <input name="in" type="color3" interfacename="subsurface_radius" />
@@ -227,10 +227,10 @@
       <input name="color" type="color3" nodename="coat_affected_subsurface_color" />
       <input name="radius" type="vector3" nodename="subsurface_radius_scaled" />
       <input name="anisotropy" type="float" interfacename="subsurface_anisotropy" />
-      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
     </subsurface_bsdf>
     <convert name="subsurface_selector" type="float">
-      <input name="in" type="boolean" interfacename="thin_walled" />
+      <input name="in" type="boolean" interfacename="geometry_thin_walled" />
     </convert>
     <mix name="selected_subsurface_bsdf" type="BSDF">
       <input name="fg" type="BSDF" nodename="translucent_bsdf" />
@@ -249,7 +249,7 @@
       <input name="weight" type="float" interfacename="fuzz_weight" />
       <input name="color" type="color3" interfacename="fuzz_color" />
       <input name="roughness" type="float" interfacename="fuzz_roughness" />
-      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
     </sheen_bsdf>
     <layer name="fuzz_layer" type="BSDF">
       <input name="top" type="BSDF" nodename="fuzz_bsdf" />
@@ -262,7 +262,7 @@
       <input name="tint" type="color3" interfacename="transmission_color" />
       <input name="ior" type="float" interfacename="specular_ior" />
       <input name="roughness" type="vector2" nodename="transmission_roughness" />
-      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" nodename="main_tangent" />
       <input name="distribution" type="string" value="ggx" />
       <input name="scatter_mode" type="string" value="T" />
@@ -279,7 +279,7 @@
       <input name="tint" type="color3" interfacename="specular_color" />
       <input name="ior" type="float" interfacename="specular_ior" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
-      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" nodename="main_tangent" />
       <input name="distribution" type="string" value="ggx" />
       <input name="scatter_mode" type="string" value="R" />
@@ -304,7 +304,7 @@
       <input name="color0" type="color3" nodename="metal_reflectivity" />
       <input name="color90" type="color3" nodename="metal_edgecolor" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
-      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" nodename="main_tangent" />
     </generalized_schlick_bsdf>
     <mix name="metalness_mix" type="BSDF">
@@ -342,7 +342,7 @@
       <input name="tint" type="color3" value="1.0, 1.0, 1.0" />
       <input name="ior" type="float" interfacename="coat_ior" />
       <input name="roughness" type="vector2" nodename="coat_roughness_vector" />
-      <input name="normal" type="vector3" interfacename="coat_normal" />
+      <input name="normal" type="vector3" interfacename="geometry_coat_normal" />
       <input name="tangent" type="vector3" nodename="coat_tangent" />
       <input name="distribution" type="string" value="ggx" />
       <input name="scatter_mode" type="string" value="R" />
@@ -395,7 +395,7 @@
     <!-- Surface construction with opacity -->
     <!-- Node <surface> only supports monochromatic opacity so use the luminance of input opacity color -->
     <luminance name="opacity_luminance" type="color3">
-      <input name="in" type="color3" interfacename="opacity" />
+      <input name="in" type="color3" interfacename="geometry_opacity" />
     </luminance>
     <surface name="shader_constructor" type="surfaceshader">
       <input name="bsdf" type="BSDF" nodename="coat_layer" />
