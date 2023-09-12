@@ -67,7 +67,7 @@
            doc="The rotation of the anisotropic effect of the clear-coat layer." />
     <input name="coat_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Coat Index of Refraction" uifolder="Coat"
            doc="The index of refraction of the clear-coat layer." />
-    <input name="geometry_coat_normal" type="vector3" defaultgeomprop="Nworld" uiname="Coat normal" uifolder="Coat"
+    <input name="geometry_coat_normal" type="vector3" defaultgeomprop="Nworld" uiname="Coat normal" uifolder="Geometry"
            doc="Input normal for clear-coat layer" />
     <input name="coat_affect_color" type="float" value="0" uimin="0" uimax="1" uiname="Coat Affect Color" uifolder="Coat" uiadvanced="true"
            doc="Controls the saturation of diffuse reflection and subsurface scattering below the clear-coat." />
