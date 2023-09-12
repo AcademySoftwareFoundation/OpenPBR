@@ -85,7 +85,7 @@
            doc="If true the surface is double-sided and represents an infinitely thin shell. Suitable for thin objects such as tree leaves or paper." />
     <input name="geometry_normal" type="vector3" defaultgeomprop="Nworld" uiname="Normal" uifolder="Geometry"
            doc="Input geometric normal" />
-    <input name="geometry_coat_normal" type="vector3" defaultgeomprop="Nworld" uiname="Coat normal" uifolder="Geometry"
+    <input name="geometry_coat_normal" type="vector3" defaultgeomprop="Nworld" uiname="Coat Normal" uifolder="Geometry"
            doc="Input normal for clear-coat layer" />
     <input name="geometry_tangent" type="vector3" defaultgeomprop="Tworld" uiname="Tangent Input" uifolder="Geometry"
            doc="Input geometric tangent" />
