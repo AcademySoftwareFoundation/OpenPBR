@@ -43,10 +43,10 @@
            doc="The blend between diffuse reflection and subsurface scattering. A value of 1.0 indicates full subsurface scattering and a value 0 for diffuse reflection only." />
     <input name="subsurface_color" type="color3" value="0.8, 0.8, 0.8" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Color" uifolder="Subsurface" uiadvanced="true"
            doc="The color of the subsurface scattering effect." />
-    <input name="subsurface_radius" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Radius" uifolder="Subsurface" uiadvanced="true"
-           doc="The mean free path. The distance which light can travel before being scattered inside the surface." />
-    <input name="subsurface_radius_scale" type="float" value="1" uimin="0.0" uisoftmax="10.0" uiname="Subsurface Radius Scale" uifolder="Subsurface" uiadvanced="true"
-           doc="Scalar weight for the subsurface radius value." />
+    <input name="subsurface_radius" type="float" value="1" uimin="0.0" uisoftmax="10.0" uiname="Subsurface Radius" uifolder="Subsurface" uiadvanced="true"
+           doc="The mean free path, i.e. the average distance which light can travel before being scattered or absorbed inside the surface." />
+    <input name="subsurface_radius_scale" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Radius Scale" uifolder="Subsurface" uiadvanced="true"
+           doc="Per-channel scale factor for the subsurface radius value." />
     <input name="subsurface_anisotropy" type="float" value="0" uimin="-1.0" uimax="1.0" uiname="Subsurface Anisotropy" uifolder="Subsurface" uiadvanced="true"
            doc="The direction of subsurface scattering. 0 scatters light evenly, positive values scatter forward and negative values scatter backward." />
     <input name="fuzz_weight" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Fuzz Weight" uifolder="Fuzz" uiadvanced="true"
