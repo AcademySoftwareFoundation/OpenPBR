@@ -216,11 +216,11 @@
       <input name="normal" type="vector3" interfacename="normal" />
     </translucent_bsdf>
     <convert name="subsurface_radius_vector" type="vector3">
-      <input name="in" type="color3" interfacename="subsurface_radius" />
+      <input name="in" type="color3" interfacename="subsurface_radius_scale" />
     </convert>
     <multiply name="subsurface_radius_scaled" type="vector3">
       <input name="in1" type="vector3" nodename="subsurface_radius_vector" />
-      <input name="in2" type="float" interfacename="subsurface_radius_scale" />
+      <input name="in2" type="float" interfacename="subsurface_radius" />
     </multiply>
     <subsurface_bsdf name="subsurface_bsdf" type="BSDF">
       <input name="weight" type="float" value="1.0" />
