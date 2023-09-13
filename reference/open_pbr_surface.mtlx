@@ -38,7 +38,7 @@
     <input name="transmission_dispersion" type="float" value="0" uimin="0.0" uisoftmax="100.0" uiname="Transmission Dispersion" uifolder="Transmission" uiadvanced="true"
            doc="Dispersion amount, describing how much the dielectric index of refraction varies across wavelengths." />
     <input name="transmission_extra_roughness" type="float" value="0" uimin="-1.0" uisoftmin="0.0" uimax="1.0" uiname="Transmission Roughness" uifolder="Transmission" uiadvanced="true"
-           doc="Additional roughness of on top of specular roughness, applied to refracted rays. Positive values blur refractions more than reflections, and negative values blur refractions less." />
+           doc="Additional roughness on top of specular roughness, applied to refracted rays. Positive values blur refractions more than reflections, and negative values blur refractions less." />
     <input name="subsurface_weight" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Subsurface" uifolder="Subsurface Weight" uiadvanced="true"
            doc="Mixture weight which dials the opaque dielectric base between diffuse reflection and subsurface scattering. A value of 1.0 indicates full subsurface scattering and a value 0 for diffuse reflection only." />
     <input name="subsurface_color" type="color3" value="0.8, 0.8, 0.8" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Color" uifolder="Subsurface" uiadvanced="true"
