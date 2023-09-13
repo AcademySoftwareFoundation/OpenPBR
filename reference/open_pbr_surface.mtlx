@@ -398,7 +398,7 @@
       <input name="in" type="color3" interfacename="geometry_opacity" />
     </luminance>
     <surface name="shader_constructor" type="surfaceshader">
-      <input name="bsdf" type="BSDF" nodename="fuzz_layer" />
+      <input name="bsdf" type="BSDF" nodename="coat_layer" />
       <input name="edf" type="EDF" nodename="emission_edf" />
       <input name="opacity" type="float" nodename="opacity_luminance" channels="r" />
     </surface>
