@@ -284,7 +284,7 @@
       <input name="in2" type="float" interfacename="specular_weight" />
     </multiply>
     <!-- TODO: Add support for a color82 input in generalized_schlick_bsdf -->
-    <generalized_schlick_bsdf name="metallic_brdf" type="BSDF">
+    <generalized_schlick_bsdf name="metallic_bsdf" type="BSDF">
       <input name="weight" type="float" value="1.0" />
       <input name="color0" type="color3" nodename="metal_reflectivity" />
       <input name="color90" type="color3" nodename="metal_edgecolor" />
@@ -293,7 +293,7 @@
       <input name="tangent" type="vector3" nodename="main_tangent" />
     </generalized_schlick_bsdf>
     <mix name="base_substrate" type="BSDF">
-      <input name="fg" type="BSDF" nodename="metallic_brdf" />
+      <input name="fg" type="BSDF" nodename="metallic_bsdf" />
       <input name="bg" type="BSDF" nodename="dielectric_base" />
       <input name="mix" type="float" interfacename="base_metalness" />
     </mix>
