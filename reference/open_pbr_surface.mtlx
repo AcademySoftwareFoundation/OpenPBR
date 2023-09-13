@@ -22,7 +22,7 @@
     <input name="specular_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Index of Refraction" uifolder="Specular"
            doc="Index of refraction of the dielectric base." />
     <input name="specular_anisotropy" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Specular Anisotropy" uifolder="Specular" uiadvanced="true"
-           doc="The directional bias of the roughness of the metal/dielectric base, resulting in increasingly stretched highlights." />
+           doc="The directional bias of the roughness of the metal/dielectric base, resulting in increasingly stretched highlights along the tangent direction." />
     <input name="specular_rotation" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Specular Rotation" uifolder="Specular" uiadvanced="true"
            doc="Rotation of the axis of specular roughness anisotropy around the surface normal." />
     <input name="transmission_weight" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Transmission Weight" uifolder="Transmission" uiadvanced="true"
@@ -62,7 +62,7 @@
     <input name="coat_roughness" type="float" value="0.1" uimin="0.0" uimax="1.0" uiname="Coat Roughness" uifolder="Coat"
            doc="The roughness of the clear-coat reflections. The lower the value, the sharper the reflection." />
     <input name="coat_anisotropy" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Coat Anisotropy" uifolder="Coat" uiadvanced="true"
-           doc="The directional bias of the roughness of the clear-coat layer, resulting in increasingly stretched highlights." />
+           doc="The directional bias of the roughness of the clear-coat layer, resulting in increasingly stretched highlights along the coat tangent direction." />
     <input name="coat_rotation" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Coat Rotation" uifolder="Coat" uiadvanced="true"
            doc="Rotation of the axis of clear-coat roughness anisotropy around the coat normal." />
     <input name="coat_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Coat Index of Refraction" uifolder="Coat"
