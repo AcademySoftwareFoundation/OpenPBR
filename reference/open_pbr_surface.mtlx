@@ -274,7 +274,7 @@
       <input name="base" type="BSDF" nodename="dielectric_substrate" />
     </layer>
 
-    <!-- Base Substrate -->
+    <!-- Metal Layer -->
     <multiply name="metal_reflectivity" type="color3">
       <input name="in1" type="color3" interfacename="base_color" />
       <input name="in2" type="float" interfacename="base_weight" />
