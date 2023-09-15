@@ -248,10 +248,78 @@
     </mix>
 
     <!-- Dielectric Base -->
+    <divide name="specular_to_coat_ior_ratio" type="float">
+      <input name="in1" type="float" interfacename="specular_ior" />
+      <input name="in2" type="float" nodename="modulated_coat_ior" />
+    </divide>
+    <subtract name="specular_ior_minus_one" type="float">
+      <input name="in1" type="float" nodename="specular_to_coat_ior_ratio" />
+      <input name="in2" type="float" value="1.0" />
+    </subtract>
+    <add name="one_plus_specular_ior" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="specular_to_coat_ior_ratio" />
+    </add>
+    <divide name="specular_ior_to_F0_sqrt" type="float">
+      <input name="in1" type="float" nodename="specular_ior_minus_one" />
+      <input name="in2" type="float" nodename="one_plus_specular_ior" />
+    </divide>
+    <multiply name="specular_ior_to_F0" type="float">
+      <input name="in1" type="float" nodename="specular_ior_to_F0_sqrt" />
+      <input name="in2" type="float" nodename="specular_ior_to_F0_sqrt" />
+    </multiply>
+    <divide name="half_over_specular_F0" type="float">
+      <input name="in1" type="float" value="0.5" />
+      <input name="in2" type="float" nodename="specular_ior_to_F0" />
+    </divide>
+    <min name="specular_ior_level_upper_bound" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="half_over_specular_F0" />
+    </min>
+    <clamp name="specular_ior_level_clamped" type="float">
+      <input name="in" type="float" interfacename="specular_ior_level" />
+      <input name="low" type="float" value="0.0" />
+      <input name="high" type="float" nodename="specular_ior_level_upper_bound" />
+    </clamp>
+    <multiply name="modulated_specular_reflectivity1" type="float">
+      <input name="in1" type="float" nodename="specular_ior_level_clamped" />
+      <input name="in2" type="float" nodename="specular_ior_to_F0" />
+    </multiply>
+    <multiply name="modulated_specular_reflectivity2" type="float">
+      <input name="in1" type="float" value="2.0" />
+      <input name="in2" type="float" nodename="modulated_specular_reflectivity1" />
+    </multiply>
+    <sqrt name="sqrt_modulated_specular_reflectivity" type="float">
+      <in name="in" type="float" nodename="modulated_specular_reflectivity2" />
+    </sqrt>
+    <sign name="sign_specular_ior_minus_one" type="float">
+      <in name="in" type="float" nodename="specular_ior_minus_one" />
+    </sign>
+    <multiply name="modulated_specular_reflectivity3" type="float">
+      <input name="in1" type="float" nodename="sign_specular_ior_minus_one" />
+      <input name="in2" type="float" nodename="sqrt_modulated_specular_reflectivity" />
+    </multiply>
+    <subtract name="one_minus_modulated_specular_reflectivity3" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="modulated_specular_reflectivity3" />
+    </subtract>
+    <add name="one_plus_modulated_specular_reflectivity3" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="modulated_specular_reflectivity3" />
+    </add>
+    <divide name="modulated_specular_ior_ratio" type="float">
+      <input name="in1" type="float" nodename="one_plus_modulated_specular_reflectivity3" />
+      <input name="in2" type="float" nodename="one_minus_modulated_specular_reflectivity3" />
+    </divide>
+    <multiply name="modulated_specular_ior" type="float">
+      <input name="in1" type="float" nodename="modulated_specular_ior_ratio" />
+      <input name="in2" type="float" nodename="modulated_coat_ior" />
+    </multiply>
+
     <dielectric_bsdf name="dielectric_transmission" type="BSDF">
       <input name="weight" type="float" value="1.0" />
       <input name="tint" type="color3" interfacename="transmission_color" />
-      <input name="ior" type="float" interfacename="specular_ior" />
+      <input name="ior" type="float" nodename="modulated_specular_ior" />
       <input name="roughness" type="vector2" nodename="transmission_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" nodename="main_tangent" />
@@ -266,7 +334,7 @@
     <dielectric_bsdf name="dielectric_reflection" type="BSDF">
       <input name="weight" type="float" interfacename="specular_weight" />
       <input name="tint" type="color3" interfacename="specular_color" />
-      <input name="ior" type="float" interfacename="specular_ior" />
+      <input name="ior" type="float" nodename="modulated_specular_ior" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" nodename="main_tangent" />
@@ -313,6 +381,47 @@
     </layer>
 
     <!-- Coat Layer -->
+    <divide name="half_over_coat_F0" type="float">
+      <input name="in1" type="float" value="0.5" />
+      <input name="in2" type="float" nodename="coat_ior_to_F0" />
+    </divide>
+    <min name="coat_ior_level_upper_bound" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="half_over_coat_F0" />
+    </min>
+    <clamp name="coat_ior_level_clamped" type="float">
+      <input name="in" type="float" interfacename="coat_ior_level" />
+      <input name="low" type="float" value="0.0" />
+      <input name="high" type="float" nodename="coat_ior_level_upper_bound" />
+    </clamp>
+    <multiply name="modulated_coat_reflectivity1" type="float">
+      <input name="in1" type="float" nodename="coat_ior_level_clamped" />
+      <input name="in2" type="float" nodename="coat_ior_to_F0" />
+    </multiply>
+    <multiply name="modulated_coat_reflectivity2" type="float">
+      <input name="in1" type="float" value="2.0" />
+      <input name="in2" type="float" nodename="modulated_coat_reflectivity1" />
+    </multiply>
+    <sqrt name="sqrt_modulated_coat_reflectivity" type="float">
+      <in name="in" type="float" nodename="modulated_coat_reflectivity2" />
+    </sqrt>
+    <subtract name="one_minus_sqrt_modulated_coat_reflectivity" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="sqrt_modulated_coat_reflectivity" />
+    </subtract>
+    <add name="one_plus_sqrt_modulated_coat_reflectivity" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="sqrt_modulated_coat_reflectivity" />
+    </add>
+    <divide name="modulated_coat_ior_ratio" type="float">
+      <input name="in1" type="float" nodename="one_plus_sqrt_modulated_coat_reflectivity" />
+      <input name="in2" type="float" nodename="one_minus_sqrt_modulated_coat_reflectivity" />
+    </divide>
+    <mix name="modulated_coat_ior" type="float">
+      <input name="fg" type="float" value="1.0" />
+      <input name="bg" type="float" nodename="modulated_coat_ior_ratio" />
+      <input name="mix" type="float" interfacename="coat_weight" />
+    </mix>
     <mix name="coat_attenuation" type="color3">
       <input name="fg" type="color3" interfacename="coat_color" />
       <input name="bg" type="color3" value="1.0, 1.0, 1.0" />
@@ -329,7 +438,7 @@
     <dielectric_bsdf name="coat_bsdf" type="BSDF">
       <input name="weight" type="float" interfacename="coat_weight" />
       <input name="tint" type="color3" value="1.0, 1.0, 1.0" />
-      <input name="ior" type="float" interfacename="coat_ior" />
+      <input name="ior" type="float" nodename="modulated_coat_ior" />
       <input name="roughness" type="vector2" nodename="coat_roughness_vector" />
       <input name="normal" type="vector3" interfacename="geometry_coat_normal" />
       <input name="tangent" type="vector3" nodename="coat_tangent" />
