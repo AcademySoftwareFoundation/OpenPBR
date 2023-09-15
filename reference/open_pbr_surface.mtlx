@@ -21,6 +21,8 @@
            doc="The roughness of the specular reflection. Lower numbers produce sharper reflections, higher numbers produce blurrier reflections." />
     <input name="specular_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Index of Refraction" uifolder="Specular"
            doc="Index of refraction for specular reflection." />
+    <input name="specular_ior_level" type="float" value="0.5" uimin="0.0" uisoftmin="1.0" uisoftmax="1.0" uiname="Specular IOR Level" uifolder="Specular"
+           doc="Modulates the dielectric reflectivity at normal incidence between zero and double the original." />
     <input name="specular_anisotropy" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Specular Anisotropy" uifolder="Specular" uiadvanced="true"
            doc="The directional bias of reflected and transmitted light resulting in materials appearing rougher or glossier in certain directions." />
     <input name="specular_rotation" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Specular Rotation" uifolder="Specular" uiadvanced="true"
@@ -67,6 +69,8 @@
            doc="The rotation of the anisotropic effect of the clear-coat layer." />
     <input name="coat_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Coat Index of Refraction" uifolder="Coat"
            doc="The index of refraction of the clear-coat layer." />
+    <input name="coat_ior_level" type="float" value="0.5" uimin="0.0" uisoftmin="1.0" uisoftmax="1.0" uiname="Specular IOR Level" uifolder="Specular"
+           doc="Modulates the clear-coat reflectivity at normal incidence between zero and double the original." />
     <input name="coat_affect_color" type="float" value="0" uimin="0" uimax="1" uiname="Coat Affect Color" uifolder="Coat" uiadvanced="true"
            doc="Controls the saturation of diffuse reflection and subsurface scattering below the clear-coat." />
     <input name="coat_affect_roughness" type="float" value="0" uimin="0" uimax="1" uiname="Coat Affect Roughness" uifolder="Coat" uiadvanced="true"
