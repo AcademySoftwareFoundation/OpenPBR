@@ -239,7 +239,7 @@
       <input name="in1" type="BSDF" nodename="subsurface_thin_walled_transmission_bsdf" />
       <input name="in2" type="color3" nodename="subsurface_thin_walled_btdf_factor" />
     </multiply>
-    <mix name="subsurface_thin_walled_" type="BSDF">
+    <mix name="subsurface_thin_walled" type="BSDF">
       <input name="fg" type="BSDF" nodename="subsurface_thin_walled_reflection" />
       <input name="bg" type="BSDF" nodename="subsurface_thin_walled_transmission" />
       <input name="mix" type="float" value="0.5" />
@@ -272,7 +272,7 @@
       <input name="in" type="boolean" interfacename="geometry_thin_walled" />
     </convert>
     <mix name="selected_subsurface" type="BSDF">
-      <input name="fg" type="BSDF" nodename="subsurface_thin_walled_" />
+      <input name="fg" type="BSDF" nodename="subsurface_thin_walled" />
       <input name="bg" type="BSDF" nodename="subsurface_bsdf" />
       <input name="mix" type="float" nodename="subsurface_selector" />
     </mix>
