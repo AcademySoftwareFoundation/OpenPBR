@@ -76,7 +76,7 @@
     <input name="thin_film_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Thin Film Index of Refraction" uifolder="Thin Film" uiadvanced="true"
            doc="The index of refraction of the thin-film." />
     <input name="emission_luminance" type="float" value="0" uimin="0.0" uisoftmax="1.0" uiname="Emission Luminance" uifolder="Emission"
-           doc="TThe amount of emitted light, as a luminance in nits." />
+           doc="The amount of emitted light, as a luminance in nits." />
     <input name="emission_color" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Emission Color" uifolder="Emission"
            doc="The color of the emitted light." />
     <input name="geometry_opacity" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Opacity" uifolder="Geometry"
