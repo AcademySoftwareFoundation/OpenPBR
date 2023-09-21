@@ -715,9 +715,9 @@ Implementations may choose to compute light transport in the subsurface medium e
 Subsurface params             | Label        | Type      | Range               | Default       | Description
 ------------------------------|--------------|-----------|:-------------------:|:-------------:|----------------------------------------------
 **`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]          $ | $ 0         $ | Mix weight between subsurface and diffuse slabs
-**`subsurface_color`**        | Color        | `color3`  | $ [0, 1]^3    $ | (0.8, 0.8, 0.8) | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
-**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty] $ | 1.0             | Length scale of diffusion along the surface
-**`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3    $ | (1.0, 1.0, 1.0) | RGB multiplier to **`subsurface_radius`**, giving the per-channel diffusion length
+**`subsurface_color`**        | Color        | `color3`  | $ [0, 1]^3        $ | (0.8, 0.8, 0.8) | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
+**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty)     $ | 1.0             | Length scale of diffusion along the surface
+**`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3        $ | (1.0, 1.0, 1.0) | RGB multiplier to **`subsurface_radius`**, giving the per-channel diffusion length
 **`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1,1]          $ | $ 0         $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
 
 ![](images/subsurface1.jpg width=99%) ![](images/subsurface2.jpg width=99%) ![](images/subsurface3.jpg width=99%)
