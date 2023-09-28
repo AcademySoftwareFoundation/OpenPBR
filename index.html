@@ -597,10 +597,10 @@ Specular params           | Label      | Type     | Range           | Norm      
 **`specular_weight`**     | Weight     | `float`  | $ [0, 1]      $ |            | $ 1         $ | Scalar multiplier to the dielectric Fresnel factor
 **`specular_color`**      | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
 **`specular_roughness`**  | Roughness  | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
-**`specular_ior_level`**  | IOR level  | `float`  | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the dielectric reflectivity at normal incidence between zero and double the original
 **`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0         $ | Orientation of roughness anisotropy
+**`specular_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
+**`specular_ior_level`**  | IOR level  | `float`  | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the dielectric reflectivity at normal incidence between zero and double the original
 
 ![](images/spec_ior1.png width=95%) ![](images/spec_ior2.png width=95%) ![](images/spec_ior3.png width=95%)
 <div class="shifted-caption">
@@ -973,10 +973,10 @@ Coat params           | Label      | Type     | Range           |  Norm      | D
 **`coat_weight`**     | Weight     | `float`  | $ [0, 1]      $ |            | $ 0         $ | Coverage weight of coat slab
 **`coat_color`**      | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Overall color due to absorption of $V_\mathrm{coat}$
 **`coat_roughness`**  | Roughness  | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 0         $ | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
-**`coat_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
-**`coat_ior_level`**  | IOR level  | `float`  | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the coat reflectivity at normal incidence between zero and double the original
 **`coat_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
 **`coat_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0         $ | Orientation of roughness anisotropy
+**`coat_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
+**`coat_ior_level`**  | IOR level  | `float`  | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the coat reflectivity at normal incidence between zero and double the original
 
 <!-- Markdeep:
 **`coat_affect_color`**     | Affect Color     | `float`  | $ [0, 1]   $ | $ 1         $ | How much to prevent the coat from affecting the brightness and saturation of layers below
