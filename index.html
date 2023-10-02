@@ -1022,7 +1022,7 @@ The form of this model is the following (with $\mu_i, \mu_o$ the angle cosines t
 \begin{equation}
 \mu_i \, f_\mathrm{fuzz}(\omega_i, \omega_o) = \mathbf{F} \, E_\mathrm{fuzz}(\mu_o, \alpha) \, D(\mu_i | \mu_o, \alpha)
 \end{equation}
-where $\mathbf{F}$ = **`fuzz_color`**, $E_\mathrm{fuzz}(\mu_o, \alpha)$ (termed $R$ in [#Zeltner2022]) is the reflectance at angle cosine $\mu_o$ given roughness $\alpha$ = **`fuzz_roughness`** $\in [0,1]$, and $D(\mu_i | \mu_o, \alpha)$ is a lobe defined by linear transformations of a cosine lobe (LTCs), where the transformation matrices (and $E_\mathrm{fuzz}$) are tabulated in a grid in the $(\mu_o, \alpha)$ plane, with values fitted to a simulation of the scattering in the volumetric fuzz microflake layer. Since via the LTC lobe $D$ is a normalized PDF over the hemisphere, the resulting albedo of $f_\mathrm{fuzz}$ is $\mathbf{F} \, E_\mathrm{fuzz}(\mu_o, \alpha)$.
+where $\mathbf{F}$ = **`fuzz_color`**, $E_\mathrm{fuzz}(\mu_o, \alpha)$ (termed $R$ in [#Zeltner2022]) is the reflectance at angle cosine $\mu_o$ given roughness $\alpha$ = **`fuzz_roughness`** $\in [0,1]$, and $D(\mu_i | \mu_o, \alpha)$ is a lobe defined by linear transformations of a cosine lobe (LTCs), where the transformation matrices (and $E_\mathrm{fuzz}$) are tabulated in a grid in the $(\mu_o, \alpha)$ plane, with values fitted to a simulation of the scattering in the volumetric fuzz microflake layer. Since the LTC lobe $D$ is a normalized PDF over the hemisphere, the resulting albedo of $f_\mathrm{fuzz}$ is $\mathbf{F} \, E_\mathrm{fuzz}(\mu_o, \alpha)$.
 
 <!-- Markdeep:
 To compute this lobe, $\omega_o$ is rotated into the $x$-$z$ plane (with $z$ aligned with **`geometry_normal`**) and the following LTC matrix multiplication evaluated:
