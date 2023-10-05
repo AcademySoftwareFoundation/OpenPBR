@@ -1024,24 +1024,6 @@ The form of this model is the following (with $\mu_i, \mu_o$ the angle cosines t
 \end{equation}
 where $\mathbf{F}$ = **`fuzz_color`**, $E_\mathrm{fuzz}(\mu_o, \alpha)$ (termed $R$ in [#Zeltner2022]) is the reflectance at angle cosine $\mu_o$ given roughness $\alpha$ = **`fuzz_roughness`** $\in [0,1]$, and $D(\mu_i | \mu_o, \alpha)$ is a lobe defined by linear transformations of a cosine lobe (LTCs), where the transformation matrices (and $E_\mathrm{fuzz}$) are tabulated in a grid in the $(\mu_o, \alpha)$ plane, with values fitted to a simulation of the scattering in the volumetric fuzz microflake layer. Since the LTC lobe $D$ is a normalized PDF over the hemisphere, the resulting albedo of $f_\mathrm{fuzz}$ is $\mathbf{F} \, E_\mathrm{fuzz}(\mu_o, \alpha)$.
 
-<!-- Markdeep:
-To compute this lobe, $\omega_o$ is rotated into the $x$-$z$ plane (with $z$ aligned with **`geometry_normal`**) and the following LTC matrix multiplication evaluated:
-\begin{equation}
-D(\omega_o | \mu_i, \alpha) = \frac{||M^{-1}||}{||M^{-1}\omega_o||} \; D_o(\bar{\omega})
-\end{equation}
-where $M^{-1}(\mu_i, \alpha)$ are 3x3 matrices, $\bar{\omega} = M^{-1}\omega_o / ||M^{-1}\omega_o||$ and $D_o(\bar{\omega})$ is given by a normalized cosine lobe clamped to the positive hemisphere, i.e. $D_o = \mathrm{max(0, \bar{\omega})} / \pi$.
-The matrices $M^{-1}(\mu_i, \alpha)$ are defined by:
-\begin{equation}
-M^{-1}(\mu_i, \alpha) =
-\begin{pmatrix}
-A(\mu_i, \alpha) & 0                & B(\mu_i, \alpha) \\
-0                & A(\mu_i, \alpha) & 0                \\
-0                & 0                & 1                \\
-\end{pmatrix} \ .
-\end{equation}
-The quantities $R(\mu_i, \alpha)$, $A(\mu_i, \alpha)$ and $B(\mu_i, \alpha)$ are each tabulated as a 32x32 grid in the $[0,1]^2$ plane. This can then be efficiently importance sampled by sampling $\bar{\omega}$ from the PDF $D_o$, and computing $\omega_o = M\bar{\omega}/||M\bar{\omega}||$.
- -->
-
 
 If using the albedo-scaling interpretation of layering, a reasonable approximation of the reflection from the fuzz layer combined with the reflection from the base is to take
 \begin{eqnarray}
