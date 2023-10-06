@@ -534,7 +534,7 @@ Thin-film params          | Label     | Type     | Range           | Norm       
 
 
 
-Dielectric-base
+Dielectric base
 -------------------------------------
 
 The dielectric-base is assumed to have a surface BSDF described by a rough GGX dielectric [microfacet model](index.html#model/microfacetmodel) [#Walter2007], and a bulk volumetric medium supporting absorption and scattering (whether physically due to the inherent molecular properties of the dielectric as in water, or e.g. a dispersion of embedded particles or flakes as in paint).
@@ -732,7 +732,7 @@ Subsurface params             | Label        | Type      | Range           | Def
    Give example renders of how the blend of glossy-diffuse and subsurface (via the **`subsurface_weight`**) can be important for skin rendering (as in the Adobe model docs)
 
 
-### Translucent-base
+### Translucent base
 
 For cases where the substrate medium is translucent, i.e. transmits and refracts a significant quantity of light, we provide a separate parametrization of the underlying medium more appropriate for this use case than the subsurface model, where the **`transmission_weight`** mix weight selects this model rather than the opaque mix of glossy-diffuse and subsurface. This is a more traditional volumetric parametrization specifying the properties of a homogeneous medium interior to the object, with or without absorption and scattering, which is useful for modeling materials ranging from clear or colored absorbing-only glass and liquids to translucent materials with visually significant scattering such as honey, fruit juice, murky water, opalescent glass, or milky glass.
 
@@ -1262,7 +1262,7 @@ f_\textrm{glossy-diffuse}   &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!
 where, as described in the Layering section, $E[f_X]$ denotes the directional albedo of $f_X$.
 
 Here the substrate lobes $\color{darkblue}{f^T_\textrm{specular}}$ and $\color{darkblue}{f_\textrm{SSS}}$ are technically BSSRDFs, which model the entry into the internal medium via the dielectric interface, transport of light from entry point to exit points including absorption and scattering processes, and exit from the medium back though the interface, generating both a reflection and transmission component. [^BSDF_BSSRDF_sum]
-The "specular" BTDF/BSSRDF $\color{darkblue}{f^T_\textrm{specular}}$ corresponds to transmission into the medium parametrized in the Translucent-base section, and BSSRDF $\color{darkblue}{f_\textrm{SSS}}$ corresponds to transmission into the medium parametrized in the Subsurface section. In the case of $f_\textrm{glossy-diffuse}$, the BSSRDF degenerates into the BRDF $\color{darkblue}{f_\mathrm{diffuse}}$ as described in the Glossy-diffuse section.
+The "specular" BTDF/BSSRDF $\color{darkblue}{f^T_\textrm{specular}}$ corresponds to transmission into the medium parametrized in the Translucent base section, and BSSRDF $\color{darkblue}{f_\textrm{SSS}}$ corresponds to transmission into the medium parametrized in the Subsurface section. In the case of $f_\textrm{glossy-diffuse}$, the BSSRDF degenerates into the BRDF $\color{darkblue}{f_\mathrm{diffuse}}$ as described in the Glossy-diffuse section.
 
 Note that in this albedo scaling approximation, the transmission Fresnel factor associated with $\color{darkblue}{f^T_\textrm{specular}}$ and $f_\textrm{SSS}$ can be *omitted* as the energy conservation of the dielectric BSDF as a whole is maintained automatically, even without explicit multiple scattering compensation or in the presence of modifications to the reflection Fresnel factor via **`specular_weight`** and **`specular_color`**.
 
