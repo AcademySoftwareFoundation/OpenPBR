@@ -36,10 +36,10 @@ We aim for the overall behavior to be simple, logical, intuitive, and understand
 We thus adopt a material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]). With each component of the structure, we also define a set of parameters with names, valid ranges and default values, and describe how the component should be affected by the parameters.
 
 In outline the structure consists of:
-   - A [base substrate](index.html#model/basesubstrate) made of a mixture of [metal](index.html#model/metallicbase) or [dielectric](index.html#model/dielectricbase). The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric base represents either of three components, that can be statistically mixed:
-        1. [Glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse): dielectric with opaque "diffuse" internal media, for example wood, granite, concrete, cardboard, and wall paint.
-        2. [Subsurface](index.html#model/dielectricbase/subsurface): dielectric with dense highly scattering internal media, for example plastic, marble, skin, vegetation, and food.
-        3. [Translucent base](index.html#model/dielectricbase/translucentbase) dielectric with translucent internal media, for example glass, crystals, and liquids.
+   - A [base substrate](index.html#model/base-substrate) made of a mixture of [metal](index.html#model/metallicbase) or [dielectric](index.html#model/dielectricbase). The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric base represents either of three components, that can be statistically mixed:
+        1. [Glossy-diffuse](index.html#model/dielectric-base/glossy-diffuse): dielectric with opaque "diffuse" internal media, for example wood, granite, concrete, cardboard, and wall paint.
+        2. [Subsurface](index.html#model/dielectric-base/subsurface): dielectric with dense highly scattering internal media, for example plastic, marble, skin, vegetation, and food.
+        3. [Translucent-base](index.html#model/dielectric-base/translucent-base): dielectric with translucent internal media, for example glass, crystals, and liquids.
    - [Coat](index.html#model/coat): An optional layer of dielectric, which may have an absorbing medium, acting as a coating on top of the base substrate.
      The dielectric interface of this coat layer provides a secondary specular lobe.
    - [Fuzz](index.html#model/fuzz): An optional layer representing the reflection from micro-fibers (such as fine hair, peach fuzz, textile strands, and dust grains) on top of everything else.
