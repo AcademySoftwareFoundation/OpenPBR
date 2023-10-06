@@ -23,7 +23,7 @@ Historical background and objectives
 
 Interchange of computer graphics scene assets remains a significant problem today, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines which are not easily interoperable. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem and is a topic of active scientific research. Despite this, there is a strong need today for industries engaged in physically based rendering (both offline and real-time) to find a standardized material model that covers the most common use cases in day-to-day workflows.
 
-Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light-transport simulation in the scene. Such general frameworks include MaterialX [#Smythe2016], Open Shading Language (OSL) [#Gritz2010], and Material Definition Language (MDL) [#Kettner2015], which allow specifying the material as a combination of primitive surface-reflectance models. These frameworks alone however are not sufficient for look development by end users, who should not be expected to build complex surface shaders from the ground up for day-to-day tasks. Instead it is much more convenient in practice for them to work with a standard über-shader parametrization, i.e. a single monolithic material definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials.
+Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX [#Smythe2016], Open Shading Language (OSL) [#Gritz2010], and Material Definition Language (MDL) [#Kettner2015], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users, who should not be expected to build complex surface shaders from the ground up for day-to-day tasks. Instead it is much more convenient in practice for them to work with a standard über-shader parametrization, i.e. a single monolithic material definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials.
 
 There have been various previous proposals for such an über-shader, such as Disney's Principled Shader [#Burley2012], Allegorithmic's PBR shading model [#McDermott2018], and most recently the Autodesk Standard Surface shader [#Georgiev2019] and the Adobe Standard Material [#Kutz2021]. 
 Autodesk Standard Surface has strong spiritual predecessors in Anders Langlands' alSurface [#Langlands2014] and Autodesk 3ds Max's Physical Material [#Andersson2016]. 3ds Max's Physical Material in turn was strongly inspired by Allegorithmic's model, Disney's Principled Shader, and general industry trends in several real-time 3D engines.
@@ -62,7 +62,7 @@ In both cases, the important consideration is that the implementation respects t
 Formalism
 ============================================
 
-Our goal is to create a surface-shading model that is able to faithfully represent a wide variety of real-world materials. The light scattering characteristics at the surfaces of basic materials like metal, glass, or wall paint are well studied and can be accurately represented via simple analytical models. Other materials, such as finished wood, cloth, or skin, comprise semi-transparent layers of matter stacked on top of each other. The more intricate behavior of such materials is the result of light scattering at the interfaces between these layers and propagating through them, and each such scattering interface can typically be represented by an analytical model. Materials are also heterogeneous across the surface, for example a rusty metal surface has regions with bare specular metal and dull iron oxide, and the transition between these may be abrupt or smooth.
+Our goal is to create a surface shading model that is able to faithfully represent a wide variety of real-world materials. The light scattering characteristics at the surfaces of basic materials like metal, glass, or wall paint are well studied and can be accurately represented via simple analytical models. Other materials, such as finished wood, cloth, or skin, comprise semi-transparent layers of matter stacked on top of each other. The more intricate behavior of such materials is the result of light scattering at the interfaces between these layers and propagating through them, and each such scattering interface can typically be represented by an analytical model. Materials are also heterogeneous across the surface, for example a rusty metal surface has regions with bare specular metal and dull iron oxide, and the transition between these may be abrupt or smooth.
 
 Two basic operations — layering and mixing — provide a language for building a model of a composite heterogeneous material consisting of vertically layered slabs with structure varying horizontally over the surface. Unlike previous models such as Autodesk Standard Surface [#Georgiev2019], we define the model by describing the physical structure as unambiguously as possible, rather than by specifying a particular form of implementation such as a BSDF mixture model.
 
@@ -93,7 +93,7 @@ Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ a
 
 If the slab is completely opaque (e.g. conducting or diffuse) we need only specify the surface BSDF $f$, as the interior medium is irrelevant for light transport. If the slab is non-opaque, i.e. translucent, the interior medium $V$ of the slab is taken to be a homogeneous dielectric which optionally contains a specified homogeneous volumetric medium (or "VDF"). By VDF we mean the set of quantities (in general spatially varying fields) which define a volumetric optical medium, i.e.
 
-   - the normalized phase-function parameters
+   - the normalized phase function parameters
    - the absorption and scattering coefficients (alternatively, extinction coefficient and scattering albedo)
    - the index of refraction (IOR) and dispersion of the embedding dielectric medium
 
@@ -101,7 +101,7 @@ We assume that the renderer is aware that the volumetric properties may vary fro
 
 It is understood that in principle the medium $V$ specifies its own depth, which can also be unbounded denoting a semi-infinite "bulk" medium with no substrate. We denote such an unbounded semi-infinite volumetric medium as $V^\infty$. This is an abstraction of course, where we understand that such a semi-infinite medium actually just represents the bottom layer of the material structure and the medium will most likely terminate somewhere (but remote from the surface on the mesoscopic scale). Such a slab with a semi-infinite medium does not need to supply a base BSDF (it can be just omitted). Note that the BSDF of the bottom interface (if the depth is finite) does not need to be specified as it will be derivable from the BSDF of the underlying slab if present (in combination with the properties of the medium VDF).
 
-If the bounding BSDFs of a slab are completely non-transmissive and opaque (e.g. metallic), the internal medium is irrelevant for light-transport purposes. For convenience, it can be omitted:
+If the bounding BSDFs of a slab are completely non-transmissive and opaque (e.g. metallic), the internal medium is irrelevant for light transport purposes. For convenience, it can be omitted:
 \begin{equation}
 S_\mathrm{opaque} = \mathrm{Slab}(f) \ .
 \end{equation}
@@ -817,7 +817,7 @@ At the default **`transmission_dispersion_scale`** of zero, the Abbe number is i
 !!! WARNING
    Consider restoring non-physical control **`​transmission_extra_roughness`**, i.e. additional (positive or negative) roughness on top of **`specular_roughness`**
 
-   However, **`​transmission_extra_roughness`** is inconvenient to implement because it requires an extra microfacet-model evaluation. Without it, one microfacet model can be used for both reflection and refraction.
+   However, **`​transmission_extra_roughness`** is inconvenient to implement because it requires an extra microfacet model evaluation. Without it, one microfacet model can be used for both reflection and refraction.
    Instead of using **`​transmission_extra_roughness`,** why not use rough transmission and then add a coat (with the coat's effect on the underlying roughness disabled)?
 
    If **`​transmission_extra_roughness`** is restored, should it also apply to the interface of the subsurface-scattering substrate?
