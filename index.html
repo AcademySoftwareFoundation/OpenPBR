@@ -89,7 +89,7 @@ where $f$ is the interface BSDF and $V$ is the medium VDF. To clarify the relati
 *******************************
 
 We do not dictate how the surfaces of the slab are described physically at the microscopic level, but at the level of the macroscopic slab description they are flat interfaces with a known BSDF. Ideally these BSDFs should be reciprocal and energy conserving, though a given implementation may want to relax these assumptions for efficiency or simplicity.
-Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ as usual. We will generally remain agnostic about the actual specific functional form and details of the BSDFs (or VDFs), leaving it for the implementation to make reasonable assumptions given a verbal description of the slab physical properties and the described parameters. We assume that the BSDF implementations are generally [microfacet models](index.html#model/microfacetmodel), but we do not want to dictate specific implementations for the BSDFs since models may need to differ depending on the hardware constraints, and also tend to evolve over time. We hope the provided verbal description combined with the set of parameters is sufficient to make it reasonably unambiguous what a good implementation would look like.
+Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ where, following the usual convention, these both point away from the surface vertex with $\omega_o$ in the direction of the outgoing light and $\omega_i$ opposite to the direction of the incident light. We will generally remain agnostic about the actual specific functional form and details of the BSDFs (or VDFs), leaving it for the implementation to make reasonable assumptions given a verbal description of the slab physical properties and the described parameters. We assume that the BSDF implementations are generally [microfacet models](index.html#model/microfacetmodel), but we do not want to dictate specific implementations for the BSDFs since models may need to differ depending on the hardware constraints, and also tend to evolve over time. We hope the provided verbal description combined with the set of parameters is sufficient to make it reasonably unambiguous what a good implementation would look like.
 
 If the slab is completely opaque (e.g. conducting or diffuse) we need only specify the surface BSDF $f$, as the interior medium is irrelevant for light transport. If the slab is non-opaque, i.e. translucent, the interior medium $V$ of the slab is taken to be a homogeneous dielectric which optionally contains a specified homogeneous volumetric medium (or "VDF"). By VDF we mean the set of quantities (in general spatially varying fields) which define a volumetric optical medium, i.e.
 
@@ -204,7 +204,7 @@ where to ensure the energy conservation the normalization constant $C$ involves 
 Note though that this albedo-scaling approximation does not correctly take into account the effect of multiple light bounces back and forth between the interfaces, or absorption and scattering in the volumetric medium of the coat $V_\mathrm{coat}$. In general the resulting BSDF lobe shape will not be a simple linear combination of the interface BSDFs.
 To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric transmittance through the coat in the incident and output directions could be approximately modelled as
 \begin{equation} \label{non-reciprocal-albedo-scaling-with-T}
-f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  +  T_\mathrm{coat}(\omega_i, \omega_o) \bigl(1 - E_\mathrm{coat}(\omega_o)\bigr) \,f_\mathrm{sub}(\omega_i, \omega_o) \ .
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  +  T_\mathrm{coat}(\omega_i, \omega_o) \bigl(1 - E_\mathrm{coat}(\omega_o)\bigr) \,f_\mathrm{sub}(\omega_i, \omega_o)
 \end{equation}
 where $T_\mathrm{coat}(\omega_i, \omega_o)$ accounts for the total volumetric absorption of the coat along the input and output rays. Similarly if the coat is rough this will effectively roughen the substrate BSDF lobe also, which can be accounted for approximately via various heuristics.
 
@@ -487,7 +487,7 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 
 - **`specular_rotation`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_rotation`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The rotation is normalized to $[0, 1]$ representing angles from 0° to 360° counterclockwise, with 0° being the original tangent vector direction. Note that the appearance of the specular highlight is identical for rotations between $[0, 0.5]$ and $[0.5, 1]$; this allows the preservation of value when converting to/from other models that support directional anisotropy.
 
-The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for  multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016], where the multiple bounces are explicitly modelled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
+The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for  multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016a], where the multiple bounces are explicitly modelled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
 
 
 Base Substrate
@@ -1016,27 +1016,29 @@ M_\mathrm{surface} = \mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{f
 * +-------------------------------------------------+ *
 *******************************************************
 
-The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution (based for example on [#Heitz2015], [#Kutz2021], [#Zeltner2022]). We assume that this representation has these basic characteristics:
+The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution. We recommend the specific model of [#Zeltner2022] (based on the earlier work of [#Heitz2015]), which has the following characteristics:
 
-- has a fixed unit optical thickness (which makes it more practical to do fitting of the multiple-scattering-BRDF to enable efficient evaluation and importance sampling)
-- has microflakes that are perfectly specular and opaque with a single-scattering albedo that produces the **`fuzz_color`** after multiple scattering
-- has an apparent surface roughness parametrized by **`fuzz_roughness`**
-- any light not reflected after multiple scattering is assumed to transmit to the lower layers (because the microflake volume has gray extinction, the transmitted light will not be tinted by the fuzz)
+- Represents a homogeneous volumetric layer with a fiber-like SGGX microflake [#Heitz2015] phase function. This is approximated using a Linearly Transformed Cosines (LTC) model [#Heitz2016b] fitted to volumetric simulations . The microflakes are assumed to have a single-scattering albedo that effectively produces a reflection tinted with the **`fuzz_color`** after multiple scattering.
+- The volumetric fuzz layer is assumed to have a fixed unit optical thickness in all channels, and is purely scattering so no energy is absorbed. Thus any light not reflected after multiple scattering is assumed to transmit to the lower layers, and the transmittance is gray so the base is not tinted by the fuzz. The amount of this fixed thickness fuzz is controlled via the layer coverage weight **`fuzz_weight`** .
+- Has an apparent surface roughness parametrized by **`fuzz_roughness`**, which controls how fibre-like the microflake distribution of the layer is. At low roughness the microflakes are highly fibre-like (i.e. thin fibres oriented along the normal) producing a high-sheen fabric appearance, while at high roughness the microflakes are spherical producing a dusty appearance.
 
-One practical model is the approach of [#Conty2017] where the layer is treated as a microfacet BRDF with an NDF which is peaked for grazing micro-normals, and is explicitly single-scattering only where the light not reflected is assumed to transmit through to the base layers. The form of this is the same as the approximate microflake model of [#Kutz2021].
+The form of this model is the following (with $\mu_i, \mu_o$ the angle cosines to the normal of $\omega_i, \omega_o$):
+\begin{equation}
+\mu_i \, f_\mathrm{fuzz}(\omega_i, \omega_o) = \mathbf{F} \, E_\mathrm{fuzz}(\mu_o, \alpha) \, D(\mu_i | \mu_o, \alpha)
+\end{equation}
+where $\mathbf{F}$ = **`fuzz_color`**, $E_\mathrm{fuzz}(\mu_o, \alpha)$ (termed $R$ in [#Zeltner2022]) is the reflectance at angle cosine $\mu_o$ given roughness $\alpha$ = **`fuzz_roughness`** $\in [0,1]$, and $D(\mu_i | \mu_o, \alpha)$ is a lobe defined by linear transformations of a cosine lobe (LTCs), where the transformation matrices (and $E_\mathrm{fuzz}$) are tabulated in a grid in the $(\mu_o, \alpha)$ plane, with values fitted to a simulation of the scattering in the volumetric fuzz microflake layer. Since the LTC lobe $D$ is a normalized PDF over the hemisphere, the resulting albedo of $f_\mathrm{fuzz}$ is $\mathbf{F} \, E_\mathrm{fuzz}(\mu_o, \alpha)$.
 
-If using the albedo-scaling interpretation of layering, a reasonable approximation of the reflection from the colored fibers combined with the gray extinction is to take (with $\mathtt{F}$ = **`fuzz_weight`**):
+
+If using the albedo-scaling interpretation of layering, a reasonable approximation of the reflection from the fuzz layer combined with the reflection from the base is to take
 \begin{eqnarray}
-\mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}, \mathtt{F}) &\rightarrow&   \mathtt{F} \,f_\mathrm{fuzz} +  \bigl(1 - \mathtt{F} \,E[\overline{f_\mathrm{fuzz}}] \bigr) \,f_\textrm{coated-base}               \nonumber \\
-                                                                             &=&             \mathtt{F} \,f_\mathrm{fuzz} +  \mathrm{lerp}\bigl(1, 1 - E[\overline{f_\mathrm{fuzz}}], \mathtt{F}\bigr) \,f_\textrm{coated-base} \ , \label{fuzz-layering-approx}
+\mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}) &\rightarrow& f_\mathrm{fuzz} +  \bigl(1 - E_\mathrm{fuzz} \bigr) \,f_\textrm{coated-base} \ ,
 \end{eqnarray}
-where $\overline{f_\mathrm{fuzz}}$ corresponds to $f_\mathrm{fuzz}$ with a white **`fuzz_color`**.
+where the albedo-scaling is explicitly modified to not tint the base since the tint $\mathbf{F}$ appears only in the first term via $f_\mathrm{fuzz}$.
+Then accounting for the coverage weight of the fuzz layer, $\mathtt{F}$ = **`fuzz_weight`**, gives:
+\begin{eqnarray}
+\mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}, \mathtt{F})  &\rightarrow&  \mathtt{F} \,f_\mathrm{fuzz} +  \mathrm{lerp}\bigl(1, 1 - E_\mathrm{fuzz}, \mathtt{F}\bigr) \,f_\textrm{coated-base} \ . \label{fuzz-layering-approx}
+\end{eqnarray}
 
-!!! WARNING
-   The specification of unit optical thickness does not map in an obvious way to the microfacet interpretation. A more detailed description of the form of the model, in some approximation, could be helpful. Also, it seems perhaps restrictive to set the transmittance of the layer to a specific value (so that the fuzz layer can never completely occlude the underlying substrate at any point).
-
-!!! WARNING
-   If fuzz is often used to represent a layer of fine dust, it might be useful to have richer control over the NDF/anisotropy representing the shape of the dust grains. (For example via the SGGX microflake model [#Heitz2015]).
 
 Fuzz params          | Label     | Type     | Range        | Default       | Description
 ---------------------|-----------|----------|:------------:|:-------------:|----------------------------------------------
@@ -1281,7 +1283,7 @@ Next, the coat is layered on top of the base substrate with the coverage weight 
 f_\mathrm{coated-base} = \mathtt{C} \,\color{darkblue}{f_\mathrm{coat}} +  \mathrm{lerp}\left(1,  T_\mathrm{coat} (1 - E[\color{darkblue}{f_\mathrm{coat}}]), \mathtt{C}\right) f_\textrm{base-substrate} \ .
 \end{equation}
 
-Similarly, the fuzz layer is applied with coverage weight $\mathtt{F}$ (with albedo-scaling adjusted to account for the unit transmittance and gray extinction, according to equation [fuzz-layering-approx]), producing:
+Similarly, the fuzz layer is applied with coverage weight $\mathtt{F}$ (with albedo-scaling adjusted to account for the gray transmission, according to equation [fuzz-layering-approx]), producing (where $\color{darkblue}{\overline{f_\mathrm{fuzz}}}$ is the fuzz BRDF with the tint color set to white):
 \begin{equation}
 f_\mathrm{surface} = \mathtt{F} \,\color{darkblue}{f_\mathrm{fuzz}} +  \mathrm{lerp}\left(1, 1 - E[\color{darkblue}{\overline{f_\mathrm{fuzz}}}], \mathtt{F}\right) f_\textrm{coated-base} \ .
 \end{equation}
@@ -1327,8 +1329,8 @@ Where the component lobes are listed below.
    | Coating                | $\color{darkblue}{f_\mathrm{coat}}$         | coat BRDF                  | as in the Coat section                     |
    | Emission               | $\color{darkblue}{L_e}$                     | emission EDF               | as in the Emission section                 |
    | Metal                  | $\color{darkblue}{f_\mathrm{conductor}}$    | metal BRDF                 | as in the Metal section                    |
-   | Specular reflection    | $\color{darkblue}{f^R_\textrm{specular}}$   | specular BRDF              | as in the Dielectric base section          |
-   | Specular transmission  | $\color{darkblue}{f^T_\textrm{specular}}$   | specular BTDF/BSSRDF       | as in the Translucent base section         |
+   | Specular reflection    | $\color{darkblue}{f^R_\textrm{specular}}$   | specular BRDF              | as in the Dielectric-base section          |
+   | Specular transmission  | $\color{darkblue}{f^T_\textrm{specular}}$   | specular BTDF/BSSRDF       | as in the Translucent-base section         |
    | Fuzz                   | $\color{darkblue}{f_\mathrm{fuzz}}$         | fuzz BRDF                  | as in the Fuzz section                     |
    | Subsurface scattering  | $\color{darkblue}{f_\textrm{SSS}}$          | subsurface BSSRDF          | as in the Subsurface section               |
    | Diffuse reflection     | $\color{darkblue}{f_\mathrm{diffuse}}$      | diffuse BRDF               | as in the Glossy-diffuse section           |
@@ -1400,7 +1402,9 @@ References
 
 [#Heitz2015]: Eric Heitz, Jonathan Dupuy, Cyril Crassin, Carsten Dachsbacher. *The SGGX microflake distribution*, ACM Transactions on Graphics (2015).
 
-[#Heitz2016]: Eric Heitz, Johannes Hanika, Eugene d’Eon and Carsten Dachsbacher. *Multiple-Scattering Microfacet BSDFs with the Smith Model*, ACM Transactions on Graphics (2016).
+[#Heitz2016a]: Eric Heitz, Johannes Hanika, Eugene d’Eon and Carsten Dachsbacher. *Multiple-Scattering Microfacet BSDFs with the Smith Model*, ACM Transactions on Graphics (2016).
+
+[#Heitz2016b]: Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. *Real-Time Polygonal-Light Shading with Linearly Transformed Cosines*, ACM SIGGRAPH (2016).
 
 [#Hery2017]: Christophe Hery, Ryusuke Villemin, Junyi Ling. *Pixar's Foundation for Materials*, Pixar technical report (2017).
 
