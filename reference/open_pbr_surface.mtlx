@@ -203,18 +203,49 @@
       <input name="in2" type="float" nodename="coat_gamma" />
     </power>
 
-    <!-- Diffuse/Subsurface Layer -->
-    <oren_nayar_diffuse_bsdf name="diffuse_bsdf" type="BSDF">
-      <input name="weight" type="float" interfacename="base_weight" />
-      <input name="color" type="color3" nodename="coat_affected_diffuse_color" />
+    <!-- Subsurface (thin-walled) -->
+    <oren_nayar_diffuse_bsdf name="subsurface_thin_walled_reflection_bsdf" type="BSDF">
+      <input name="weight" type="float" value="1.0" />
+      <input name="color" type="color3" nodename="coat_affected_subsurface_color" />
       <input name="roughness" type="float" interfacename="base_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
     </oren_nayar_diffuse_bsdf>
-    <translucent_bsdf name="translucent_bsdf" type="BSDF">
+    <subtract name="one_minus_subsurface_anisotropy" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" interfacename="subsurface_anisotropy" />
+    </subtract>
+    <multiply name="subsurface_thin_walled_brdf_factor" type="color3">
+      <input name="in1" type="color3" interfacename="subsurface_color" />
+      <input name="in2" type="float" nodename="one_minus_subsurface_anisotropy" />
+    </multiply>
+    <multiply name="subsurface_thin_walled_reflection" type="BSDF">
+      <input name="in1" type="BSDF" nodename="subsurface_thin_walled_reflection_bsdf" />
+      <input name="in2" type="color3" nodename="subsurface_thin_walled_brdf_factor" />
+    </multiply>
+    <translucent_bsdf name="subsurface_thin_walled_transmission_bsdf" type="BSDF">
       <input name="weight" type="float" value="1.0" />
       <input name="color" type="color3" nodename="coat_affected_subsurface_color" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
     </translucent_bsdf>
+    <add name="one_plus_subsurface_anisotropy" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" interfacename="subsurface_anisotropy" />
+    </add>
+    <multiply name="subsurface_thin_walled_btdf_factor" type="color3">
+      <input name="in1" type="color3" interfacename="subsurface_color" />
+      <input name="in2" type="float" nodename="one_plus_subsurface_anisotropy" />
+    </multiply>
+    <multiply name="subsurface_thin_walled_transmission" type="BSDF">
+      <input name="in1" type="BSDF" nodename="subsurface_thin_walled_transmission_bsdf" />
+      <input name="in2" type="color3" nodename="subsurface_thin_walled_btdf_factor" />
+    </multiply>
+    <mix name="subsurface_thin_walled" type="BSDF">
+      <input name="fg" type="BSDF" nodename="subsurface_thin_walled_reflection" />
+      <input name="bg" type="BSDF" nodename="subsurface_thin_walled_transmission" />
+      <input name="mix" type="float" value="0.5" />
+    </mix>
+
+    <!-- Subsurface (non-thin-walled) -->
     <convert name="subsurface_radius_vector" type="vector3">
       <input name="in" type="color3" interfacename="subsurface_radius_scale" />
     </convert>
@@ -229,16 +260,24 @@
       <input name="anisotropy" type="float" interfacename="subsurface_anisotropy" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
     </subsurface_bsdf>
+
+    <!-- Opaque Dielectric Base -->
+    <oren_nayar_diffuse_bsdf name="diffuse_bsdf" type="BSDF">
+      <input name="weight" type="float" interfacename="base_weight" />
+      <input name="color" type="color3" nodename="coat_affected_diffuse_color" />
+      <input name="roughness" type="float" interfacename="base_roughness" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
+    </oren_nayar_diffuse_bsdf>
     <convert name="subsurface_selector" type="float">
       <input name="in" type="boolean" interfacename="geometry_thin_walled" />
     </convert>
-    <mix name="selected_subsurface_bsdf" type="BSDF">
-      <input name="fg" type="BSDF" nodename="translucent_bsdf" />
+    <mix name="selected_subsurface" type="BSDF">
+      <input name="fg" type="BSDF" nodename="subsurface_thin_walled" />
       <input name="bg" type="BSDF" nodename="subsurface_bsdf" />
       <input name="mix" type="float" nodename="subsurface_selector" />
     </mix>
     <mix name="opaque_base" type="BSDF">
-      <input name="fg" type="BSDF" nodename="selected_subsurface_bsdf" />
+      <input name="fg" type="BSDF" nodename="selected_subsurface" />
       <input name="bg" type="BSDF" nodename="diffuse_bsdf" />
       <input name="mix" type="float" interfacename="subsurface_weight" />
     </mix>
