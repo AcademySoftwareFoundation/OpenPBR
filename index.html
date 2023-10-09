@@ -402,7 +402,7 @@ Microfacet model
 
 We give here some general assumptions about the form and parametrization of the BSDFs which describe the interfaces in the model outlined in the previous section.
 
-The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$ and $f_\mathrm{coat}$ of the [metal](index.html#model/metallicbase), [dielectric](index.html#model/dielectricbase) and [coat](index.html#model/coat) slabs respectively, are each assumed to be described by a standard microfacet model. This is a widely used approximation in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal or dielectric, where the statistical distribution of the normal of these facets (termed the "micronormal") determines the surface roughness characteristics at the macroscopic scale.
+The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$ and $f_\mathrm{coat}$ of the [metal](index.html#model/metallicbase), [dielectric](index.html#model/dielectricbase) and [coat](index.html#model/coat) slabs respectively, are each assumed to be described by a standard microfacet model. This is a widely used approximation in which the surface at a microscopic scale (the _microsurface_) is assumed to be composed of a heightfield consisting of smooth microfacets of either metal or dielectric, where the statistical distribution of the normal of these facets, termed the _micronormal_, determines the surface roughness characteristics at the macroscopic scale.
 
 The other interfaces are not standard microfacet models, but strongly related:
 
@@ -417,39 +417,39 @@ f(\omega_i, \omega_o) \propto F(\omega_i, h) \; D(h) \; G(\omega_i, \omega_o)
 \end{equation}
 where $h = (\omega_i+\omega_o)/|\omega_i+\omega_o|$ is the half-vector, i.e. the micronormal which mirror reflects $\omega_i$ into $\omega_o$. For dielectrics there is also a BTDF, i.e. the portion of the BSDF where the input and output directions lie in opposite rather than the same hemispheres, which has a similar form to the BRDF (except with a modified half-vector and Fresnel factor) [#Walter2007].
 
-The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section. The "masking-shadowing" function $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF (below) the masking-shadowing function then has a well-known form [#Heitz2014b].
+The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section. The _masking-shadowing_ function $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF equation [GGX] the masking-shadowing function then has a well-known form [#Heitz2014b].
 
 The Normal Distribution Function (NDF) $D(m)$ describes the relative probability of occurrence of micronormal $m$ on the surface, and thus the roughness characteristics.
 A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution ([#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
-$$
+\begin{equation} \label{GGX}
 D_\mathrm{GGX}(m) \propto \left( 1 + \frac{\tan^2\theta_m}{\alpha^2} \right)^{-2}
-$$
-where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, and the parameter $\alpha \in [0, \infty)$ controls the roughness of the surface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ i.e. flat microfacets, while as $\alpha \rightarrow \infty$ microfacets of all orientations are equally prevalent.
-Following [#Burley2012], we set
-$$
-\alpha = r^2 \ ,
-$$
-where $r$ is termed the roughness, as this produces a more perceptually linear resulting change in apparent roughness as $r$ is varied.
+\end{equation}
+where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, and the parameter $\alpha \in [0, \infty)$ controls the typical slope of the microsurface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ i.e. flat microfacets, while as $\alpha \rightarrow \infty$ microfacets of all orientations are equally prevalent.
+Following [#Burley2012], we set (in the isotropic case)
+\begin{equation}
+\alpha = r^2
+\end{equation}
+where $r$ is termed the _roughness_, as this produces a more perceptually linear resulting change in apparent roughness as $r$ is varied.
 
-In the general case the roughness is anisotropic, that is the NDF is not circularly symmetric but stretched along some direction in the surface plane, producing an elongation of the specular highlight along the stretch direction. This simulates coherent microscale geometry due to processes like scratches or brushing.
-This is parametrized by two separate $\alpha$-roughnesses $\alpha_t$ and $\alpha_b$ along orthonormal tangent and bitangent vectors in the surface plane (where only the tangent vector direction needs to be specified, as an angle relative to some specified original tangent vector field). The form [^normalization] of the GGX distribution in this anisotropic case is (given the polar angle $\phi_m$ of $m$ relative to the tangent):
-$$
+In the general case the roughness is anisotropic, that is the NDF is not circularly symmetric but stretched along some direction in the surface plane, producing an elongation of the specular highlight along the stretch direction. This simulates coherent anisotropic microscale groove geometry due to processes like scratches or brushing.
+This is parametrized by two separate $\alpha$-roughnesses $\alpha_t$ and $\alpha_b$ along orthonormal tangent and bitangent vectors in the surface plane, where the tangent direction corresponds to the direction in which the highlights are elongated (equivalently, the surface grooves lie along the bitangent). It is assumed that there is a fiducial tangent vector field defined, and the tangent vector direction is specified as a polar angle relative to it. The form of the GGX distribution in this anisotropic case is, given the polar angle $\phi_m$ of $m$ relative to the tangent:
+\begin{equation}
 D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \left(\frac{\cos^2\phi_m}{\alpha_t^2} + \frac{\sin^2\phi_m}{\alpha_b^2}\right) \right)^{-2}
-$$
+\end{equation}
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 
 !!! WARNING
    GGX (originally "Ground Glass unknown" [#Walter2007]) is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed Generalized-Trowbridge-Reitz (GTR) which has an exponent $\gamma$, where GGX is the special case $\gamma=2$. This gives more control over the tail of the NDF. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
 
 The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$, to preserve the average roughness regardless of the anisotropy. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
-$$
+\begin{equation}
 \left\{
 \begin{aligned}
 \alpha_t &= r^2 \sqrt{\frac{2}{1 + (1 - a)^2}}  \; \ , \\[2ex]
 \alpha_b &= (1 - a) \, \alpha_t \ .
 \end{aligned}
 \right.
-$$
+\end{equation}
 
 ![Figure [ndf_anisotropy]: NDF shapes as a function of roughness $r$ and anisotropy $a$.](images/anisotropy.png width=60%)
 
