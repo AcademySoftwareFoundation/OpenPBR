@@ -418,8 +418,8 @@
       <input name="in2" type="float" nodename="one_minus_sqrt_modulated_coat_reflectivity" />
     </divide>
     <mix name="modulated_coat_ior" type="float">
-      <input name="fg" type="float" value="1.0" />
-      <input name="bg" type="float" nodename="modulated_coat_ior_ratio" />
+      <input name="fg" type="float" nodename="modulated_coat_ior_ratio" />
+      <input name="bg" type="float" value="1.0" />
       <input name="mix" type="float" interfacename="coat_weight" />
     </mix>
     <mix name="coat_attenuation" type="color3">
