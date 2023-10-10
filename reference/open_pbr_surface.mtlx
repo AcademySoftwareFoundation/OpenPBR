@@ -45,7 +45,7 @@
            doc="The overall reflected color of the subsurface scattering effect." />
     <input name="subsurface_radius" type="float" value="1" uimin="0.0" uisoftmax="10.0" uiname="Subsurface Radius" uifolder="Subsurface" uiadvanced="true"
            doc="Length scale of the subsurface diffusion blur profile on the surface." />
-    <input name="subsurface_radius_scale" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Radius Scale" uifolder="Subsurface" uiadvanced="true"
+    <input name="subsurface_radius_scale" type="color3" value="1.0, 0.5, 0.25" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Radius Scale" uifolder="Subsurface" uiadvanced="true"
            doc="RGB multiplier to subsurface_radius, giving the per-channel diffusion blur profile size." />
     <input name="subsurface_anisotropy" type="float" value="0" uimin="-1.0" uimax="1.0" uiname="Subsurface Anisotropy" uifolder="Subsurface" uiadvanced="true"
            doc="Controls the phase-function of subsurface scattering, where zero scatters light evenly, positive values scatter forward, and negative values scatter backward." />

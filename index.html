@@ -709,16 +709,17 @@ Implementations may choose to compute light transport in the subsurface medium e
    Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, though we didn't make this explicit.
 
 !!! WARNING
-   Technically, the anisotropy could be different in each channel, but we don't support this (also it could be problematic to implement).
+
+Note that the default value of **`subsurface_radius_scale`** is set at $(1, 0.5, 0.25)$ to approximate the effect of Rayleigh scattering. If we roughly approximate the wavelength corresponding to each of the RGB channels as $\lambda/\mathrm{nm} \approx 650, 550, 450$ and assume the radii scale like the reciprocal of the extinction, then since in Rayleigh scattering the extinction scales like $\lambda^{-4}$ for light of wavelength $\lambda$ the expected relative magnitudes of the radii are $(1,  (550/650)^4, (450/650)^4) \approx (1, 0.5, 0.25)$, hence the chosen default. This provides a slightly more realistic default look for the subsurface than resulting from gray radii.
 
 
-Subsurface params             | Label        | Type      | Range           | Default             | Description
-------------------------------|--------------|-----------|:---------------:|:-------------------:|----------------------------------------------
-**`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]      $ | $ 0               $ | Mix weight between subsurface and diffuse slabs
-**`subsurface_color`**        | Color        | `color3`  | $ [0, 1]      $ | $ (0.8, 0.8, 0.8) $ | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
-**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty) $ | $ 1               $ | Length scale of diffusion along the surface
-**`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3    $ | $ (1, 1, 1)       $ | RGB multiplier to **`subsurface_radius`**, giving the per-channel diffusion length
-**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1, 1]     $ | $ 0               $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
+Subsurface params             | Label        | Type      | Range           | Default              | Description
+------------------------------|--------------|-----------|:---------------:|:--------------------:|----------------------------------------------
+**`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]      $ | $ 0                $ | Mix weight between subsurface and diffuse slabs
+**`subsurface_color`**        | Color        | `color3`  | $ [0, 1]      $ | $ (0.8, 0.8, 0.8)  $ | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
+**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty) $ | $ 1                $ | Length scale of diffusion along the surface
+**`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3    $ | $ (1.0, 0.5, 0.25) $ | RGB multiplier to **`subsurface_radius`**, giving the per-channel diffusion length
+**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1, 1]     $ | $ 0                $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
 
 ![](images/subsurface1.jpg width=99%) ![](images/subsurface2.jpg width=99%) ![](images/subsurface3.jpg width=99%)
 <div class="shifted-caption">
