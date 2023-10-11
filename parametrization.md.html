@@ -72,11 +72,6 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `geometry_normal`                     | Normal              | `vector3` | N/A               |               | unperturbed normal   |            |
 | `geometry_tangent`                    | Tangent             | `vector3` | N/A               |               | unperturbed tangent  |            |
 | `geometry_coat_normal`                | Coat Normal         | `vector3` | N/A               |               | unperturbed normal   |            |
-<!--
-| `coat_affect_color`                   | Affect Color        | `float`   | $ [0, 1]        $ |               | $ 1                $ |            |
-| `coat_affect_roughness`               | Affect Roughness    | `float`   | $ [0, 1]        $ |               | $ 1                $ |            |
-| `coat_affect_ior`                     | Affect IOR          | `float`   | $ [0, 1]        $ |               | $ 1                $ |            |
--->
 
 <!-- Markdeep: -->
 <style class="fallback">
@@ -90,24 +85,3 @@ window.markdeepOptions = {tocStyle: "long", smartQuotes=true}
 <script>
 window.alreadyProcessedMarkdeep || (document.body.style.visibility="visible")
 </script>
-
-   
-
-<!---
-   !!! WARNING
-    TODO: Suggest to remove these new parameters from the table, until further consensus reached about whether to include them (now or later).
-
-| `geometry_height`                     | `float`   | Height                    | [0, 1]                  | 0                             |            |           |
-| `geometry_combine_normal_and_height`  | `boolean` | Combine normal and height | N/A                     | false                            |            | ✅        |
-
-`geometry_height` 
-: Displacement (or bump) amount in the direction of the normal. Displacement is a scalar change in surface position toward unperturbed, blended normal surface. In cases where tessellated displacement is not possible or desired, height may be implemented as a bump map.
-
-`geometry_combine_normal_and_height` 
-: Indicates how the normal information should be interpreted when there is also a height information. If the normal already contains the detail of the height, then it should be set to false to avoid double perturbation of the normals. If the normal curvature is intended to be applied in combination with displacement from the height, combine normal and height should be true to allow the displacement to be considered when perturbing normals.
-
-
--->
-
-
-

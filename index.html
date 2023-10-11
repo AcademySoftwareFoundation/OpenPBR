@@ -625,12 +625,6 @@ which can be evaluated more cheaply e.g. by [Monte Carlo](https://www.pbr-book.o
 
 The model is agnostic about the choice of diffuse BSDF lobe used, though we assume **`base_roughness`** controls its roughness so a reasonable choice is the Oren-Nayar model [#Pharr2023], where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. How this base roughness arises from the physical model of a dielectric embedding a dense volumetric medium is left open to interpretation. The albedo of the diffuse lobe is specified by **`base_weight`** multiplied by **`base_color`**.
 
-<!--
-For example if the diffuse lobe is Lambertian i.e. $f_\mathrm{diffuse} = \rho_d/\pi$ , then $C = 1/(1-\rho_\mathrm{dielectric})$ where $\rho_\mathrm{dielectric}$ is the average albedo [^average-albedo] of the dielectric lobe [#Kelemen2001]:
-\begin{equation}
-\rho_\mathrm{dielectric} = \frac{1}{\pi}\int_{\mathcal{H}_+} f_\mathrm{dielectric}(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i  \ .
-\end{equation}
- -->
 
 Glossy-diffuse params | Label     | Type     | Range            |  Norm      | Default             | Description
 ----------------------|-----------|----------|:----------------:|:----------:|:-------------------:|----------------------------------------------
@@ -901,22 +895,6 @@ A number of other physical effects will occur due to the presence of the coat:
       - The IOR of the coat medium $V_\mathrm{coat}$ will alter the Fresnel factor of the underlying metal or dielectric (as detailed below).
 
 In a full light transport simulation these effects would occur automatically, but in an approximate model they may need to be accounted for by hand.
-
-<!-- Markdeep:
-For example, the Autodesk Standard Surface model modulates the **`base_color`** and **`subsurface_color`**, and the roughnesses of the metal and dielectric BSDFs, according to the
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C
-            base_color       -> pow(base_color,       1 + coat)
-            subsurface_color -> pow(subsurface_color, 1 + coat)
-            roughness        -> roughness + coat*coat_roughness*(1 - roughness)
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-and the roughnesses of the metal and dielectric BSDFs via
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C
-            roughness -> roughness + coat*coat_roughness*(1 - roughness)
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In some practical use cases however, it may be desirable for this physical effect to be ignored so that the base color is unaffected by the presence of the coat. For this purpose we provide the **`coat_affect_color`** parameter, which allows
--->
 
 The **`coat_ior_level`** parameter in $[0, 1]$ modulates the coat reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum. This works similarly to the formula for **`specular_ior_level`** in equation [modulated_ior]. In detail, the coat Fresnel reflection factor at normal incidence is given by
 \begin{equation}
@@ -1430,9 +1408,6 @@ References
 
 [^BSDF_BSSRDF_sum]: This sum of BSDF and BSSRDF can be justified mathematically by interpreting a BSDF as the special case of a BSSRDF restricted to equal exit and entry points.
 
-<!--
-[^average-albedo]: Also termed the *hemispherical-hemispherical* reflectance.
--->
 
 <!-- Markdeep: -->
 <style class="fallback">
