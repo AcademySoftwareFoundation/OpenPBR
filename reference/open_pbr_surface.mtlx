@@ -29,7 +29,7 @@
            doc="Mixture weight between the transparent and opaque dielectric base. The greater the value the more transparent the material." />
     <input name="transmission_color" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Transmission Color" uifolder="Transmission" uiadvanced="true"
            doc="Controls color of the transparent base due to Beer's law volumetric absorption under the surface (reverts to a non-physical tint when transmission_depth is zero)." />
-    <input name="transmission_depth" type="float" value="0" uimin="0.0" uisoftmax="100.0" uiname="Transmission Depth" uifolder="Transmission" uiadvanced="true"
+    <input name="transmission_depth" type="float" value="0" uimin="0.0" uisoftmax="1.0" uiname="Transmission Depth" uifolder="Transmission" uiadvanced="true"
            doc="Specifies the distance light travels inside the transparent base before it becomes exactly the transmission_color according to Beer's law." />
     <input name="transmission_scatter" type="color3" value="0, 0, 0" uimin="0,0,0" uimax="1,1,1" uiname="Transmission Scatter" uifolder="Transmission" uiadvanced="true"
            doc="Controls the color of light volumetrically scattered inside the transparent base. Suitable for materials with visually significant scattering such as honey, fruit juice, murky water, opalescent glass, or milky glass." />
@@ -43,7 +43,7 @@
            doc="Mixture weight which dials the opaque dielectric base between diffuse reflection and subsurface scattering. A value of 1.0 indicates full subsurface scattering and a value 0 for diffuse reflection only." />
     <input name="subsurface_color" type="color3" value="0.8, 0.8, 0.8" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Color" uifolder="Subsurface" uiadvanced="true"
            doc="The overall reflected color of the subsurface scattering effect." />
-    <input name="subsurface_radius" type="float" value="1" uimin="0.0" uisoftmax="10.0" uiname="Subsurface Radius" uifolder="Subsurface" uiadvanced="true"
+    <input name="subsurface_radius" type="float" value="1" uimin="0.0" uisoftmax="1.0" uiname="Subsurface Radius" uifolder="Subsurface" uiadvanced="true"
            doc="Length scale of the subsurface diffusion blur profile on the surface." />
     <input name="subsurface_radius_scale" type="color3" value="1.0, 0.5, 0.25" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Radius Scale" uifolder="Subsurface" uiadvanced="true"
            doc="RGB multiplier to subsurface_radius, giving the per-channel diffusion blur profile size." />
@@ -75,7 +75,7 @@
            doc="The thickness of the thin film layer on the base (in nanometers). Use for materials such as multi-tone car paint or soap bubbles." />
     <input name="thin_film_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Thin Film Index of Refraction" uifolder="Thin Film" uiadvanced="true"
            doc="The index of refraction of the thin-film." />
-    <input name="emission_luminance" type="float" value="0" uimin="0.0" uisoftmax="1.0" uiname="Emission Luminance" uifolder="Emission"
+    <input name="emission_luminance" type="float" value="0" uimin="0.0" uisoftmax="1000.0" uiname="Emission Luminance" uifolder="Emission"
            doc="The amount of emitted light, as a luminance in nits." />
     <input name="emission_color" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Emission Color" uifolder="Emission"
            doc="The color of the emitted light." />
