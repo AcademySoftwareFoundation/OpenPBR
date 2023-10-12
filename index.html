@@ -395,7 +395,7 @@ where $h = (\omega_i+\omega_o)/|\omega_i+\omega_o|$ is the half-vector, i.e. the
 The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section. The "masking-shadowing" function $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF (below) the masking-shadowing function then has a well-known form [#Heitz2014b].
 
 The Normal Distribution Function (NDF) $D(m)$ describes the relative probability of occurrence of micronormal $m$ on the surface, and thus the roughness characteristics.
-A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution ([#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
+A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution (originally "Ground Glass unknown": [#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
 $$
 D_\mathrm{GGX}(m) \propto \left( 1 + \frac{\tan^2\theta_m}{\alpha^2} \right)^{-2}
 $$
@@ -413,8 +413,8 @@ D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \left(\frac{\cos^2\phi_m}{\a
 $$
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 
-!!! WARNING
-   GGX (originally "Ground Glass unknown" [#Walter2007]) is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed Generalized-Trowbridge-Reitz (GTR) which has an exponent $\gamma$, where GGX is the special case $\gamma=2$. This gives more control over the tail of the NDF. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
+!!! Note: Future work
+   The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
 
 The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$, to preserve the average roughness regardless of the anisotropy. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
 $$
