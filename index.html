@@ -880,7 +880,7 @@ n_\mathrm{coat} = n_\mathrm{ambient} \; \mathrm{lerp}(1, \eta^\prime_c, \mathtt{
 
 The ratio between the specular IOR ($n_\mathrm{specular} = \mathtt{specular\_ior}$) and the coat IOR, $\eta_s = n_\mathrm{specular} / n_\mathrm{coat}$ then determines the specular Fresnel factor, as in equation [modulated_ior].
 
-!!! WARNING
+!!! Note: Future work
    Autodesk Standard Surface provided various scalar controls in $[0, 1]$ for gradually turning off certain physical effects of the coat, i.e.:
          - `coat_affect_color`: whether to darken/saturate the substrate due to bounces in the coat layer
          - `coat_affect_roughness`: whether to roughen the substrate if the coat is rough
