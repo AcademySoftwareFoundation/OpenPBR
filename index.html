@@ -654,16 +654,12 @@ Note that due to the singularity at $g=1$, in practice the anisotropy needs to b
 
 Implementations may choose to compute light transport in the subsurface medium either via a fast, approximate bidirectional scattering surface reflectance distribution (BSSRDF) model using e.g. the dipole approximation [#Jensen2001], or more accurately via volumetric path tracing.
 
-!!! WARNING
+!!! Note: Future work
    The similarity-theory based remapping introduced here is designed to decouple the effect of the anisotropy from the extinction (which is controlled by the subsurface radii). The effect of the anisotropy is thus quite different from the usual parametrization, but we think it is more useful in this form as otherwise the anisotropy control primarily effectively reduces extinction, which seems redundant with the radii. With the new mapping, the anisotropy has a more subtle effect, where shadow edges are more blurred/crisp for forward/backward scattering respectively. However we need to better describe and give some images making more clear the resulting behavior.
 
-!!! WARNING
    The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here are just what is available in the current papers, but make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface. 
 
-!!! WARNING
    Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, though we didn't make this explicit.
-
-!!! WARNING
 
 Note that the default value of **`subsurface_radius_scale`** is set at $(1, 0.5, 0.25)$ to approximate the effect of Rayleigh scattering. If we roughly approximate the wavelength corresponding to each of the RGB channels as $\lambda/\mathrm{nm} \approx 650, 550, 450$ and assume the radii scale like the reciprocal of the extinction, then since in Rayleigh scattering the extinction scales like $\lambda^{-4}$ for light of wavelength $\lambda$ the expected relative magnitudes of the radii are $(1,  (550/650)^4, (450/650)^4) \approx (1, 0.5, 0.25)$, hence the chosen default. This provides a slightly more realistic default look for the subsurface than resulting from gray radii.
 
