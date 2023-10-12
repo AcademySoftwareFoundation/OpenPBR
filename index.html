@@ -308,6 +308,7 @@ Metadata
 This specification is designed to facilitate exchange of assets between facilities which may use different render engines and pipelines. To this end it attempts to reduce the ambiguity about the final look, so that assets can be expected to render roughly the same visually if the implementation conforms reasonably well to the specification.
 
 However the parameters of the physical model that we describe do not specify all of the assumptions that would be needed to obtain a good visual match. We recommend therefore, for the purposes of asset exchange, that the parameters be packaged with certain metadata that provides the following missing information:
+   - The version of the specification implemented.
 
    - The assumed color space of all the color parameters. If unspecified, following MaterialX [#Smythe2016], by default this color space is assumed to be [ACEScg](https://docs.acescentral.com/specifications/acescg/).
 
@@ -319,13 +320,7 @@ However the parameters of the physical model that we describe do not specify all
 
    - The assumed convention for converting the input **`geometry_normal`**, **`geometry_tangent`** and **`geometry_coat_normal`** maps, if present, to the final shading normal of the local surface at each point.
 
-As in practice OpenPBR will be integrated within other transport protocols such as MaterialX and USD, the specific form and content of this metadata is outside the scope of this spec.
-
-!!! WARNING
-   It is still an open question whether some of this metadata, or other metadata, should be specified as part of the OpenPBR model itself.
-   Alternatively, the metadata could perhaps be more formally specified effectively as a set of adjunct parameters.
-
-
+As in practice OpenPBR will be integrated within data exchange frameworks such as MaterialX and USD, the specific form and content of this metadata is outside the scope of this specification.
 
 Model
 ============================================
