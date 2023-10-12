@@ -77,11 +77,11 @@ We work in the local space of a 2d surface, so horizontal refers to directions i
 
 We do not dictate how the surfaces of the slab are described physically at the microscopic level, but at the level of the macroscopic slab description they are flat interfaces with a known BSDF. We will be as specific as possible about the chosen functional form of the BSDFs, though in most cases we refer to the literature for the full details of the implementation. The BSDFs are mostly [microfacet models](index.html#model/microfacetmodel) (apart from the [fuzz](index.html#model/fuzz) BSDF which derives from microflake theory).
 
-Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ where, following the usual convention, these both point away from the surface vertex with $\omega_o$ in the direction of the outgoing light and $\omega_i$ opposite to the direction of the incident light. Physically the BSDF should be energy conserving and reciprocal. Energy conservation of a BSDF $f(\omega_i, \omega_o)$ amounts to the requirement that the _directional reflectance_ (or _albedo_) $E(\omega_o) \le 1$ for all output ray directions, where $E(\omega_o)$ is defined as the integral of the BSDF over incident directions in the incident hemisphere $\mathcal{H}_i$ with projected solid angle measure:
+Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ where, following the usual convention, these both point away from the surface vertex with $\omega_o$ in the direction of the outgoing light and $\omega_i$ opposite to the direction of the incident light. Physically the BSDF should be energy conserving and reciprocal. Energy conservation of a BRDF [^brdf] $f(\omega_i, \omega_o)$ amounts to the requirement that the _directional reflectance_ (or _albedo_) $E(\omega_o) \le 1$ for all output ray directions, where $E(\omega_o)$ is defined as the integral of the BRDF over directions in the same hemisphere $\mathcal{H}_+$ as $\omega_o$ with projected solid angle measure:
 \begin{equation} \label{energy-conservation}
-E(\omega_o) \equiv \int_{\mathcal{H}_i} f(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i \ .
+E(\omega_o) \equiv \int_{\mathcal{H}_+} f(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i \ .
 \end{equation}
-For transmissive BSDFs, there is a similar constraint except involving the sum of the directional reflectance $E(\omega_o)$ and the _directional transmittance_ $T(\omega_o)$, where $T(\omega_o)$ is defined by integrating the BSDF over the transmitted hemisphere $\mathcal{H}_t$. All BSDFs used are energy conserving in this sense. A BSDF which in addition does not dissipate any energy, such as a dielectric interface, is said to be _energy-preserving_ and satisfies $E(\omega_o) + T(\omega_o) = 1$.
+More generally, for transmissive BSDFs there is a similar constraint $E(\omega_o) + T(\omega_o)\le 1$ where the _directional transmittance_ $T(\omega_o)$ is defined by integrating the BSDF over the opposite hemisphere $\mathcal{H}_-$ to $\omega_o$. All BSDFs used are energy conserving in this sense. A BSDF which in addition does not dissipate any energy, such as a dielectric interface or a diffuse surface with a white albedo, is said to be _energy-preserving_ and satisfies $E(\omega_o) + T(\omega_o) = 1$.
 
 Reciprocity [^reciprocity] is the requirement that the BSDF is symmetric under interchange of the arguments, i.e. $\omega_i \leftrightarrow \omega_o$. In some cases this is relaxed and a non-reciprocal BSDF used, as in practice it does not lead to serious issues.
 
@@ -1418,6 +1418,8 @@ References
 <br>
 <br>
 <br>
+
+[^brdf]:  The term BSDF is often specialized to BRDF or BTDF to denote the portions of the BSDF which reflect into the same hemisphere, or transmit into the opposite hemisphere, respectively.
 
 [^reciprocity]: Technically, the reciprocity condition also involves the index of refraction [#Veach1997].
 
