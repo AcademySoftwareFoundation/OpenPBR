@@ -488,10 +488,8 @@ where $\mathtt{M} = \mathtt{base\_metalness}$, which controls the fraction of mi
 Rainbow-like iridescence effects occur due to interference when a thin refractive film with thickness on the order of the light wavelength is placed on top of a material. To model this, there is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by its thickness and the film IOR.
 In practice, these effects are most easily incorporated directly into the microfacet BSDFs of both the metal and dielectric-base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
 
-!!! WARNING
-   It is currently not clear enough how the IOR of the surrounding media affects the thin-film interference.
-   Also the behavior of the current parametrization is arguably unintuitive, as the effect of the thickness is not obvious.
-   It may be useful to have a more artist-friendly dial of the "iridescence".
+!!! Note: Future work
+   It is currently not clear enough how the IOR of the surrounding media affects the thin-film interference. Moreover, the behavior of the current parametrization is arguably unintuitive, as the effect of the thickness is not obvious. It may be useful to have a more artist-friendly dial of the "iridescence".
 
 
 Thin-film params          | Label     | Type     | Range           | Norm          | Default | Description
