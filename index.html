@@ -1107,9 +1107,6 @@ A convenient rough approximation of this is to ignore the coat and fuzz layers o
 
 A more general interpretation would be to allow each side of the thin-wall to be defined by a distinct thin-walled OpenPBR Surface (one associated to the top, in the direction of the normal, and one to the bottom in the opposite direction) so that the thin base slabs meet in the middle. Then if there are different translucent-base or subsurface parameters on each side, these need to be resolved somehow (e.g. the parameters could be blended, or the light transport could model the presence of the two distinct thin layers of dielectric). If this is supported, we assume it is dealt with in a renderer-specific fashion by assigning separate shaders to each side.
 
-!!! WARNING
-      It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
-
 In the thin-wall structure, the base slabs are interpreted as infinitesimally thin sheets, thus their behavior is assumed to change as follows:
 
    - As noted above, **`geometry_opacity`** makes physical sense as a fractional value in the thin-walled case (unlike the bulk case), controlling the overall presence weight of the thin wall.
@@ -1130,9 +1127,12 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
       At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission.
       The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this). This model is useful for rendering cases such as light scattering through a thin sheet of paper.
 
-!!! WARNING
-   The thin-walled limit of the subsurface slab has been introduced as a convenient, slightly more physically based model than the diffuse-transmission of the Autodesk Standard Surface. It does not really correspond to the thin-walled limit of a volumetric medium (bounded by dielectrics) though.
-   The thin-walled limit of the translucent slab described above is closer to that, though it explicitly ignores scattering. It might be worth attempting to unify these two representations into a single thin-wall dielectric volume model.
+!!! Note: Future work
+   It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
+
+   The thin-walled limit of the subsurface slab has been introduced as a convenient, slightly more physically based model than the diffuse-transmission of [#Georgiev2019]. It does not really correspond to the thin-walled limit of a volumetric medium (bounded by dielectrics) though.
+   The thin-walled limit of the translucent slab described in the Thin-walled case section is closer to that, though it explicitly ignores scattering. It might be worth attempting to unify these two representations into a single thin-wall dielectric volume model.
+
 
 ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
 <div class="shifted-caption">
