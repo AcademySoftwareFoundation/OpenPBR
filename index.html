@@ -2,20 +2,14 @@
 <link rel="stylesheet" href="style/style.css">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-**OpenPBR Surface draft specification**
+**OpenPBR Surface specification**
 
 <center>Zap Andersson, Paul Edmondson, Julien Guertault, Adrien Herubel, Alan King, </center>
 <center>Peter Kutz, Andréa Machizaud, Jamie Portsmouth, Frédéric Servant.</center>
 
 <center>*Version 0.2, 2023-10-19. A joint work of Adobe and Autodesk*</center>
 
-This document is a draft specification of a surface shading model: the OpenPBR Surface model. Designed as an über-surface, it aims to be capable of accurately modeling the vast majority of CG materials used in practical visual effects and feature animation productions. The model has been developed as a synthesis of the Autodesk Standard Surface and the Adobe Standard Material models.
-
-!!! WARNING
-   This document is still a work-in-progress. To facilitate discussion, we flag various currently open questions in yellow boxes like this.
-
-!!! Tip
-   These green boxes flag areas where the spec needs more work, where it is clear what remains to be done.
+This document is a specification of a surface shading model: the OpenPBR Surface model. Designed as an über-surface, it aims to be capable of accurately modeling the vast majority of CG materials used in practical visual effects and feature animation productions. The model has been developed as a synthesis of the Autodesk Standard Surface and the Adobe Standard Material models.
 
 
 Historical background and objectives
@@ -241,7 +235,7 @@ The mix operation is also used to describe the probability that a particular lay
 \begin{equation}
 \mathrm{\mathbf{mix}}(S_\mathrm{sub}, \mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}), w_\mathrm{coat}) \ .
 \end{equation}
-For convenience this may also be written more concisely as an weighted layer operator which covers a given fraction of the substrate with the coat layer:
+For convenience this may also be written more concisely as a weighted layer operator which covers a given fraction of the substrate with the coat layer:
 \begin{equation}
 \mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}, w_\mathrm{coat}) \ .
 \end{equation}
@@ -607,9 +601,6 @@ Specular params           | Label      | Type     | Range           | Norm      
    ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.3, 1.5 (default)](dummy)
 </div>
 
-!!! Tip
-   Include some figure showing the effect of textured **`specular_ior_level`**, versus textured **`specular_weight`**
-
 
 ### Glossy-diffuse
 
@@ -634,12 +625,6 @@ which can be evaluated more cheaply e.g. by [Monte Carlo](https://www.pbr-book.o
 
 The model is agnostic about the choice of diffuse BSDF lobe used, though we assume **`base_roughness`** controls its roughness so a reasonable choice is the Oren-Nayar model [#Pharr2023], where **`base_roughness`** controls the roughness of the underlying microsurface of diffuse microfacets. How this base roughness arises from the physical model of a dielectric embedding a dense volumetric medium is left open to interpretation. The albedo of the diffuse lobe is specified by **`base_weight`** multiplied by **`base_color`**.
 
-<!--
-For example if the diffuse lobe is Lambertian i.e. $f_\mathrm{diffuse} = \rho_d/\pi$ , then $C = 1/(1-\rho_\mathrm{dielectric})$ where $\rho_\mathrm{dielectric}$ is the average albedo [^average-albedo] of the dielectric lobe [#Kelemen2001]:
-\begin{equation}
-\rho_\mathrm{dielectric} = \frac{1}{\pi}\int_{\mathcal{H}_+} f_\mathrm{dielectric}(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i  \ .
-\end{equation}
- -->
 
 Glossy-diffuse params | Label     | Type     | Range            |  Norm      | Default             | Description
 ----------------------|-----------|----------|:----------------:|:----------:|:-------------------:|----------------------------------------------
@@ -652,11 +637,6 @@ Glossy-diffuse params | Label     | Type     | Range            |  Norm      | D
 <div class="shifted-caption">
     ![Figure [fuzz]: Wood rendered as glossy-diffuse, composed of diffuse lobe (left), specular lobe (middle), and their normalized sum](dummy)
 </div>
-
-
-!!! Tip
-   Explain why default `base_color` is (0.8,0.8,0.8)
-
 
 
 ### Subsurface
@@ -725,12 +705,6 @@ Subsurface params             | Label        | Type      | Range           | Def
 <div class="shifted-caption">
     ![Figure [subsurface]: The effect of varying the subsurface scattering radius (**`subsurface_radius`**)](dummy)
 </div>
-
-!!! Tip
-   Show renders of the effect of the parameters with the proposed remapping (particularly the anisotropy).
-
-!!! Tip
-   Give example renders of how the blend of glossy-diffuse and subsurface (via the **`subsurface_weight`**) can be important for skin rendering (as in the Adobe model docs)
 
 
 ### Translucent base
@@ -802,9 +776,6 @@ However the Abbe number itself is not very intuitive to work with, as the disper
 V_d = \frac{\mathtt{transmission\_dispersion\_abbe\_number}} {\mathtt{transmission\_dispersion\_scale}} \ .
 \end{equation}
 At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20. The default 20 was chosen since common real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], water and diamond both have Abbe numbers between 55 and 56, while the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the **`transmission_dispersion_abbe_number`** can be changed.
-
-!!! Tip
-   A discussion of how dispersion is implemented typically, in a non-spectral renderer.
 
 ![](images/dispersion_0percent.png width=99%) ![](images/dispersion_25percent.png width=99%) ![](images/dispersion_50percent.png width=99%) ![](images/dispersion_75percent.png width=99%) ![](images/dispersion_100percent.png width=99%)
 <div class="shifted-caption">
@@ -886,8 +857,6 @@ Metal params              | Label      | Type     | Range           |  Norm     
 **`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
 **`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0               $ | Orientation of roughness anisotropy
 
-!!! Tip
-   Show images where the behavior of the F82 model is more obvious (such as closeups of metals or materials with art-directed colors).
 
 ![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
 <div class="shifted-caption">
@@ -926,22 +895,6 @@ A number of other physical effects will occur due to the presence of the coat:
       - The IOR of the coat medium $V_\mathrm{coat}$ will alter the Fresnel factor of the underlying metal or dielectric (as detailed below).
 
 In a full light transport simulation these effects would occur automatically, but in an approximate model they may need to be accounted for by hand.
-
-<!-- Markdeep:
-For example, the Autodesk Standard Surface model modulates the **`base_color`** and **`subsurface_color`**, and the roughnesses of the metal and dielectric BSDFs, according to the
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C
-            base_color       -> pow(base_color,       1 + coat)
-            subsurface_color -> pow(subsurface_color, 1 + coat)
-            roughness        -> roughness + coat*coat_roughness*(1 - roughness)
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-and the roughnesses of the metal and dielectric BSDFs via
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C
-            roughness -> roughness + coat*coat_roughness*(1 - roughness)
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In some practical use cases however, it may be desirable for this physical effect to be ignored so that the base color is unaffected by the presence of the coat. For this purpose we provide the **`coat_affect_color`** parameter, which allows
--->
 
 The **`coat_ior_level`** parameter in $[0, 1]$ modulates the coat reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum. This works similarly to the formula for **`specular_ior_level`** in equation [modulated_ior]. In detail, the coat Fresnel reflection factor at normal incidence is given by
 \begin{equation}
@@ -1053,9 +1006,6 @@ Fuzz params          | Label     | Type     | Range        | Default       | Des
     ![Figure [fuzz]: Various textiles rendered using fuzz.](dummy)
 </div>
 
-!!! Tip
-   Show some images of the fuzz layer being used to represent "dust".
-
 
 Emission
 -------------------------------------
@@ -1157,9 +1107,6 @@ The perturbed normals and tangent will of course be specified by input textures 
 !!! WARNING:
    How the base and coat normal maps are composed is not specified, but perhaps it needs to be?
 
-!!! Tip
-   Some images to show the effect of the base and coat normals (separately and together) would be helpful.
-
 
 Thin-walled case
 -------------------------------------
@@ -1221,9 +1168,6 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
 <div class="shifted-caption">
       ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`geometry_thin_walled`** subsurface (right)](dummy)
 </div>
-
-!!! Tip
-   Show images of the thin wall translucent slab (rough stained glass windows for example).
 
 
 Reduction to a mixture of lobes
@@ -1465,9 +1409,6 @@ References
 
 [^BSDF_BSSRDF_sum]: This sum of BSDF and BSSRDF can be justified mathematically by interpreting a BSDF as the special case of a BSSRDF restricted to equal exit and entry points.
 
-<!--
-[^average-albedo]: Also termed the *hemispherical-hemispherical* reflectance.
--->
 
 <!-- Markdeep: -->
 <style class="fallback">
