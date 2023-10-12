@@ -955,7 +955,6 @@ The form of this model is the following (with $\mu_i, \mu_o$ the angle cosines t
 \end{equation}
 where $\mathbf{F}$ = **`fuzz_color`**, $E_\mathrm{fuzz}(\mu_o, \alpha)$ (termed $R$ in [#Zeltner2022]) is the reflectance at angle cosine $\mu_o$ given roughness $\alpha$ = **`fuzz_roughness`** $\in [0,1]$, and $D(\mu_i | \mu_o, \alpha)$ is a lobe defined by linear transformations of a cosine lobe (LTCs), where the transformation matrices (and $E_\mathrm{fuzz}$) are tabulated in a grid in the $(\mu_o, \alpha)$ plane, with values fitted to a simulation of the scattering in the volumetric fuzz microflake layer. Since the LTC lobe $D$ is a normalized PDF over the hemisphere, the resulting albedo of $f_\mathrm{fuzz}$ is $\mathbf{F} \, E_\mathrm{fuzz}(\mu_o, \alpha)$.
 
-
 If using the albedo-scaling interpretation of layering, a reasonable approximation of the reflection from the fuzz layer combined with the reflection from the base is to take
 \begin{eqnarray}
 \mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}) &\rightarrow& f_\mathrm{fuzz} +  \bigl(1 - E_\mathrm{fuzz} \bigr) \,f_\textrm{coated-base} \ ,
@@ -965,6 +964,8 @@ Then accounting for the coverage weight of the fuzz layer, $\mathtt{F}$ = **`fuz
 \begin{eqnarray}
 \mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}, \mathtt{F})  &\rightarrow&  \mathtt{F} \,f_\mathrm{fuzz} +  \mathrm{lerp}\bigl(1, 1 - E_\mathrm{fuzz}, \mathtt{F}\bigr) \,f_\textrm{coated-base} \ . \label{fuzz-layering-approx}
 \end{eqnarray}
+
+The fuzz shading normal is assumed to inherit from that of the substrate layer, the physical picture being that the fuzz volume settles and conforms to the geometry of the substrate. The substrate is generally a mixture of coat and uncoated base. Thus physically the fuzz model should be evaluated with each of the **`coat_normal`** and **`geometry_normal`** separately (if they differ), and the final result blended according to the **`coat_weight`**. As a practical approximation, it may be more convenient and efficient to instead approximate the fuzz normal by interpolating the coat and base normal (e.g. via a Slerp operation) according to **`coat_weight`**.
 
 
 Fuzz params          | Label     | Type     | Range        | Default       | Description
@@ -1268,7 +1269,7 @@ MaterialX reference implementation
 
 We provide a [reference implementation](reference/open_pbr_surface.mtlx) in MaterialX, which is based on the derivation in the previous section and the implementation of Autodesk Standard Surface [#Georgiev2019].
 
-!!! ERROR: This implementation is a work-in-progress.
+!!! WARNING
          Our MaterialX implementation is as faithful to the OpenPBR specification as existing shading languages (e.g. OSL, MDL) support.
          Thus it is still missing certain features, i.e.:
             - the microfacet NDF anisotropy formula of the Microfacet model section
