@@ -76,7 +76,7 @@ E(\omega_o) \equiv \int_{\mathcal{H}_+} f(\omega_i, \omega_o) \,\mathrm{d}\omega
 \end{equation}
 More generally, for transmissive BSDFs there is a similar constraint $E(\omega_o) + T(\omega_o)\le 1$ where the _directional transmittance_ $T(\omega_o)$ is defined by integrating the BSDF over the opposite hemisphere $\mathcal{H}_-$ to $\omega_o$. All BSDFs used are energy conserving in this sense. A BSDF which in addition does not dissipate any energy, such as a dielectric interface or a diffuse surface with a white albedo, is said to be _energy-preserving_ and satisfies $E(\omega_o) + T(\omega_o) = 1$.
 
-Reciprocity [^reciprocity] is the requirement that the BSDF is symmetric under interchange of the arguments, i.e. $\omega_i \leftrightarrow \omega_o$. In some cases this is relaxed and a non-reciprocal BSDF used, as in practice it does not lead to serious issues.
+Reciprocity [^reciprocity] is the requirement that the BSDF is symmetric under interchange of the arguments, i.e. $\omega_i \leftrightarrow \omega_o$. In some cases this is relaxed and a non-reciprocal BSDF used for simplicity or efficiency, as in practice it does not lead to serious issues.
 
 If the slab is completely opaque (e.g. conducting or diffuse) we need only specify the surface BSDF $f$, as the interior medium is irrelevant for light transport. If the slab is non-opaque, i.e. translucent, the interior medium $V$ of the slab is taken to be a homogeneous dielectric which optionally contains a specified homogeneous volumetric medium (or "VDF"). By VDF we mean the set of quantities (in general spatially varying fields) which define a volumetric optical medium, i.e.
 
