@@ -723,7 +723,7 @@ The RGB **`transmission_color`** $\mathbf{T}$ and scalar **`transmission_depth`*
 \begin{equation}
 \boldsymbol{\mu}_t = - \frac{\ln \mathbf{T}} {\lambda} \ .
 \end{equation}
-Being a length, **`transmission_depth`** can be any value greater or equal to zero. Since this is not convenient from a UI point of view, we propose the user be presented with a soft range $[0, 1]$, thus covering common cases.
+Being a length, **`transmission_depth`** can be any value greater than or equal to zero. Since this is not convenient from a UI point of view, we propose the user be presented with a soft range $[0, 1]$, thus covering common cases.
 However when **`transmission_depth`** $\lambda$ is zero, it is assumed that the interior medium is absent ($\boldsymbol{\mu}_t=0$) and **`transmission_color`** is used instead to non-physically tint the dielectric refraction Fresnel factor multiplicatively by a constant amount (ignoring the dielectric energy balance).
 
 The **`transmission_scatter`** parameter $\mathbf{S}$ directly sets the medium scattering coefficient $\boldsymbol{\mu}_s$ (as a multiple of the inverse **`transmission_depth`**):
