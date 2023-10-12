@@ -19,7 +19,7 @@
            doc="Color of the specular reflection (controls the physical edge-tint for metals, and a non-physical overall tint for dielectrics)." />
     <input name="specular_roughness" type="float" value="0.3" uimin="0.0" uimax="1.0" uiname="Specular Roughness" uifolder="Specular"
            doc="The roughness of the specular reflection. Lower numbers produce sharper reflections, higher numbers produce blurrier reflections." />
-    <input name="specular_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Index of Refraction" uifolder="Specular"
+    <input name="specular_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Specular Index of Refraction" uifolder="Specular"
            doc="Index of refraction of the dielectric base." />
     <input name="specular_ior_level" type="float" value="0.5" uimin="0.0" uimax="1.0" uiname="Specular IOR Level" uifolder="Specular"
            doc="Modulates the dielectric reflectivity at normal incidence between zero and double the original." />
@@ -39,9 +39,7 @@
            doc="The amount of directional bias, or anisotropy, of the volumetric scattering in the transparent base." />
     <input name="transmission_dispersion" type="float" value="0.0" uimin="0.0" uisoftmax="100.0" uiname="Transmission Dispersion" uifolder="Transmission" uiadvanced="true"
            doc="Dispersion amount, describing how much the dielectric index of refraction varies across wavelengths." />
-    <input name="transmission_extra_roughness" type="float" value="0.0" uimin="-1.0" uisoftmin="0.0" uimax="1.0" uiname="Transmission Roughness" uifolder="Transmission" uiadvanced="true"
-           doc="Additional roughness on top of specular roughness, applied to refracted rays. Positive values blur refractions more than reflections, and negative values blur refractions less." />
-    <input name="subsurface_weight" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Subsurface" uifolder="Subsurface Weight" uiadvanced="true"
+    <input name="subsurface_weight" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Subsurface" uifolder="Subsurface Weight" uiadvanced="true"
            doc="Mixture weight which dials the opaque dielectric base between diffuse reflection and subsurface scattering. A value of 1.0 indicates full subsurface scattering and a value 0 for diffuse reflection only." />
     <input name="subsurface_color" type="color3" value="0.8, 0.8, 0.8" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Color" uifolder="Subsurface" uiadvanced="true"
            doc="The overall reflected color of the subsurface scattering effect." />
@@ -71,11 +69,7 @@
            doc="The index of refraction of the clear-coat layer." />
     <input name="coat_ior_level" type="float" value="0.5" uimin="0.0" uimax="1.0" uiname="Coat IOR Level" uifolder="Specular"
            doc="Modulates the clear-coat reflectivity at normal incidence between zero and double the original." />
-    <input name="coat_affect_color" type="float" value="0" uimin="0" uimax="1" uiname="Coat Affect Color" uifolder="Coat" uiadvanced="true"
-           doc="Controls the extra saturation of diffuse reflection and subsurface scattering below the clear-coat, due to bounces in the coat layer." />
-    <input name="coat_affect_roughness" type="float" value="0" uimin="0" uimax="1" uiname="Coat Affect Roughness" uifolder="Coat" uiadvanced="true"
-           doc="Controls the extra roughness of the specular reflection in the layers below the clear-coat." />
-    <input name="thin_film_thickness" type="float" value="0.0" uimin="0.0" uisoftmax="2000.0" uiname="Thin Film Thickness" uifolder="Thin Film" uiadvanced="true"
+    <input name="thin_film_thickness" type="float" value="0" uimin="0.0" uisoftmax="2000.0" uiname="Thin Film Thickness" uifolder="Thin Film" uiadvanced="true"
            doc="The thickness of the thin film layer on the base (in nanometers). Use for materials such as multi-tone car paint or soap bubbles." />
     <input name="thin_film_ior" type="float" value="1.5" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Thin Film Index of Refraction" uifolder="Thin Film" uiadvanced="true"
            doc="The index of refraction of the thin-film." />
@@ -104,7 +98,7 @@
     <!-- Roughness influence by coat-->
     <!-- Calculate main specular roughness -->
     <multiply name="coat_affect_roughness_multiply1" type="float">
-      <input name="in1" type="float" interfacename="coat_affect_roughness" />
+      <input name="in1" type="float" value="1.0" />
       <input name="in2" type="float" interfacename="coat_weight" />
     </multiply>
     <multiply name="coat_affect_roughness_multiply2" type="float">
@@ -121,12 +115,8 @@
       <input name="anisotropy" type="float" interfacename="specular_anisotropy" />
     </roughness_anisotropy>
     <!-- Calculate transmission roughness -->
-    <add name="transmission_roughness_add" type="float">
-      <input name="in1" type="float" interfacename="specular_roughness" />
-      <input name="in2" type="float" interfacename="transmission_extra_roughness" />
-    </add>
     <clamp name="transmission_roughness_clamped" type="float">
-      <input name="in" type="float" nodename="transmission_roughness_add" />
+      <input name="in" type="float" interfacename="specular_roughness" />
     </clamp>
     <mix name="coat_affected_transmission_roughness" type="float">
       <input name="fg" type="float" value="1.0" />
@@ -184,7 +174,7 @@
     </clamp>
     <multiply name="coat_gamma_multiply" type="float">
       <input name="in1" type="float" nodename="coat_clamped" />
-      <input name="in2" type="float" interfacename="coat_affect_color" />
+      <input name="in2" type="float" value="1.0" />
     </multiply>
     <add name="coat_gamma" type="float">
       <input name="in1" type="float" nodename="coat_gamma_multiply" />
