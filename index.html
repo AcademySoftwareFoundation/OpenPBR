@@ -1351,7 +1351,8 @@ MaterialX reference implementation
 We provide a [reference implementation](reference/open_pbr_surface.mtlx) in MaterialX, which is based on the derivation in the previous section and the implementation of Autodesk Standard Surface [#Georgiev2019].
 
 !!! ERROR: This implementation is a work-in-progress.
-    Currently it is missing the following functionality:
+         Our MaterialX implementation is as faithful to the OpenPBR specification as existing shading languages (e.g. OSL, MDL) support.
+         Thus it is still missing certain features, i.e.:
             - the microfacet NDF anisotropy formula of the Microfacet model section
             - the F82-tint conductor Fresnel model of the Metal section
             - the remapping logic described in the Subsurface section
@@ -1360,7 +1361,7 @@ We provide a [reference implementation](reference/open_pbr_surface.mtlx) in Mate
             - the thin-walled glass model of the Thin-walled case section
             - the specific fuzz model (of [#Zeltner2022]) specified in the Fuzz section
             - correct normal map blending for the Fuzz model
-
+         Additional improvements to achieve this functionality will require in some cases industry-wide adoption of these features, not merely new MaterialX features.
 
 
 
