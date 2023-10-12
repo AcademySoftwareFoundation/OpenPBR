@@ -44,7 +44,7 @@ In outline the structure consists of:
 Since the model is simply a physical description of this material structure, in principle it would be amenable to solution via accurate methods such as those developed in [#Jakob2014], [#Belcour2018], and [#Zeltner2018], which attempt to compute all the various modes of reflection and transmission through the whole stack of layers, generating a final bidirectional scattering distribution function (BSDF) which is not necessarily a simple linear combination of the individual interface BSDFs.
 
 However we want this material model to be renderable on a wide range of platforms, from offline path tracers all the way to real-time game engines on mobile devices.
-Enforcing a particular implementation would make the use of the material model impractical for certain classes of renderers, and ultimately make the model less useful. For this reason we consider the choice of a specific implementation to be outside the scope of this specification. For convenience and efficiency, at present it is most likely to be mapped to a model consisting of a mixture of BSDF lobes similar to the Autodesk Standard Surface shader [#Georgiev2019]. An example derivation of derivation of such a model is provided in the ["Reduction to a mixture of lobes"](index.html#model/reductiontoamixtureoflobes) section below.
+Enforcing a particular implementation would make the use of the material model impractical for certain classes of renderers, and ultimately make the model less useful. For this reason we consider the choice of a specific implementation to be outside the scope of this specification. For convenience and efficiency, at present it is most likely to be mapped to a model consisting of a mixture of BSDF lobes similar to the Autodesk Standard Surface shader [#Georgiev2019]. An example derivation of such a model is provided in the ["Reduction to a mixture of lobes"](index.html#model/reductiontoamixtureoflobes) section below. Based on this, we provide a [reference implementation in MaterialX](index.html#model/materialximplementation).
 
 When a particular implementation of some aspect is widely adopted we suggest it, and when an accurate solution can be prohibitively costly we also suggest alternative approximations. But ultimately it is up to the developer to choose the appropriate implementation for their use case, based on their practical constraints and the level of visual quality they are aiming for. Similarly, we do not expect all implementations to support the entirety of the material model. It is understood that a given renderer may not support accurate subsurface scattering for example, or that anisotropic coating may be too expensive for VR (Virtual Reality), etc. Again, it is up to the developer to choose the extent to which they support the features of the model, and what to do about the ones they don't. For example, a renderer that doesn't handle subsurface scattering or coating might choose to modify the base color and roughness to mimic their effect.
 In both cases, the important consideration is that the implementation respects the intent of the material. To that end, we make our best effort to describe as unambiguously as possible the material model, its physical layout, and the behavior of the parameters that control its properties.
@@ -62,8 +62,7 @@ This formalism is general enough to describe arbitrarily complex materials, but 
 Slabs
 -------------------------------------
 
-To define our model unambiguously we use a simple formalism which describes an abstraction of a physical optical material consisting of "slabs" of dielectric or conductor, bounded by BSDFs. We work in the local space of a 2d surface, so horizontal refers to directions in the local plane, and vertical means aligned with the outward shading normal. The direction towards the top of the material is understood to align with the local shading normal at the current light transport vertex.
-The notion that the slabs are homogeneous in the horizontal extent is an idealization where, in order to make the light transport tractable, we consider that on the "mesoscopic" scale of the depth of the slabs in the structure, the slabs are locally homogeneous. On a larger macroscopic scale, the properties of the slabs, and the overall structure of the material, will vary over the surface.
+To define our model unambiguously we use a simple formalism which describes an abstraction of a physical optical material consisting of "slabs" of dielectric or conductor, bounded by BSDFs. We work in the local space of a 2d surface, so horizontal refers to directions in the local plane, and vertical means aligned with the outward shading normal. The direction towards the top of the material is understood to align with the local shading normal at the current light transport vertex. The notion that the slabs are homogeneous in the horizontal extent is an idealization where, in order to make the light transport tractable, we consider that on the "mesoscopic" scale of the depth of the slabs in the structure, the slabs are locally homogeneous. On a larger macroscopic scale, the properties of the slabs, and the overall structure of the material, will vary over the surface.
 
 Each slab consists of a homogeneous dielectric or conducting medium $V$ with conceptually unbounded extent horizontally and a finite vertical extent, bounded above by a surface with a given interface BSDF $f$. We denote a general slab therefore as follows:
 \begin{equation}
@@ -129,7 +128,7 @@ Given constituent slabs, we then build a more complex composite material by "ver
 Layering
 -------------------------------------
 
-The layer operation generates a composite material by depositing a slab $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$ (or composite material), conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$, so that $V_\mathrm{coat}$ becomes the adjacent medium above the microsurface of $S_\mathrm{sub}$. 
+The layer operation generates a composite material by depositing a slab $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$ (or composite material), conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$, so that $V_\mathrm{coat}$ becomes the adjacent medium to the top interface of $S_\mathrm{sub}$.
 
 The physical act of bringing the two independent slabs $S_\mathrm{sub}$ and $S_\mathrm{coat}$ together and bonding them produces a new composite material $L$ which is "vertically" heterogeneous on the mesoscopic scale, denoted by:
 \begin{equation}
@@ -291,6 +290,7 @@ Metadata
 This specification is designed to facilitate exchange of assets between facilities which may use different render engines and pipelines. To this end it attempts to reduce the ambiguity about the final look, so that assets can be expected to render roughly the same visually if the implementation conforms reasonably well to the specification.
 
 However the parameters of the physical model that we describe do not specify all of the assumptions that would be needed to obtain a good visual match. We recommend therefore, for the purposes of asset exchange, that the parameters be packaged with certain metadata that provides the following missing information:
+   - The version of the specification implemented.
 
    - The assumed color space of all the color parameters. If unspecified, following MaterialX [#Smythe2016], by default this color space is assumed to be [ACEScg](https://docs.acescentral.com/specifications/acescg/).
 
@@ -302,11 +302,7 @@ However the parameters of the physical model that we describe do not specify all
 
    - The assumed convention for converting the input **`geometry_normal`**, **`geometry_tangent`** and **`geometry_coat_normal`** maps, if present, to the final shading normal of the local surface at each point.
 
-As in practice OpenPBR will be integrated within other transport protocols such as MaterialX and USD, the specific form and content of this metadata is outside the scope of this specification.
-
-!!! Note: Future work
-   Whether metadata should be specified as part of the OpenPBR model itself, or formally specified as a set of adjunct parameters, remains an open question.
-
+As in practice OpenPBR will be integrated within data exchange frameworks such as MaterialX and USD, the specific form and content of this metadata is outside the scope of this specification.
 
 
 Model
@@ -377,7 +373,7 @@ Microfacet model
 
 We give here some general assumptions about the form and parametrization of the BSDFs which describe the interfaces in the model outlined in the previous section.
 
-The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$ and $f_\mathrm{coat}$ of the [metal](index.html#model/metallicbase), [dielectric](index.html#model/dielectricbase) and [coat](index.html#model/coat) slabs respectively, are each assumed to be described by a standard microfacet model. This is a widely used approximation in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal or dielectric, where the statistical distribution of the normal of these facets (termed the "micronormal") determines the surface roughness characteristics at the macroscopic scale.
+The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$ and $f_\mathrm{coat}$ of the [metal](index.html#model/metallicbase), [dielectric](index.html#model/dielectricbase) and [coat](index.html#model/coat) slabs respectively, are each assumed to be described by a standard microfacet model. This is a widely used approximation in which the surface at a microscopic scale (the _microsurface_) is assumed to be composed of a heightfield consisting of smooth microfacets of either metal or dielectric, where the statistical distribution of the normal of these facets, termed the _micronormal_, determines the surface roughness characteristics at the macroscopic scale.
 
 The other interfaces are not standard microfacet models, but strongly related:
 
@@ -392,39 +388,38 @@ f(\omega_i, \omega_o) \propto F(\omega_i, h) \; D(h) \; G(\omega_i, \omega_o)
 \end{equation}
 where $h = (\omega_i+\omega_o)/|\omega_i+\omega_o|$ is the half-vector, i.e. the micronormal which mirror reflects $\omega_i$ into $\omega_o$. For dielectrics there is also a BTDF, i.e. the portion of the BSDF where the input and output directions lie in opposite rather than the same hemispheres, which has a similar form to the BRDF (except with a modified half-vector and Fresnel factor) [#Walter2007].
 
-The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section. The "masking-shadowing" function $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF (below) the masking-shadowing function then has a well-known form [#Heitz2014b].
+The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section. The _masking-shadowing_ function $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF equation [GGX] the masking-shadowing function then has a well-known form [#Heitz2014b].
 
 The Normal Distribution Function (NDF) $D(m)$ describes the relative probability of occurrence of micronormal $m$ on the surface, and thus the roughness characteristics.
 A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution (originally "Ground Glass unknown": [#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
-$$
+\begin{equation} \label{GGX}
 D_\mathrm{GGX}(m) \propto \left( 1 + \frac{\tan^2\theta_m}{\alpha^2} \right)^{-2}
-$$
-where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, and the parameter $\alpha \in [0, \infty)$ controls the roughness of the surface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ i.e. flat microfacets, while as $\alpha \rightarrow \infty$ microfacets of all orientations are equally prevalent.
-Following [#Burley2012], we set
-$$
-\alpha = r^2 \ ,
-$$
-where $r$ is termed the roughness, as this produces a more perceptually linear resulting change in apparent roughness as $r$ is varied.
+\end{equation}
+where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, and the parameter $\alpha \in [0, \infty)$ controls the roughness of the microsurface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ i.e. flat microfacets, while as $\alpha \rightarrow \infty$ microfacets of all slopes are equally prevalent.
+Following [#Burley2012], we set (in the isotropic case)
+\begin{equation}
+\alpha = r^2
+\end{equation}
+where $r$ is termed the _roughness_, as this produces a more perceptually linear resulting change in apparent roughness as $r$ is varied.
 
-In the general case the roughness is anisotropic, that is the NDF is not circularly symmetric but stretched along some direction in the surface plane, producing an elongation of the specular highlight along the stretch direction. This simulates coherent microscale geometry due to processes like scratches or brushing.
-This is parametrized by two separate $\alpha$-roughnesses $\alpha_t$ and $\alpha_b$ along orthonormal tangent and bitangent vectors in the surface plane (where only the tangent vector direction needs to be specified, as an angle relative to some specified original tangent vector field). The form [^normalization] of the GGX distribution in this anisotropic case is (given the polar angle $\phi_m$ of $m$ relative to the tangent):
-$$
+In the general case the roughness is anisotropic, that is the NDF is not circularly symmetric but stretched along some direction in the surface plane, producing an elongation of the specular highlight along that direction. This simulates coherent microscale groove geometry perpendicular to the stretch direction due to processes like scratches or brushing. It is assumed that a reference tangent vector field is defined (via **`geometry_tangent`**), and the surface tangent vector direction is then specified as a polar angle relative to it. The tangent direction corresponds to the direction in which the highlights are elongated (equivalently, the surface grooves lie along the orthogonal bitangent). The GGX distribution in the anisotropic case is then parametrized by two separate $\alpha$-roughnesses $\alpha_t$ and $\alpha_b$ along the tangent and bitangent vectors as follows, given the polar angle $\phi_m$ of the micronormal $m$ relative to the tangent (counterclockwise about the normal):
+\begin{equation}
 D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \left(\frac{\cos^2\phi_m}{\alpha_t^2} + \frac{\sin^2\phi_m}{\alpha_b^2}\right) \right)^{-2}
-$$
+\end{equation}
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 
 !!! Note: Future work
    The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
 
 The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$, to preserve the average roughness regardless of the anisotropy. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
-$$
+\begin{equation}
 \left\{
 \begin{aligned}
 \alpha_t &= r^2 \sqrt{\frac{2}{1 + (1 - a)^2}}  \; \ , \\[2ex]
 \alpha_b &= (1 - a) \, \alpha_t \ .
 \end{aligned}
 \right.
-$$
+\end{equation}
 
 ![Figure [ndf_anisotropy]: NDF shapes as a function of roughness $r$ and anisotropy $a$.](images/anisotropy.png width=60%)
 
@@ -460,7 +455,7 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 
 - **`specular_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the specular highlight is stretched in the direction of anisotropic rotation).
 
-- **`specular_rotation`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_rotation`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The rotation is normalized to $[0, 1]$ representing angles from 0° to 360° counterclockwise, with 0° being the original tangent vector direction. Note that the appearance of the specular highlight is identical for rotations between $[0, 0.5]$ and $[0.5, 1]$; this allows the preservation of value when converting to/from other models that support directional anisotropy.
+- **`specular_rotation`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_rotation`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The rotation is normalized to $[0, 1]$ representing angles from 0° to 360° counterclockwise about the normal, with 0° being the original tangent vector direction. Note that the appearance of the specular highlight is identical for rotations between $[0, 0.5]$ and $[0.5, 1]$; this allows the preservation of value when converting to/from other models that support directional anisotropy.
 
 The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016], where the multiple bounces are explicitly modelled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
 
@@ -948,7 +943,6 @@ The form of this model is the following (with $\mu_i, \mu_o$ the angle cosines t
 \end{equation}
 where $\mathbf{F}$ = **`fuzz_color`**, $E_\mathrm{fuzz}(\mu_o, \alpha)$ (termed $R$ in [#Zeltner2022]) is the reflectance at angle cosine $\mu_o$ given roughness $\alpha$ = **`fuzz_roughness`** $\in [0,1]$, and $D(\mu_i | \mu_o, \alpha)$ is a lobe defined by linear transformations of a cosine lobe (LTCs), where the transformation matrices (and $E_\mathrm{fuzz}$) are tabulated in a grid in the $(\mu_o, \alpha)$ plane, with values fitted to a simulation of the scattering in the volumetric fuzz microflake layer. Since the LTC lobe $D$ is a normalized PDF over the hemisphere, the resulting albedo of $f_\mathrm{fuzz}$ is $\mathbf{F} \, E_\mathrm{fuzz}(\mu_o, \alpha)$.
 
-
 If using the albedo-scaling interpretation of layering, a reasonable approximation of the reflection from the fuzz layer combined with the reflection from the base is to take
 \begin{eqnarray}
 \mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}) &\rightarrow& f_\mathrm{fuzz} +  \bigl(1 - E_\mathrm{fuzz} \bigr) \,f_\textrm{coated-base} \ ,
@@ -958,6 +952,8 @@ Then accounting for the coverage weight of the fuzz layer, $\mathtt{F}$ = **`fuz
 \begin{eqnarray}
 \mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}, \mathtt{F})  &\rightarrow&  \mathtt{F} \,f_\mathrm{fuzz} +  \mathrm{lerp}\bigl(1, 1 - E_\mathrm{fuzz}, \mathtt{F}\bigr) \,f_\textrm{coated-base} \ . \label{fuzz-layering-approx}
 \end{eqnarray}
+
+The fuzz shading normal is assumed to inherit from that of the substrate layer, the physical picture being that the fuzz volume settles and conforms to the geometry of the substrate. The substrate is generally a mixture of coat and uncoated base. Thus physically the fuzz model should be evaluated with each of the **`coat_normal`** and **`geometry_normal`** separately (if they differ), and the final result blended according to the **`coat_weight`**. As a practical approximation, it may be more convenient and efficient to instead approximate the fuzz normal by interpolating the coat and base normal (e.g. via a Slerp operation) according to **`coat_weight`**.
 
 
 Fuzz params          | Label     | Type     | Range        | Default       | Description
@@ -1136,7 +1132,7 @@ Reduction to a mixture of lobes
 
 In various practical models such as Disney's Principled Shader [#Burley2012], Autodesk 3ds Max's Physical Material [#Andersson2016] and Autodesk Standard Surface [#Georgiev2019], the model is defined as a mixture (i.e. linear combination) of BSDF/BSSRDFs corresponding to the constituent BSDF lobes of the reflection and transmission. The light transport between the layers and overall energy balance is approximated via the mix weights. Given such a representation, the integration into a renderer is relatively straightforward as the individual lobes can be importance sampled and combined with direct lighting estimates via standard techniques such as multiple importance sampling (MIS) [#Veach1997].
 
-As an example, we give here a brief derivation of a mixture model representation analogous to Autodesk Standard Surface, from the stated material structure of OpenPBR. Following Autodesk Standard Surface, we assume here that layering is implemented via the non-reciprocal albedo-scaling of equation [non-reciprocal-albedo-scaling].
+As an example, we give here a brief derivation of a mixture model representation analogous to Autodesk Standard Surface, from the stated material structure of OpenPBR. Following Autodesk Standard Surface, we assume here that layering is implemented via the non-reciprocal albedo-scaling of equation [non-reciprocal-albedo-scaling]. This derivation also informs how we implement our MaterialX [reference implementation](reference/open_pbr_surface.mtlx).
 
 Consider first the non-thin-walled case (i.e. **`geometry_thin_walled`** is false).
 For brevity, in the following we suppress all the direction arguments, and use the notation of the tree diagram in the Model section for the weight factors i.e.:
@@ -1250,6 +1246,25 @@ In the thin walled case (i.e. when **`geometry_thin_walled`** is true), we will 
    - The subsurface lobe $\color{darkblue}{f_\textrm{SSS}}$ degenerates into diffuse reflection and transmission lobes ${f^R_\textrm{diffuse}}$, ${f^T_\textrm{diffuse}}$ as given in equation [thin_wall_subsurface].
 
 The full representation in code of this linear combination of BRDF/BTDF/BSSRDF lobes will depend on renderer-specific details.
+
+
+MaterialX reference implementation
+----------------------------------
+
+We provide a [reference implementation](reference/open_pbr_surface.mtlx) in MaterialX, which is based on the derivation in the previous section and the implementation of Autodesk Standard Surface [#Georgiev2019].
+
+!!! ERROR: This implementation is a work-in-progress.
+         Our MaterialX implementation is as faithful to the OpenPBR specification as existing shading languages (e.g. OSL, MDL) support.
+         Thus it is still missing certain features, i.e.:
+            - the microfacet NDF anisotropy formula of the Microfacet model section
+            - the F82-tint conductor Fresnel model of the Metal section
+            - the remapping logic described in the Subsurface section
+            - the volumetric medium of the Translucent base section
+            - the dispersion scaling logic of the Translucent base section
+            - the thin-walled glass model of the Thin-walled case section
+            - the specific fuzz model (of [#Zeltner2022]) specified in the Fuzz section
+            - correct normal map blending for the Fuzz model
+         Additional improvements to achieve this functionality will require in some cases industry-wide adoption of these features, not merely new MaterialX features.
 
 
 
