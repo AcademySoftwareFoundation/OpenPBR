@@ -815,11 +815,8 @@ where $\bar{\mu} = 1/7$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic ref
 \end{equation}
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of $\mathtt{specular\_weight}$ and $\mathtt{specular\_color}$. Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
-!!! WARNING
-   Should we allow the tint to be a soft-max at the upper bound, i.e. $[0, 1)$ range, to support "exotic" metals?
-
-!!! WARNING
-   The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately. (Is this a defect of the models based on a fitted modification to the Schlick formula?) (Is the visual impact noticeable or negligible?)
+!!! Note: Future work
+   The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately. It is also not clear if taking it into account would cause a significant visual difference.
 
 
 Metal params              | Label      | Type     | Range           |  Norm      | Default             | Description
