@@ -397,12 +397,11 @@ A popular form of NDF which well-approximates the roughness of real materials is
 \begin{equation} \label{GGX}
 D_\mathrm{GGX}(m) \propto \left( 1 + \frac{\tan^2\theta_m}{\alpha^2} \right)^{-2}
 \end{equation}
-where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, and the parameter $\alpha \in [0, \infty)$ controls the roughness of the microsurface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ so the microsurface is mostly flat leading to a smooth appearance, while as $\alpha \rightarrow \infty$ the microsurface becomes increasingly jagged, leading to a rough appearance.
-Following [#Burley2012], we set (in the isotropic case)
+where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, and the parameter $\alpha$ controls the apparent roughness of the microsurface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ so the microsurface is mostly flat leading to a smooth appearance, while as $\alpha$ grows the microsurface becomes increasingly jagged, leading to a rough appearance. In practice we restrict to the range $\alpha \in [0,1]$, as $\alpha > 1$ does not produce a plausible rough appearance. Following [#Burley2012], we set (in the isotropic case)
 \begin{equation}
 \alpha = r^2
 \end{equation}
-where $r$ is termed the _roughness_, as this produces a more perceptually linear resulting change in apparent roughness as $r$ is varied.
+where $r$ is the user-facing _roughness_, as this produces a more perceptually linear resulting change in apparent roughness as $r$ is varied.
 
 In the general case the roughness is anisotropic, that is the NDF is not circularly symmetric but stretched along some direction in the surface plane, producing an elongation of the specular highlight along that direction. This simulates coherent microscale groove geometry perpendicular to the stretch direction due to processes like scratches or brushing. It is assumed that a reference tangent vector field is defined (via **`geometry_tangent`**), and the surface tangent vector direction is then specified as a polar angle relative to it. The tangent direction corresponds to the direction in which the highlights are elongated (equivalently, the surface grooves lie along the orthogonal bitangent). The GGX distribution in the anisotropic case is then parametrized by two separate $\alpha$-roughnesses $\alpha_t$ and $\alpha_b$ along the tangent and bitangent vectors as follows, given the polar angle $\phi_m$ of the micronormal $m$ relative to the tangent (counterclockwise about the normal):
 \begin{equation}
