@@ -1030,7 +1030,7 @@ The intensity of the EDF is controlled by a luminance and a color multiplier. Th
 
 Moreover, the overall material luminance may be further reduced in the presence of coat or fuzz, as they can absorb light coming from the emissive layer before it exits the surface. The emission from the top surface should in principle gain a directional dependence due to the combined effects of absorption, total internal reflection (TIR) and multiple bounces in the coat layer, and absorption in the fuzz layer. The combined effect should result mostly in darkening and saturation at grazing angles.
 
-Being an intensity, **`emission_luminance`** can be any value greater or equal to zero. Since this is not convenient from a UI point of view, we propose the user be presented with a soft range $[0, 1000]$, corresponding to the typical range of home appliances.
+Being an intensity, **`emission_luminance`** can be any value greater than or equal to zero. Since this is not convenient from a UI point of view, we propose the user be presented with a soft range $[0, 1000]$, corresponding to the typical range of home appliances.
 
 !!! WARNING
    The interaction of emission and fuzz should be specified, either here or preferably in the Fuzz section.
