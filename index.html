@@ -393,13 +393,7 @@ Microfacet model
 
 We give here some general assumptions about the form and parametrization of the BSDFs which describe the interfaces in the model outlined in the previous section.
 
-The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$ and $f_\mathrm{coat}$ of the [metal](index.html#model/metal), [dielectric](index.html#model/dielectricbase) and [coat](index.html#model/coat) slabs respectively, are each assumed to be described by a standard microfacet model. This is a widely used approximation in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal or dielectric, where the statistical distribution of the normal of these facets (termed the "micronormal") determines the surface roughness characteristics at the macroscopic scale.
-
-The other interfaces are not standard microfacet models, but strongly related:
-
-   - The [glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse) BRDF $f_\textrm{glossy-diffuse}$ is the combination of a microfacet dielectric BRDF and a diffuse lobe, normalized to be energy conserving.
-
-   - The [fuzz](index.html#model/fuzz) BSDF $f_\mathrm{fuzz}$ can be modeled as a microfacet BRDF with a special NDF designed to peak for micronormals in grazing orientations.
+The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$, $f_\mathrm{coat}$ and $f_\mathrm{diffuse}$ of the [metal](index.html#model/metal), [dielectric](index.html#model/dielectricbase), [coat](index.html#model/coat) and [glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse) slabs respectively, are each assumed to be described by a standard _microfacet model_. This is a widely used approximation ([#Pharr2023]) in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal, dielectric or Lambertian material, where the statistical distribution of the normal of these facets (termed the _micronormal_) determines the surface roughness characteristics at the macroscopic scale. (The [fuzz](index.html#model/fuzz) model is distinct and based on a volumetric "microflake" model [#Heitz2015]).
 
 A microfacet BRDF has the standard form [^Jacobian] ([#Walter2007], [#Pharr2023]) in the single-scattering approximation:
 \begin{equation}
@@ -408,7 +402,7 @@ f(\omega_i, \omega_o) \propto F(\omega_i, h) \; D(h) \; G(\omega_i, \omega_o)
 \end{equation}
 where $h = (\omega_i+\omega_o)/|\omega_i+\omega_o|$ is the half-vector, i.e. the micronormal which mirror reflects $\omega_i$ into $\omega_o$. For dielectrics there is also a BTDF, i.e. the portion of the BSDF where the input and output directions lie in opposite rather than the same hemispheres, which has a similar form to the BRDF (except with a modified half-vector and Fresnel factor) [#Walter2007].
 
-The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section. The "masking-shadowing" function $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF (below) the masking-shadowing function then has a well-known form [#Heitz2014b].
+The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section. The _masking-shadowing function_ $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF (below) the masking-shadowing function then has a well-known form [#Heitz2014b].
 
 The Normal Distribution Function (NDF) $D(m)$ describes the relative probability of occurrence of micronormal $m$ on the surface, and thus the roughness characteristics.
 A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution ([#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
@@ -478,7 +472,7 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 
 - **`specular_rotation`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_rotation`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The rotation is normalized to $[0, 1]$ representing angles from 0° to 360° counterclockwise, with 0° being the original tangent vector direction. Note that the appearance of the specular highlight is identical for rotations between $[0, 0.5]$ and $[0.5, 1]$; this allows the preservation of value when converting to/from other models that support directional anisotropy.
 
-The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016], where the multiple bounces are explicitly modelled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
+The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016], where the multiple bounces are explicitly modeled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
 
 
 Base Substrate
@@ -1262,7 +1256,7 @@ f_\mathrm{PBR} = \mathtt{\alpha} \,f_\mathrm{surface}  + (1 - \mathtt{\alpha}) \
 \end{equation}
 where $\color{darkblue}{f_\textrm{transparent}}$ is understood to denote a delta-function BSDF corresponding to the absence of any surface interaction.
 
-If $\mathtt{E}$ represents the isotropic emission luminance from the base, then the total EDF lobe $\color{darkblue}{L_e}$ can be modelled according to the absorption in the coat layer as:
+If $\mathtt{E}$ represents the isotropic emission luminance from the base, then the total EDF lobe $\color{darkblue}{L_e}$ can be modeled according to the absorption in the coat layer as:
 \begin{eqnarray}
 \color{darkblue}{L_e}  &=& (1 - \mathtt{C}) \,\mathtt{E} + \mathtt{C} \,T_\mathrm{coat} \mathtt{E}  \nonumber \\
                         &=& \mathrm{lerp}\left(1,  T_\mathrm{coat}, \mathtt{C}\right) \mathtt{E} \ .
