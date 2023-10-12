@@ -343,7 +343,7 @@ S_\textrm{coat}                 &=& \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coa
 S_\textrm{metal}                &=& \mathrm{Slab}(f_\mathrm{conductor})                                \nonumber \\
 S_\textrm{translucent-base}     &=& \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{dielectric}) \nonumber \\
 S_\textrm{subsurface}           &=& \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{subsurface}) \nonumber \\
-S_\textrm{glossy}               &=& \mathrm{Slab}(f_\textrm{dielectric}, V_\mathrm{dielectric})        \nonumber \\
+S_\textrm{gloss}                &=& \mathrm{Slab}(f_\textrm{dielectric}, V_\mathrm{dielectric})        \nonumber \\
 S_\textrm{diffuse}              &=& \mathrm{Slab}(f_\textrm{diffuse})                                  \nonumber \\
 \end{eqnarray}
 
@@ -532,7 +532,7 @@ The translucent-base is described in the Translucent base section, while the opa
 
 The opaque-base substrate is assumed to be a dielectric with dense subsurface volumetric absorption and scattering, which tends to an idealized "glossy-diffuse" BSDF in the limit of infinite density medium. In some cases a blend of subsurface and completely opaque glossy-diffuse scattering is desired, for example in skin rendering where the diffuse component provides the surface details of the skin (freckles, blemishes, makeup, etc.) and the subsurface component provides the color detail of the underlying veins and tissue. To support this, we make the opaque-base substrate be a statistical mix of glossy-diffuse and subsurface models (described in the Glossy-diffuse section and the Subsurface section respectively):
 \begin{eqnarray}
-M_\textrm{opaque-base}  &=& \mathrm{\mathbf{mix}}(S_\textrm{glossy-diffuse}, S_\mathrm{subsurface}, \mathtt{S})
+M_\textrm{opaque-base}  &=& \mathrm{\mathbf{mix}}(M_\textrm{glossy-diffuse}, S_\mathrm{subsurface}, \mathtt{S})
 \end{eqnarray}
 where $\mathtt{S} = \mathtt{subsurface\_weight}$.
 
