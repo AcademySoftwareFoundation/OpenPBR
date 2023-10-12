@@ -604,7 +604,7 @@ The opaque substrate slab has a diffuse BRDF lobe:
 \begin{eqnarray}
 S_\textrm{diffuse}    = \mathrm{Slab}(f_\mathrm{diffuse})
 \end{eqnarray}
-where $f_\mathrm{diffuse}$ is defined to be the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a microfacet model where the microfacets are individually Lambertian, with albedo specified by specified by **`base_weight`** multiplied by **`base_color`**, and a roughness parameter given by **`base_roughness`**.
+where $f_\mathrm{diffuse}$ is defined to be the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a microfacet model where the microfacets are individually Lambertian, with albedo specified by **`base_weight`** multiplied by **`base_color`**, and a roughness parameter given by **`base_roughness`**.
 
 The resulting BRDF of the glossy-diffuse slab is the combination of a "glossy" specular lobe provided by reflection from the dielectric interface, and a diffuse lobe provided by bounces off the substrate. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete. This form of BRDF model is classic in computer graphics and typically termed the Ashikhmin-Shirley or Kelemen model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]).
 
