@@ -915,7 +915,7 @@ In reality, coats can darken the underlying surface also due to a different mech
 We leave it up to the implementation to decide what level of approximation to use for this (in the simplest approximation, the **`coat_color`** can just be treated as the total transmittance $T$ which is multiplied into the substrate lobes).
 
 The IOR of the coat medium $V_\mathrm{coat}$ will alter the Fresnel factor of the underlying metal or dielectric.
-The **`coat_ior_level`** parameter in $[0, 1]$ modulates the coat Fresnel reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum. This works similarly to the formula for **`specular_ior_level`** in equation [modulated_ior]. In detail, the coat Fresnel reflection factor at normal incidence is given by
+The **`coat_ior`** parameter controls the index of refraction of the coat medium. The **`coat_ior_level`** parameter in $[0, 1]$ modulates the coat Fresnel reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum. This works similarly to the formula for **`specular_ior_level`** in equation [modulated_ior]. In detail, the coat Fresnel reflection factor at normal incidence is given by
 \begin{equation}
 F_c = \frac{|\eta_c - 1|^2}{(\eta_c + 1)^2} \ .
 \end{equation}
