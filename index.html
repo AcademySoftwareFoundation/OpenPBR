@@ -624,7 +624,7 @@ and remapped extinction coefficient $\bar{\boldsymbol{\mu}}_t$ by
 \end{equation}
 Note that due to the singularity at $g=1$, in practice the anisotropy needs to be limited to be not too close to 1.
 
-Implementations may choose to compute light transport in the subsurface medium either via a fast, approximate bidirectional scattering surface reflectance distribution (BSSRDF) model using e.g. the dipole approximation [#Jensen2001], or more accurately via volumetric path tracing.
+Implementations may choose to compute light transport in the subsurface medium either via a fast, approximate bidirectional scattering surface reflectance distribution (BSSRDF) model using e.g. the dipole approximation [#Jensen2001], or more accurately via volumetric path tracing ([#Novak2018], [#Pharr2023]).
 
 !!! Note: Future work
    The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface.
@@ -1297,6 +1297,8 @@ References
 [#McDermott2018]: Wes McDermott. [*The PBR Guide*](https://substance3d.adobe.com/tutorials/courses/the-pbr-guide-part-1), Allegorithmic white paper (2018).
 
 [#Neubelt13]: David Neubelt, Matt Pettineo. *Crafting a Next-Gen Material Pipeline for The Order: 1886*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2013).
+
+[#Novak2018]: Jan Novák, Iliyan Georgiev, Johannes Hanika, Wojciech Jarosz. *Monte Carlo Methods for Volumetric Light Transport Simulation*, Computer Graphics Forum (2018).
 
 [#Oren1994]: Michael Oren and Shree K. Nayar. *Generalization of Lambert's reflectance model*, ACM SIGGRAPH (1994).
 
