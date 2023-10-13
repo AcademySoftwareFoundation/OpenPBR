@@ -34,7 +34,7 @@ We thus adopt a specific form of material structure that has proved useful as a 
      The dielectric interface of this coat layer provides a secondary specular lobe.
    - [Fuzz](index.html#model/fuzz): An optional layer representing the reflection from micro-fibers (such as fine hair, peach fuzz, textile strands, and dust grains) on top of everything else.
 
-   ![Figure [diagram_model]: Schematic illustration of the idealized material model that our shader emulates. Horizontal stacking of slabs represents statistical mixture and vertical stacking represents layering.](images/model_schematic.svg width="100%")
+   ![Figure [diagram_model]: Schematic illustration of the idealized physical material that our shader models. Horizontal stacking of slabs represents statistical mixture and vertical stacking represents layering.](images/model_schematic.svg width="100%")
 
 We define this physical material structure in detail using a simple [formalism](index.html#formalism) involving slabs of material composed via layering and mixing operations. This formalism is general enough to describe arbitrarily complex materials, but we restrict its usage here to defining the particular material structure illustrated above.
 
@@ -58,7 +58,7 @@ Each slab consists of a homogeneous dielectric or conducting medium $V$ with con
 \begin{equation}
 \quad S = \mathrm{Slab}(f, V)
 \end{equation}
-where $f$ is the interface BSDF and $V$ is the medium VDF. To clarify the relationships, we represent slabs diagrammatically in a block form as follows:
+where $f$ is the interface BSDF and $V$ is the medium VDF (as defined below). To clarify the relationships, we represent slabs diagrammatically in a block form as follows:
 *******************************
 *    +-----------------+ f    *
 *    |                 |      *
@@ -66,9 +66,9 @@ where $f$ is the interface BSDF and $V$ is the medium VDF. To clarify the relati
 *    |                 |      *
 *    +-----------------+      *
 *******************************
-We work in the local space of a 2d surface, so horizontal refers to directions in the local plane, and vertical means aligned with the outward shading normal. The direction towards the top of the material is understood to align with the local shading normal at the current light transport vertex. The notion that the slabs are homogeneous in the horizontal extent is an idealization where, in order to make the light transport tractable, we consider that on the "mesoscopic" scale of the depth of the slabs in the structure, the slabs are locally homogeneous. On a larger macroscopic scale, the properties of the slabs, and the overall structure of the material, will vary over the surface.
+We work in the local space of a 2d surface, so horizontal refers to directions in the local plane, and vertical means aligned with the outward shading normal. The direction towards the top of the material is understood to align with the local shading normal at the current light transport vertex. In order to make the light transport tractable we consider that on the mesoscopic scale of the depth of the slabs in the structure, the slabs are locally homogeneous. On a larger macroscopic scale, the properties of the slabs, and the overall structure of the material, will vary over the surface.
 
-We do not dictate how the surfaces of the slab are described physically at the microscopic level, but at the level of the macroscopic slab description they are flat interfaces with a known BSDF. We will be as specific as possible about the chosen functional form of the BSDFs, though in most cases we refer to the literature for the full details of the implementation. The BSDFs are mostly [microfacet models](index.html#model/microfacetmodel) (apart from the [fuzz](index.html#model/fuzz) BSDF which derives from microflake theory).
+We do not dictate how the surfaces of the slab are described physically at the microscopic level, but at the level of the mesoscopic slab description they are flat interfaces with a known BSDF. We will be as specific as possible about the chosen functional form of the BSDFs, though in most cases we refer to the literature for the full details of the implementation. The BSDFs are mostly [microfacet models](index.html#model/microfacetmodel) (apart from the [fuzz](index.html#model/fuzz) BSDF which derives from microflake theory).
 
 Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ where, following the usual convention, these both point away from the surface vertex with $\omega_o$ in the direction of the outgoing light and $\omega_i$ opposite to the direction of the incident light. Physically the BSDF should be energy conserving and reciprocal. Energy conservation of a BRDF [^brdf] $f(\omega_i, \omega_o)$ amounts to the requirement that the _directional reflectance_ (or _albedo_) $E(\omega_o) \le 1$ for all output ray directions, where $E(\omega_o)$ is defined as the integral of the BRDF over directions in the same hemisphere $\mathcal{H}_+$ as $\omega_o$ with projected solid angle measure:
 \begin{equation} \label{energy-conservation}
@@ -86,9 +86,9 @@ If the slab is completely opaque (e.g. conducting or diffuse) we need only speci
 
 We assume that the renderer is aware that the volumetric properties may vary from point to point, inherited from the surface parameters, and how the fields are "filled-in" in the space surrounding the surfaces is a matter for implementations to deal with.
 
-It is understood that in principle the medium $V$ specifies its own depth, which can also be unbounded denoting a semi-infinite "bulk" medium with no substrate. We denote such an unbounded semi-infinite volumetric medium as $V^\infty$. This is an abstraction of course, where we understand that such a semi-infinite medium actually just represents the bottom layer of the material structure and the medium will most likely terminate somewhere (but remote from the surface on the mesoscopic scale). Such a slab with a semi-infinite medium does not need to supply a base BSDF (it can be just omitted). Note that the BSDF of the bottom interface (if the depth is finite) does not need to be specified as it will be derivable from the BSDF of the underlying slab if present (in combination with the properties of the medium VDF).
+The medium $V$ either specifies its own depth, or is a semi-infinite "bulk" volumetric medium at the bottom of the structure. We denote such a bulk medium conceptually unbounded below as $V^\infty$. This is an abstraction of course, where we understand that such a semi-infinite medium actually just represents the bottom layer of the local surface structure. The medium will most likely terminate somewhere but remote from the surface on the mesoscopic scale. Note that the BSDF of the bottom interface of a slab $S$ of finite depth does not need to be specified, as it will be derivable from the BSDF of the underlying slab in combination with the properties of the medium of $S$ (as discussed in the Layering section).
 
-If the bounding BSDFs of a slab are completely non-transmissive and opaque (e.g. metallic), the internal medium is irrelevant for light transport purposes. For convenience, it can be omitted:
+If the bounding BSDFs of a slab are completely non-transmissive and opaque (e.g. metallic or diffuse), the internal medium is irrelevant for light transport purposes. For convenience, it can be omitted:
 \begin{equation}
 S_\mathrm{opaque} = \mathrm{Slab}(f) \ .
 \end{equation}
@@ -117,7 +117,7 @@ S_\mathrm{bulk} = \mathrm{Slab}(f, V^\infty) \ .
 For completeness, the absence of a slab (i.e. no surface or underlying medium), which corresponds just to the ambient dielectric medium, is denoted $\mathrm{Slab}(\emptyset)$.
 
 A slab does not itself specify anything about other slabs in relation to itself (e.g. its substrate slab or overlying slab).
-The adjacent medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top and bottom of the entire structure is also assumed to be given and unspecified by the model. If the renderer keeps track of the dielectric medium in which the surface is embedded (via a scheme such as "nested dielectrics" [#Budge2002]) which may be the interior dielectric bulk of some transparent object in the scene such as a piece of glass or body of water, then the surrounding ambient medium is a dielectric whose IOR we denote **`ambient_ior`**, or if dielectric medium tracking is not done then **`ambient_ior`** can be assumed to be 1 corresponding to air or vacuum.
+The adjacent medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top of the entire structure (and bottom if thin-walled) is also assumed to be given and unspecified by the model. If the renderer keeps track of the dielectric medium in which the surface is embedded (via a scheme such as "nested dielectrics" [#Budge2002]) which may be the interior dielectric bulk of some transparent object in the scene such as a piece of glass or body of water, then the surrounding ambient medium is a dielectric whose IOR we denote **`ambient_ior`**, or if dielectric medium tracking is not done then **`ambient_ior`** can be assumed to be 1 corresponding to air or vacuum.
 
 Given constituent slabs, we then build a more complex composite material by "vertically" [layering](index.html#formalism/layering) and "horizontally" [mixing](index.html#formalism/mixing) slabs, as described below.
 
@@ -125,7 +125,7 @@ Given constituent slabs, we then build a more complex composite material by "ver
 Layering
 -------------------------------------
 
-The layer operation generates a composite material by depositing a slab $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$ (or composite material), conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$, so that $V_\mathrm{coat}$ becomes the adjacent medium to the top interface of $S_\mathrm{sub}$.
+The layer operation generates a composite material by depositing a slab $S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat})$ on top of another substrate slab $S_\mathrm{sub} = \mathrm{Slab}(f_\mathrm{sub}, V_\mathrm{sub})$ or composite material, conceptually bonding the base of $S_\mathrm{coat}$'s dielectric medium to the surface of $S_\mathrm{sub}$, so that $V_\mathrm{coat}$ becomes the adjacent medium to the top interface of $S_\mathrm{sub}$.
 
 The physical act of bringing the two independent slabs $S_\mathrm{sub}$ and $S_\mathrm{coat}$ together and bonding them produces a new composite material $L$ which is "vertically" heterogeneous on the mesoscopic scale, denoted by:
 \begin{equation}
@@ -218,7 +218,7 @@ Diagrammatically, we represent the mix as putting the two slabs horizontally adj
 *                                                          *
 ************************************************************
 
-The mix operation is also used to describe the probability that a particular layer structure exists in the material at a particular point. For example a coating $S_\mathrm{coat}$ may cover the substrate layers $S_\mathrm{sub}$, but be intermittent and applied only to some fraction $w_\mathrm{coat}$ (the coat "presence" or "coverage" weight) of the substrate. This would be specified as
+The mix operation is also used to describe the probability that a particular layer structure exists in the material at a particular point. For example a coating $S_\mathrm{coat}$ may cover the substrate layers $S_\mathrm{sub}$, but be intermittent and applied only to some fraction $w_\mathrm{coat}$ (the coat _presence_ or _coverage_ weight) of the substrate. This would be specified as
 \begin{equation}
 \mathrm{\mathbf{mix}}(S_\mathrm{sub}, \mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat}), w_\mathrm{coat}) \ .
 \end{equation}
@@ -240,7 +240,7 @@ For convenience this may also be written more concisely as a weighted layer oper
 *     substrate coated intermittently     *
 *******************************************
 
-This physical picture of the mix operation becomes somewhat unrealistic in some cases where the bottom-most bulk materials being blended are not obviously consistent (e.g. blending dielectric and metallic bulks), but in such cases it is understood that the implementation should do the best it can to make sense of the physics (e.g. the metal bulk could be considered to actually be surface metallic flakes on top of a single consistent dielectric). 
+This physical picture of the mix operation becomes somewhat unrealistic in some cases where the bottom-most bulk materials being blended are not obviously consistent (e.g. blending dielectric and metallic bulks), but in such cases it is understood that the implementation should do the best it can to make sense of the physics. For example the metal bulk could be considered to actually be surface metallic flakes on top of a single consistent dielectric.
 
 The implementation of the mix operation in a renderer depends on how the material model is approximated. Typically the model will be reduced to an effective BSDF per slab being mixed, in which case the mix can be implemented simply as a linear blend of those BSDFs, i.e. if slabs $S_0$, $S_1$ have BSDFs $f_0$, $f_1$ respectively, then the BSDF of $\mathrm{\mathbf{mix}}(S_0, S_1, w_1)$ can be mapped to [^lerp]
 \begin{equation}
@@ -273,8 +273,6 @@ Emissive properties are expressed in photometric units, since reference values a
 The conversion to radiometric units is the responsibility of the renderer. For RGB renderers, a simple approximation is proposed in [#Lagarde2014].
 
 We will generally assume in this model that the emission is uniformly distributed in all directions into the hemisphere. The emission from the structure as a whole is then physically determined (in principle) by the propagation of this emitted light from the emitting slabs through their neighbors into the ambient space.
-
-As for the BSDFs, we remain agnostic about the specific functional form of the EDFs, giving enough information from a verbal description combined with parameters to make the implementation reasonably unambiguous.
 
 
 Metadata
@@ -401,31 +399,27 @@ D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \left(\frac{\cos^2\phi_m}{\a
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 
 !!! Note: Future work
-   The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) NDF which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
+   The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) NDF which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. More recently, other generalized NDFs based on the Student's $t$-distribution have been proposed [#d'Eon2023]. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
 
-The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$, to preserve the average roughness regardless of the anisotropy. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
-\begin{equation}
-\left\{
-\begin{aligned}
-\alpha_t &= r^2 \sqrt{\frac{2}{1 + (1 - a)^2}}  \; \ , \\[2ex]
-\alpha_b &= (1 - a) \, \alpha_t \ .
-\end{aligned}
-\right.
+The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$:
+\begin{equation}  \label{openpbr-anisotropy-formula}
+\alpha_t = r^2 \sqrt{\frac{2}{1 + (1 - a)^2}} \;\ , \quad \alpha_b = (1 - a) \, \alpha_t \ .
 \end{equation}
+This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve the average roughness regardless of the anisotropy. A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). 
 
 ![Figure [ndf_anisotropy]: NDF shapes as a function of roughness $r$ and anisotropy $a$.](images/anisotropy.png width=60%)
 
 
 !!! Note: Future work
    The exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet, and the formulation described needs validation from artists.
-   Other possible parametrizations are worth considering, but our tests indicate that finding a parametrization that offers a good control while remaining predictable requires more work.
+   Other possible parametrizations are worth considering, but our tests indicate that finding a parametrization that offers superior expressivity while remaining predictable requires more investigation.
 
 
 To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{dielectric}$ and metal-base BRDF $f_\mathrm{conductor}$ share the same parameters, while the coat BSDF $f_\mathrm{coat}$ uses an independent set:
 
-- **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$ (where $\alpha = r^2$). These roughnesses are given a soft-maximum at 1, since $r=1$ corresponds to a perceptually very rough surface.
+- **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$. These roughnesses are given a soft-maximum at 1, since $r=1$ corresponds to a perceptually very rough surface.
 
-- **`specular_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the specular highlight is stretched in the direction of anisotropic rotation).
+- **`specular_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the specular highlight is stretched in the direction of anisotropic rotation). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula].
 
 - **`specular_rotation`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_rotation`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The rotation is normalized to $[0, 1]$ representing angles from 0° to 360° counterclockwise about the normal, with 0° being the original tangent vector direction. Note that the appearance of the specular highlight is identical for rotations between $[0, 0.5]$ and $[0.5, 1]$; this allows the preservation of value when converting to/from other models that support directional anisotropy.
 
@@ -456,7 +450,7 @@ Rainbow-like iridescence effects occur due to interference when a thin refractiv
 In practice, these effects are most easily incorporated directly into the microfacet BSDFs of both the metal and dielectric-base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
 
 !!! Note: Future work
-   It is currently not clear enough how the IOR of the surrounding media affects the thin-film interference. Moreover, the behavior of the current parametrization is arguably unintuitive, as the effect of the thickness is not obvious. It may be useful to have a more artist-friendly dial of the "iridescence".
+   It is currently not physically clear enough how the IOR of the surrounding media affects the thin-film interference, and how the thin-film affects the Fresnel of the adjacent slabs. Moreover, the behavior of the current parametrization is arguably unintuitive, as the effect of the thickness is not obvious. It may be useful to have a more artist-friendly dial of the "iridescence".
 
 
 Thin-film params          | Label     | Type     | Range           | Norm          | Default | Description
@@ -630,14 +624,14 @@ and remapped extinction coefficient $\bar{\boldsymbol{\mu}}_t$ by
 \end{equation}
 Note that due to the singularity at $g=1$, in practice the anisotropy needs to be limited to be not too close to 1.
 
-Implementations may choose to compute light transport in the subsurface medium either via a fast, approximate bidirectional scattering surface reflectance distribution (BSSRDF) model using e.g. the dipole approximation [#Jensen2001], or more accurately via volumetric path tracing.
-
-!!! Note: Future work
-   The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface. 
-
-   Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, but how to model subsurface scattering in the presence of varying subsurface properties is an open question.
+Implementations may choose to compute light transport in the subsurface medium either via a fast, approximate bidirectional scattering surface reflectance distribution (BSSRDF) model using e.g. the dipole approximation [#Jensen2001], or more accurately via volumetric path tracing ([#Novak2018], [#Pharr2023]).
 
 Note that the default value of **`subsurface_radius_scale`** is set at $(1, 0.5, 0.25)$ to approximate the effect of Rayleigh scattering. If we roughly approximate the wavelength corresponding to each of the RGB channels as $\lambda/\mathrm{nm} \approx 650, 550, 450$ and assume the radii scale like the reciprocal of the extinction, then since in Rayleigh scattering the extinction scales like $\lambda^{-4}$ for light of wavelength $\lambda$ the expected relative magnitudes of the radii are $(1,  (550/650)^4, (450/650)^4) \approx (1, 0.5, 0.25)$, hence the chosen default. This provides a slightly more realistic default look for the subsurface than resulting from gray radii.
+
+!!! Note: Future work
+   The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface.
+
+   Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, but how to model subsurface scattering in the presence of varying subsurface properties is an open question.
 
 
 Subsurface params             | Label        | Type      | Range           | Norm       | Default              | Description
@@ -698,9 +692,7 @@ This formulation produces volumetric parameters which reproduce reasonably well 
     ![Figure [transmission]: The effect of **`transmission_scatter_anisotropy`**. From left to right: -0.5 (back scattering), 0 (isotropic), 0.5 (forward scattering).](dummy)
 </div>
 
-The phenomenon known as _optical dispersion_ (i.e. variation of the IOR with wavelength) produces familiar rainbow-like colors when light refracts through dielectrics such as water, glass and diamond. The **`transmission_dispersion_abbe_number`** and **`transmission_dispersion_scale`** parameters control this effect. Control over dispersion is grouped with the transmission parameters since this effect is only significant in highly transparent refractive media.
-
-Dispersion is parametrized by the _Abbe number_ $V_d$, which is the ratio between differences of refractive indices at short, medium, and long wavelengths as follows:
+The phenomenon known as _optical dispersion_ (i.e. variation of the IOR with wavelength) produces familiar rainbow-like colors when light refracts through dielectrics such as water, glass and diamond. Control over dispersion is grouped with the transmission parameters since this effect is only significant in highly transparent refractive media. Dispersion is parametrized by the _Abbe number_ $V_d$, which is the ratio between differences of refractive indices at short, medium, and long wavelengths as follows:
 \begin{equation}
 V_d = \frac{n_{\mathrm{medium}} - 1}{n_{\mathrm{short}} - n_{\mathrm{long}}} \ ,
 \end{equation}
@@ -720,13 +712,15 @@ However the Abbe number itself is not very intuitive to work with, as the disper
 \begin{equation}
 V_d = \frac{\mathtt{transmission\_dispersion\_abbe\_number}} {\mathtt{transmission\_dispersion\_scale}} \ .
 \end{equation}
-At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20. The default 20 was chosen since common real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], water and diamond both have Abbe numbers between 55 and 56, while the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the **`transmission_dispersion_abbe_number`** can be changed.
+At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20. 
+
+The default 20 was chosen since common real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], water and diamond both have Abbe numbers between 55 and 56, while the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the Abbe number itself can be changed via **`transmission_dispersion_abbe_number`**.
 
 ![](images/dispersion_0percent.png width=99%) ![](images/dispersion_25percent.png width=99%) ![](images/dispersion_50percent.png width=99%) ![](images/dispersion_75percent.png width=99%) ![](images/dispersion_100percent.png width=99%)
 <div class="shifted-caption">
       ![Figure [fuzz]: Increasing the **`transmission_dispersion_scale`** of glass from 0 to 1](dummy)
 </div>
-   
+
 
 Translucent base params                   | Label            | Type     | Range           |  Norm       | Default       | Description
 ------------------------------------------|------------------|----------|:---------------:|:-----------:|:-------------:|----------------------------------------------
@@ -1065,16 +1059,21 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
          E_R[f^R_\mathrm{diffuse}] + E_T[f^T_\mathrm{diffuse}] = S \le 1 \ .
       \end{equation}
       At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission.
-      The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this). This model is useful for rendering cases such as light scattering through a thin sheet of paper.
-
-!!! Note: Future work
-   It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
+      The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this). This model is useful for rendering cases such as light scattering through a thin sheet of paper (Figure [thinwalled]).
 
 
 ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
 <div class="shifted-caption">
-      ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via **`geometry_thin_walled`** subsurface (right)](dummy)
+      ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via subsurface in thin-walled mode (right)](dummy)
 </div>
+
+
+!!! Note: Future work
+   It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
+
+!!! Note: Future work
+   The thin-walled limit of the subsurface slab has been introduced as a convenient, slightly more physically based model than the diffuse-transmission of the Autodesk Standard Surface. It does not really correspond to the thin-walled limit of a volumetric medium (bounded by dielectrics) though. The thin-walled limit of the translucent slab described above is closer to that, though it explicitly ignores scattering. It might be worth attempting to unify these two representations into a single thin-wall dielectric volume model.
+
 
 
 Reduction to a mixture of lobes
@@ -1264,6 +1263,8 @@ References
 
 [#d'Eon2021]: Eugene d’Eon. *A Hitchhiker’s guide to multiple scattering: Exact Analytic, Monte Carlo and Approximate Solutions in Transport Theory* (2022).
 
+[#d'Eon2023]: Eugene d’Eon. *Student-T and Beyond: Practical Tools for Multiple-Scattering BSDFs with General NDFs*, ACM SIGGRAPH Talks (2023).
+
 [#Georgiev2019]: Iliyan Georgiev, Jamie Portsmouth, Zap Andersson, Adrien Herubel, Alan King, Shinji Ogaki, and Frederic Servant. *Autodesk Standard Surface*, Autodesk white paper (2019).
 
 [#Gritz2010]: Larry Gritz, Clifford Stein, Chris Kulla, and Alejandro Conty. *Open Shading Language*, ACM SIGGRAPH Talks (2010).
@@ -1284,7 +1285,7 @@ References
 
 [#Jakob2014]: Wenzel Jakob, Eugene d'Eon, Otto Jakob, and Steve Marschner. *A Comprehensive Framework for Rendering Layered Materials*, ACM Transactions on Graphics (2014).
 
-[#Jendersie2023]: Johannes Jendersie1 and Eugene d'Eon. *An Approximate Mie Scattering Function for Fog and Cloud Rendering*, ACM SIGGRAPH (2023).
+[#Jendersie2023]: Johannes Jendersie and Eugene d'Eon. *An Approximate Mie Scattering Function for Fog and Cloud Rendering*, ACM SIGGRAPH (2023).
 
 [#Jensen2001]: Henrik Wann Jensen, Stephen R. Marschner, Marc Levoy, and Pat Hanrahan. *A Practical Model for Subsurface Light Transport*, ACM SIGGRAPH (2001).
 
@@ -1303,6 +1304,8 @@ References
 [#McDermott2018]: Wes McDermott. [*The PBR Guide*](https://substance3d.adobe.com/tutorials/courses/the-pbr-guide-part-1), Allegorithmic white paper (2018).
 
 [#Neubelt13]: David Neubelt, Matt Pettineo. *Crafting a Next-Gen Material Pipeline for The Order: 1886*, ACM SIGGRAPH Courses: Physically Based Shading in Theory and Practice (2013).
+
+[#Novak2018]: Jan Novák, Iliyan Georgiev, Johannes Hanika, Wojciech Jarosz. *Monte Carlo Methods for Volumetric Light Transport Simulation*, Computer Graphics Forum (2018).
 
 [#Oren1994]: Michael Oren and Shree K. Nayar. *Generalization of Lambert's reflectance model*, ACM SIGGRAPH (1994).
 
