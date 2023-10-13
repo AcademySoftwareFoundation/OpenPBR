@@ -58,7 +58,7 @@ Each slab consists of a homogeneous dielectric or conducting medium $V$ with con
 \begin{equation}
 \quad S = \mathrm{Slab}(f, V)
 \end{equation}
-where $f$ is the interface BSDF and $V$ is the medium VDF. To clarify the relationships, we represent slabs diagrammatically in a block form as follows:
+where $f$ is the interface BSDF and $V$ is the medium VDF (as defined below). To clarify the relationships, we represent slabs diagrammatically in a block form as follows:
 *******************************
 *    +-----------------+ f    *
 *    |                 |      *
@@ -66,7 +66,7 @@ where $f$ is the interface BSDF and $V$ is the medium VDF. To clarify the relati
 *    |                 |      *
 *    +-----------------+      *
 *******************************
-We work in the local space of a 2d surface, so horizontal refers to directions in the local plane, and vertical means aligned with the outward shading normal. The direction towards the top of the material is understood to align with the local shading normal at the current light transport vertex. The notion that the slabs are homogeneous in the horizontal extent is an idealization where, in order to make the light transport tractable, we consider that on the "mesoscopic" scale of the depth of the slabs in the structure, the slabs are locally homogeneous. On a larger macroscopic scale, the properties of the slabs, and the overall structure of the material, will vary over the surface.
+We work in the local space of a 2d surface, so horizontal refers to directions in the local plane, and vertical means aligned with the outward shading normal. The direction towards the top of the material is understood to align with the local shading normal at the current light transport vertex. In order to make the light transport tractable, we consider that on the "mesoscopic" scale of the depth of the slabs in the structure the slabs are locally homogeneous. On a larger macroscopic scale, the properties of the slabs, and the overall structure of the material, will vary over the surface.
 
 We do not dictate how the surfaces of the slab are described physically at the microscopic level, but at the level of the macroscopic slab description they are flat interfaces with a known BSDF. We will be as specific as possible about the chosen functional form of the BSDFs, though in most cases we refer to the literature for the full details of the implementation. The BSDFs are mostly [microfacet models](index.html#model/microfacetmodel) (apart from the [fuzz](index.html#model/fuzz) BSDF which derives from microflake theory).
 
