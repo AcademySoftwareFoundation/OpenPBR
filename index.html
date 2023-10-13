@@ -399,7 +399,7 @@ D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \left(\frac{\cos^2\phi_m}{\a
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 
 !!! Note: Future work
-   The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) NDF which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
+   The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) NDF which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. More recently, other generalized NDFs based on the Student-T distribution have been proposed [#d'Eon2023]. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
 
 The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$:
 \begin{equation}  \label{openpbr-anisotropy-formula}
@@ -1262,6 +1262,8 @@ References
 [#Conty2017]: Alejandro Conty Estevez and Christopher Kulla *Production Friendly Microfacet Sheen BRDF*, Sony Pictures Imageworks technical report (2017).
 
 [#d'Eon2021]: Eugene d’Eon. *A Hitchhiker’s guide to multiple scattering: Exact Analytic, Monte Carlo and Approximate Solutions in Transport Theory* (2022).
+
+[#d'Eon2023]: Eugene d’Eon. *Student-T and Beyond: Practical Tools for Multiple-Scattering BSDFs with General NDFs*, ACM SIGGRAPH Talks (2023).
 
 [#Georgiev2019]: Iliyan Georgiev, Jamie Portsmouth, Zap Andersson, Adrien Herubel, Alan King, Shinji Ogaki, and Frederic Servant. *Autodesk Standard Surface*, Autodesk white paper (2019).
 
