@@ -626,12 +626,12 @@ Note that due to the singularity at $g=1$, in practice the anisotropy needs to b
 
 Implementations may choose to compute light transport in the subsurface medium either via a fast, approximate bidirectional scattering surface reflectance distribution (BSSRDF) model using e.g. the dipole approximation [#Jensen2001], or more accurately via volumetric path tracing ([#Novak2018], [#Pharr2023]).
 
+Note that the default value of **`subsurface_radius_scale`** is set at $(1, 0.5, 0.25)$ to approximate the effect of Rayleigh scattering. If we roughly approximate the wavelength corresponding to each of the RGB channels as $\lambda/\mathrm{nm} \approx 650, 550, 450$ and assume the radii scale like the reciprocal of the extinction, then since in Rayleigh scattering the extinction scales like $\lambda^{-4}$ for light of wavelength $\lambda$ the expected relative magnitudes of the radii are $(1,  (550/650)^4, (450/650)^4) \approx (1, 0.5, 0.25)$, hence the chosen default. This provides a slightly more realistic default look for the subsurface than resulting from gray radii.
+
 !!! Note: Future work
    The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface.
 
    Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, but how to model subsurface scattering in the presence of varying subsurface properties is an open question.
-
-Note that the default value of **`subsurface_radius_scale`** is set at $(1, 0.5, 0.25)$ to approximate the effect of Rayleigh scattering. If we roughly approximate the wavelength corresponding to each of the RGB channels as $\lambda/\mathrm{nm} \approx 650, 550, 450$ and assume the radii scale like the reciprocal of the extinction, then since in Rayleigh scattering the extinction scales like $\lambda^{-4}$ for light of wavelength $\lambda$ the expected relative magnitudes of the radii are $(1,  (550/650)^4, (450/650)^4) \approx (1, 0.5, 0.25)$, hence the chosen default. This provides a slightly more realistic default look for the subsurface than resulting from gray radii.
 
 
 Subsurface params             | Label        | Type      | Range           | Norm       | Default              | Description
@@ -692,9 +692,7 @@ This formulation produces volumetric parameters which reproduce reasonably well 
     ![Figure [transmission]: The effect of **`transmission_scatter_anisotropy`**. From left to right: -0.5 (back scattering), 0 (isotropic), 0.5 (forward scattering).](dummy)
 </div>
 
-The phenomenon known as _optical dispersion_ (i.e. variation of the IOR with wavelength) produces familiar rainbow-like colors when light refracts through dielectrics such as water, glass and diamond. The **`transmission_dispersion_abbe_number`** and **`transmission_dispersion_scale`** parameters control this effect. Control over dispersion is grouped with the transmission parameters since this effect is only significant in highly transparent refractive media.
-
-Dispersion is parametrized by the _Abbe number_ $V_d$, which is the ratio between differences of refractive indices at short, medium, and long wavelengths as follows:
+The phenomenon known as _optical dispersion_ (i.e. variation of the IOR with wavelength) produces familiar rainbow-like colors when light refracts through dielectrics such as water, glass and diamond. Control over dispersion is grouped with the transmission parameters since this effect is only significant in highly transparent refractive media. Dispersion is parametrized by the _Abbe number_ $V_d$, which is the ratio between differences of refractive indices at short, medium, and long wavelengths as follows:
 \begin{equation}
 V_d = \frac{n_{\mathrm{medium}} - 1}{n_{\mathrm{short}} - n_{\mathrm{long}}} \ ,
 \end{equation}
@@ -714,7 +712,9 @@ However the Abbe number itself is not very intuitive to work with, as the disper
 \begin{equation}
 V_d = \frac{\mathtt{transmission\_dispersion\_abbe\_number}} {\mathtt{transmission\_dispersion\_scale}} \ .
 \end{equation}
-At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20. The default 20 was chosen since common real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], water and diamond both have Abbe numbers between 55 and 56, while the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the **`transmission_dispersion_abbe_number`** can be changed.
+At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20. 
+
+The default 20 was chosen since common real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], water and diamond both have Abbe numbers between 55 and 56, while the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the Abbe number itself can be changed via **`transmission_dispersion_abbe_number`**.
 
 ![](images/dispersion_0percent.png width=99%) ![](images/dispersion_25percent.png width=99%) ![](images/dispersion_50percent.png width=99%) ![](images/dispersion_75percent.png width=99%) ![](images/dispersion_100percent.png width=99%)
 <div class="shifted-caption">
