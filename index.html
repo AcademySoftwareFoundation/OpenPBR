@@ -726,10 +726,6 @@ At the default **`transmission_dispersion_scale`** of zero, the Abbe number is i
 <div class="shifted-caption">
       ![Figure [fuzz]: Increasing the **`transmission_dispersion_scale`** of glass from 0 to 1](dummy)
 </div>
-
-!!! Note: Future work
-   Adding an additional non-physical control **`​transmission_extra_roughness`** on top of **`specular_roughness`** could be considered, but it is inconvenient to implement because it requires an extra microfacet model evaluation. Without it, one microfacet model can be used for both reflection and refraction. Moreover, should **`​transmission_extra_roughness`** also apply to the interface of the subsurface-scattering substrate is also an open question.
-   As an alternative, using rough transmission and then add a coat (with the coat's effect on the underlying roughness disabled) could be considered.
    
 
 Translucent base params                   | Label            | Type     | Range           |  Norm       | Default       | Description
