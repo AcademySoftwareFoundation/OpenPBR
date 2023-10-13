@@ -401,29 +401,25 @@ which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 !!! Note: Future work
    The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) NDF which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
 
-The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$, to preserve the average roughness regardless of the anisotropy. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
-\begin{equation}
-\left\{
-\begin{aligned}
-\alpha_t &= r^2 \sqrt{\frac{2}{1 + (1 - a)^2}}  \; \ , \\[2ex]
-\alpha_b &= (1 - a) \, \alpha_t \ .
-\end{aligned}
-\right.
+The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$:
+\begin{equation}  \label{openpbr-anisotropy-formula}
+\alpha_t = r^2 \sqrt{\frac{2}{1 + (1 - a)^2}} \;\ , \quad \alpha_b = (1 - a) \, \alpha_t \ .
 \end{equation}
+This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve the average roughness regardless of the anisotropy. A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). 
 
 ![Figure [ndf_anisotropy]: NDF shapes as a function of roughness $r$ and anisotropy $a$.](images/anisotropy.png width=60%)
 
 
 !!! Note: Future work
    The exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet, and the formulation described needs validation from artists.
-   Other possible parametrizations are worth considering, but our tests indicate that finding a parametrization that offers a good control while remaining predictable requires more work.
+   Other possible parametrizations are worth considering, but our tests indicate that finding a parametrization that offers superior expressivity while remaining predictable requires more investigation.
 
 
 To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{dielectric}$ and metal-base BRDF $f_\mathrm{conductor}$ share the same parameters, while the coat BSDF $f_\mathrm{coat}$ uses an independent set:
 
-- **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$ (where $\alpha = r^2$). These roughnesses are given a soft-maximum at 1, since $r=1$ corresponds to a perceptually very rough surface.
+- **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$. These roughnesses are given a soft-maximum at 1, since $r=1$ corresponds to a perceptually very rough surface.
 
-- **`specular_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the specular highlight is stretched in the direction of anisotropic rotation).
+- **`specular_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the specular highlight is stretched in the direction of anisotropic rotation). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula].
 
 - **`specular_rotation`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_rotation`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The rotation is normalized to $[0, 1]$ representing angles from 0° to 360° counterclockwise about the normal, with 0° being the original tangent vector direction. Note that the appearance of the specular highlight is identical for rotations between $[0, 0.5]$ and $[0.5, 1]$; this allows the preservation of value when converting to/from other models that support directional anisotropy.
 
@@ -454,7 +450,7 @@ Rainbow-like iridescence effects occur due to interference when a thin refractiv
 In practice, these effects are most easily incorporated directly into the microfacet BSDFs of both the metal and dielectric-base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
 
 !!! Note: Future work
-   It is currently not clear enough how the IOR of the surrounding media affects the thin-film interference. Moreover, the behavior of the current parametrization is arguably unintuitive, as the effect of the thickness is not obvious. It may be useful to have a more artist-friendly dial of the "iridescence".
+   It is currently not physically clear enough how the IOR of the surrounding media affects the thin-film interference, and how the thin-film affects the Fresnel of the adjacent slabs. Moreover, the behavior of the current parametrization is arguably unintuitive, as the effect of the thickness is not obvious. It may be useful to have a more artist-friendly dial of the "iridescence".
 
 
 Thin-film params          | Label     | Type     | Range           | Norm          | Default | Description
