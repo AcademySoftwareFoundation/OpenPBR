@@ -876,7 +876,7 @@ The absorption of the medium $V_\mathrm{coat}$ is parametrized by **`coat_color`
 
 In the full light transport this observed color is further darkened and saturated due to multiple internal reflections from the inside of the coat, including a considerable amount of total internal reflection, which causes light to strike the underlying material multiple times and undergo more absorption. Also the observed tint color should vary away from **`coat_color`** as the incidence angle changes, due to the change in path length in the medium. The presence of a rough coat will increase the apparent roughness of the BSDF lobes of the underlying base. We generally assume that in the ground truth appearance, all these effects are accounted for.
 
-In reality, coats can darken the underlying surface also due to a different mechanism where the coat modifies the Fresnel factor of the base due to filling in air gaps between granules or threads, which reduces the relative IORs at the internal interfaces. This occurs e.g. on adding water to sand or fabric, or adding a penetrating wood finish. We assume here that this effect explicitly does _not_ occur, since we do not have enough knowledge about the properties of the underlying substance to model it. We can only safely assume that the first mechanism of darkening (i.e., internal reflections) occurs.
+In reality, coats can darken the underlying surface also due to a different mechanism where the coat modifies the Fresnel factor of the base due to filling in air gaps between granules or threads, which reduces the relative IORs at the internal interfaces. This occurs e.g. on adding water to sand or fabric, or adding a penetrating wood finish. We assume here that this effect explicitly does _not_ occur, since we do not have enough knowledge about the properties of the underlying substance to model it. We can only safely assume that the first mechanism of darkening (i.e. internal reflections) occurs.
 
 We leave it up to the implementation to decide what level of approximation to use for this (in the simplest approximation, the **`coat_color`** can just be multiplied into the substrate lobes).
 
@@ -945,8 +945,8 @@ M_\mathrm{surface} = \mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{f
 
 The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution. We recommend the specific model of [#Zeltner2022] (based on the earlier work of [#Heitz2015]), which has the following characteristics:
 
-- The fuzz represents a homogeneous volumetric layer with a fiber-like SGGX microflake [#Heitz2015] phase function. This is approximated using a Linearly Transformed Cosines (LTC) model [#Heitz2016b] fitted to volumetric simulations . The microflake fibers are assumed to have a single-scattering albedo that effectively produces a reflection tinted with the **`fuzz_color`** after multiple scattering.
-- The volumetric fuzz layer is assumed to have a fixed unit optical thickness in all channels, and is purely scattering so no energy is absorbed. Thus any light not reflected after multiple scattering is assumed to transmit to the lower layers, and the transmittance is gray so the base is not tinted by the fuzz. The amount of this fixed thickness fuzz is controlled via the layer coverage weight **`fuzz_weight`**. The fuzz layer is also assumed to be index-matched with the adjacent slab above it, i.e. the fibers are embedded in the surrounding dielectric medium, thus there is thus no Fresnel reflection from the slab.
+- The fuzz represents a homogeneous volumetric layer with a fiber-like SGGX microflake [#Heitz2015] phase function. This is approximated using a Linearly Transformed Cosines (LTC) model [#Heitz2016b] fitted to volumetric simulations. The microflake fibers are assumed to have a single-scattering albedo that effectively produces a reflection tinted with the **`fuzz_color`** after multiple scattering.
+- The volumetric fuzz layer is assumed to have a fixed unit optical thickness in all channels, and is purely scattering so no energy is absorbed. Thus any light not reflected after multiple scattering is assumed to transmit to the lower layers, and the transmittance is gray so the base is not tinted by the fuzz. The amount of this fixed thickness fuzz is controlled via the layer coverage weight **`fuzz_weight`**. The fuzz layer is also assumed to be index-matched with the adjacent slab above it, i.e. the fibers are embedded in the surrounding dielectric medium, thus there is no Fresnel reflection from the slab.
 - The **`fuzz_roughness`** parameter controls how fibre-like the microflake distribution of the layer is. At low roughness the microflakes are highly fibre-like (i.e. thin fibres oriented along the normal) producing a high-sheen fabric appearance, while at high roughness the microflakes are spherical producing a dusty appearance.
 
 The form of this model is the following (with $\mu_i, \mu_o$ the angle cosines to the normal of $\omega_i, \omega_o$):
@@ -965,7 +965,7 @@ Then accounting for the coverage weight of the fuzz layer, $\mathtt{F}$ = **`fuz
 \mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}, \mathtt{F})  &\rightarrow&  \mathtt{F} \,f_\mathrm{fuzz} +  \mathrm{lerp}\bigl(1, 1 - E_\mathrm{fuzz}, \mathtt{F}\bigr) \,f_\textrm{coated-base} \ . \label{fuzz-layering-approx}
 \end{eqnarray}
 
-The fuzz shading normal is assumed to inherit from that of the substrate layer, the physical picture being that the fuzz volume settles and conforms to the geometry of the substrate. The substrate is generally a mixture of coat and uncoated base. Thus physically the fuzz model should be evaluated with each of the **`coat_normal`** and **`geometry_normal`** separately (if they differ), and the final result blended according to the **`coat_weight`**. As a practical approximation, it may be more convenient and efficient to instead approximate the fuzz normal by interpolating the coat and base normal (e.g. via a Slerp operation) according to **`coat_weight`**.
+The fuzz shading normal is assumed to inherit from that of the substrate layer, the physical picture being that the fuzz volume settles and conforms to the geometry of the substrate. The substrate is generally a mixture of coat and uncoated base. Thus physically the fuzz model should be evaluated with each of the **`coat_normal`** and **`geometry_normal`** separately (if they differ), and the final result blended according to the **`coat_weight`**. As a practical approximation, it may be more convenient and efficient to instead approximate the fuzz normal by interpolating the coat and base normal according to **`coat_weight`**.
 
 
 Fuzz params          | Label     | Type     | Range        | Default       | Description
@@ -1182,7 +1182,7 @@ f_\textrm{translucent-base} &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!
 f_\textrm{subsurface}       &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!\!\!\!\!\!\!\! &(1 - E[\color{darkblue}{f^R_\textrm{specular}}]) &\,\color{darkblue}{f_\textrm{SSS}}            \ , \nonumber \\
 f_\textrm{glossy-diffuse}   &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!\!\!\!\!\!\!\! &(1 - E[\color{darkblue}{f^R_\textrm{specular}}]) &\,\color{darkblue}{f_\mathrm{diffuse}}        \ .
 \end{align}
-where, as described in the Layering section, $E[f_X]$ denotes the directional albedo of $f_X$.
+where, as described in the Slabs section, $E[f_X]$ denotes the directional albedo of $f_X$.
 
 Here the substrate lobes $\color{darkblue}{f^T_\textrm{specular}}$ and $\color{darkblue}{f_\textrm{SSS}}$ are technically BSSRDFs, which model the entry into the internal medium via the dielectric interface, transport of light from entry point to exit points including absorption and scattering processes, and exit from the medium back though the interface, generating both a reflection and transmission component. [^BSDF_BSSRDF_sum]
 The "specular" BTDF/BSSRDF $\color{darkblue}{f^T_\textrm{specular}}$ corresponds to transmission into the medium parametrized in the Translucent base section, and BSSRDF $\color{darkblue}{f_\textrm{SSS}}$ corresponds to transmission into the medium parametrized in the Subsurface section. In the case of $f_\textrm{glossy-diffuse}$, the BSSRDF degenerates into the BRDF $\color{darkblue}{f_\mathrm{diffuse}}$ as described in the Glossy-diffuse section.
@@ -1274,7 +1274,7 @@ We provide a [reference implementation](reference/open_pbr_surface.mtlx) in Mate
 !!! WARNING
          Our MaterialX implementation is as faithful to the OpenPBR specification as existing shading languages (e.g. OSL, MDL) support.
          Thus it is still missing certain features, i.e.:
-            - the microfacet NDF anisotropy formula of the Microfacet model section
+            - the microfacet NDF anisotropy formula of the [Microfacet model](index.html#model/microfacetmodel) section
             - the F82-tint conductor Fresnel model of the Metal section
             - the remapping logic described in the Subsurface section
             - the volumetric medium of the Translucent base section
