@@ -37,15 +37,15 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | **Transmission**                                                                                                                                |
 | `transmission_weight`                 | Weight              | `float`   | $ [0, 1]        $ |               | $ 0                $ |            |
 | `transmission_color`                  | Color               | `color3`  | $ [0, 1]^3      $ |               | $ (1, 1, 1)        $ |            |
-| `transmission_depth`                  | Depth               | `float`   | $ [0, \infty)   $ |               | $ 0                $ | length     |
+| `transmission_depth`                  | Depth               | `float`   | $ [0, \infty)   $ | $ [0, 1]    $ | $ 0                $ | length     |
 | `transmission_scatter`                | Scatter             | `color3`  | $ [0, 1]^3      $ |               | $ (0, 0, 0)        $ |            |
 | `transmission_scatter_anisotropy`     | Anisotropy          | `float`   | $ [-1,  1]      $ |               | $ 0                $ |            |
-| `transmission_dispersion_abbe_number` | Abbe number         | `float`   | $ [0, \infty)   $ | $ [9, 91]   $ | $ 20               $ |            |
+| `transmission_dispersion_abbe_number` | Abbe number         | `float`   | $ (0, \infty)   $ | $ [9, 91]   $ | $ 20               $ |            |
 | `transmission_dispersion_scale`       | Dispersion scale    | `float`   | $ [0,  1]       $ |               | $ 0                $ |            |
 | **Subsurface**                                                                                                                                  |
 | `subsurface_weight`                   | Weight              | `float`   | $ [0, 1]        $ |               | $ 0                $ |            |
 | `subsurface_color`                    | Color               | `color3`  | $ [0, 1]        $ |               | $ (0.8, 0.8, 0.8)  $ |            |
-| `subsurface_radius`                   | Radius              | `float`   | $ [0, \infty)   $ |               | $ 1                $ | length     |
+| `subsurface_radius`                   | Radius              | `float`   | $ [0, \infty)   $ | $ [0, 1]    $ | $ 1                $ | length     |
 | `subsurface_radius_scale`             | Radius scale        | `vector3` | $ [0, 1]^3      $ |               | $ (1.0, 0.5, 0.25) $ |            |
 | `subsurface_anisotropy`               | Anisotropy          | `float`   | $ [-1, 1]       $ |               | $ 0                $ |            |
 | **Coat**                                                                                                                                        |
@@ -61,7 +61,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `fuzz_color`                          | Color               | `color3`  | $ [0, 1]^3      $ |               | $ (1, 1, 1)        $ |            |
 | `fuzz_roughness`                      | Roughness           | `float`   | $ [0, 1]        $ |               | $ 0.5              $ |            |
 | **Emission**                                                                                                                                    |
-| `emission_luminance`                  | Luminance           | `float`   | $ [0, \infty)   $ |               | $ 0                $ | nits       |
+| `emission_luminance`                  | Luminance           | `float`   | $ [0, \infty)   $ | $ [0, 1000] $ | $ 0                $ | nits       |
 | `emission_color`                      | Color               | `color3`  | $ [0, 1]^3      $ |               | $ (1, 1, 1)        $ |            |
 | **Thin-film**                                                                                                                                   |
 | `thin_film_thickness`                 | Thickness           | `float`   | $ [0, \infty)   $ | $ [0, 2000] $ | $ 0                $ | nanometers |
