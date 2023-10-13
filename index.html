@@ -401,7 +401,7 @@ D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \left(\frac{\cos^2\phi_m}{\a
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 
 !!! Note: Future work
-   The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
+   The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) NDF which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
 
 The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$, to preserve the average roughness regardless of the anisotropy. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
 \begin{equation}
@@ -417,28 +417,8 @@ The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as th
 
 
 !!! Note: Future work
-   The exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet, and the formulation described needs validation from artists. Other possible parametrizations are worth considering.
-   In some models, modifying the anisotropy has the effect of increasing the roughness along one axis, while reducing it along the other, so the average roughness is preserved. For example, [#Burley2012] propose the mapping
-   $$
-   \alpha_t = \frac{r^2}{\sqrt{1 - 0.9 a}}, \quad\alpha_b = r^2 \sqrt{1 - 0.9 a}
-   $$
-   where $0.9$ is a value chosen to limit the aspect ratio of the specular highlight to $10:1$.
-   [#Georgiev2019] use a very similar mapping, without limiting the aspect ratio:
-   $$
-   \alpha_t = \mathrm{min}\bigl(\frac{r^2}{\sqrt{1-a}}, 1\bigr), \quad\alpha_b = r^2 \sqrt{1-a} \ .
-   $$
-   [#Kulla2017] also use a similar, but simpler mapping:
-   $$
-   \alpha_t = r^2 \, (1 + a), \quad\alpha_b = r^2 \, (1 - a) \ .
-   $$
-   Some models prefer instead to set the roughness along one axis, and modify the roughness along the other axis based on the anisotropy. This allows to stretch the specular highlight without squeezing it in the other direction. [#Neubelt13] propose:
-   $$
-   \alpha_t = r^2, \quad\alpha_b = \mathrm{lerp}(0, r^2, 1 - a) \ .
-   $$
-   [#Kutz2021] use the following mapping, one reason being to allow expressing anisotropy even with a roughness at zero.
-   $$
-   \alpha_t = r^2 + a^4, \quad\alpha_b = r^2 \ .
-   $$
+   The exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet, and the formulation described needs validation from artists.
+   Other possible parametrizations are worth considering, but our tests indicate that finding a parametrization that offers a good control while remaining predictable requires more work.
 
 
 To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{dielectric}$ and metal-base BRDF $f_\mathrm{conductor}$ share the same parameters, while the coat BSDF $f_\mathrm{coat}$ uses an independent set:
@@ -653,11 +633,9 @@ Note that due to the singularity at $g=1$, in practice the anisotropy needs to b
 Implementations may choose to compute light transport in the subsurface medium either via a fast, approximate bidirectional scattering surface reflectance distribution (BSSRDF) model using e.g. the dipole approximation [#Jensen2001], or more accurately via volumetric path tracing.
 
 !!! Note: Future work
-   The similarity-theory based remapping introduced here is designed to decouple the effect of the anisotropy from the extinction (which is controlled by the subsurface radii). The effect of the anisotropy is thus quite different from the usual parametrization, but we think it is more useful in this form as otherwise the anisotropy control primarily effectively reduces extinction, which seems redundant with the radii. With the new mapping, the anisotropy has a more subtle effect, where shadow edges are more blurred/crisp for forward/backward scattering respectively. However we need to better describe and give some images making more clear the resulting behavior.
+   The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface. 
 
-   The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here are just what is available in the current papers, but make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface. 
-
-   Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, though we didn't make this explicit.
+   Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, but how to model subsurface scattering in the presence of varying subsurface properties is an open question.
 
 Note that the default value of **`subsurface_radius_scale`** is set at $(1, 0.5, 0.25)$ to approximate the effect of Rayleigh scattering. If we roughly approximate the wavelength corresponding to each of the RGB channels as $\lambda/\mathrm{nm} \approx 650, 550, 450$ and assume the radii scale like the reciprocal of the extinction, then since in Rayleigh scattering the extinction scales like $\lambda^{-4}$ for light of wavelength $\lambda$ the expected relative magnitudes of the radii are $(1,  (550/650)^4, (450/650)^4) \approx (1, 0.5, 0.25)$, hence the chosen default. This provides a slightly more realistic default look for the subsurface than resulting from gray radii.
 
@@ -712,10 +690,7 @@ After this shifting, the final extinction coefficient is given by the new $\bold
 This formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light. Finally the medium phase function anisotropy $g \in [-1, 1]$ is given by **`transmission_scatter_anisotropy`** (the standard Henyey-Greenstein phase function is assumed).
 
 !!! Note: Future work
-   The use of **`transmission_depth`** to control the medium extinction is arguably unintuitive, compared to its inverse, the medium density (which is standard in heterogeneous volume rendering). The use of **`transmission_depth`** also requires that depth zero be considered a special case corresponding to zero (rather than infinite) extinction, which is a bit clumsy.
-   Also if we used **`transmission_density`** then the volume could be enabled with a single change to this density slider (by making **`transmission_color`** gray), instead of the two changes currently required (i.e. one has to make **`transmission_depth`** non-zero, and then make **`transmission_color`** non-white).
-
-   The Henyey-Greenstein phase function is not ideal for representing media with both forward and back scattering lobes (as in the Mie phase function). We might consider a richer model such as a dual-lobe approximation as in Arnold volumes.
+   The Henyey-Greenstein phase function is not ideal for representing media with both forward and back scattering lobes (as in the Mie phase function). A richer model such as [#Jendersie2023] could be considered in a future version.
 
 
 ![](images/transmission1.jpg width=99%) ![](images/transmission2.jpg width=99%) ![](images/transmission3.jpg width=99%)
@@ -753,15 +728,9 @@ At the default **`transmission_dispersion_scale`** of zero, the Abbe number is i
 </div>
 
 !!! Note: Future work
-   If the translucent-base is entered, and the ray emerges at another point where the metal or glossy-diffuse base is present, then it would be convenient to make the assumption that the opaque-base consists of thin "flakes" or "foil" of thin opaque material on top of the dielectric, and reflect the ray accordingly. This would allow for the rendering of e.g. metallic foil on glass, viewed from the back-side of the glass. Presumably the base would be considered to be a mirrored thin-wall, as in the symmetric interpretation of the thin-wall mode.
-
-   Consider restoring non-physical control **`​transmission_extra_roughness`**, i.e. additional (positive or negative) roughness on top of **`specular_roughness`**
-
-   However, **`​transmission_extra_roughness`** is inconvenient to implement because it requires an extra microfacet model evaluation. Without it, one microfacet model can be used for both reflection and refraction.
-   Instead of using **`​transmission_extra_roughness`,** why not use rough transmission and then add a coat (with the coat's effect on the underlying roughness disabled)?
-
-   If **`​transmission_extra_roughness`** is restored, should it also apply to the interface of the subsurface-scattering substrate?
-
+   Adding an additional non-physical control **`​transmission_extra_roughness`** on top of **`specular_roughness`** could be considered, but it is inconvenient to implement because it requires an extra microfacet model evaluation. Without it, one microfacet model can be used for both reflection and refraction. Moreover, should **`​transmission_extra_roughness`** also apply to the interface of the subsurface-scattering substrate is also an open question.
+   As an alternative, using rough transmission and then add a coat (with the coat's effect on the underlying roughness disabled) could be considered.
+   
 
 Translucent base params                   | Label            | Type     | Range           |  Norm       | Default       | Description
 ------------------------------------------|------------------|----------|:---------------:|:-----------:|:-------------:|----------------------------------------------
@@ -1108,9 +1077,6 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
 !!! Note: Future work
    It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
 
-   The thin-walled limit of the subsurface slab has been introduced as a convenient, slightly more physically based model than the diffuse-transmission of [#Georgiev2019]. It does not really correspond to the thin-walled limit of a volumetric medium (bounded by dielectrics) though.
-   The thin-walled limit of the translucent slab described in the Thin-walled case section is closer to that, though it explicitly ignores scattering. It might be worth attempting to unify these two representations into a single thin-wall dielectric volume model.
-
 
 ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
 <div class="shifted-caption">
@@ -1324,6 +1290,8 @@ References
 [#Hoffman2019]: Naty Hoffman. *Fresnel Equations Considered Harmful*, EGSR (2019).
 
 [#Jakob2014]: Wenzel Jakob, Eugene d'Eon, Otto Jakob, and Steve Marschner. *A Comprehensive Framework for Rendering Layered Materials*, ACM Transactions on Graphics (2014).
+
+[#Jendersie2023]: Johannes Jendersie1 and Eugene d'Eon. *An Approximate Mie Scattering Function for Fog and Cloud Rendering*, ACM SIGGRAPH (2023).
 
 [#Jensen2001]: Henrik Wann Jensen, Stephen R. Marschner, Marc Levoy, and Pat Hanrahan. *A Practical Model for Subsurface Light Transport*, ACM SIGGRAPH (2001).
 
