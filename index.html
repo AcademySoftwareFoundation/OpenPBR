@@ -241,7 +241,7 @@ For convenience this may also be written more concisely as a weighted layer oper
 *     substrate coated intermittently     *
 *******************************************
 
-This physical picture of the mix operation becomes somewhat unrealistic in some cases where the bottom-most bulk materials being blended are not obviously consistent (e.g. blending dielectric and metallic bulks), but in such cases it is understood that the implementation should do the best it can to make sense of the physics (e.g. the metal bulk could be considered to actually be surface metallic flakes on top of a single consistent dielectric). 
+This physical picture of the mix operation becomes somewhat unrealistic in some cases where the bottom-most bulk materials being blended are not obviously consistent (e.g. blending dielectric and metallic bulks), but in such cases it is understood that the implementation should do the best it can to make sense of the physics. For example the metal bulk could be considered to actually be surface metallic flakes on top of a single consistent dielectric.
 
 The implementation of the mix operation in a renderer depends on how the material model is approximated. Typically the model will be reduced to an effective BSDF per slab being mixed, in which case the mix can be implemented simply as a linear blend of those BSDFs, i.e. if slabs $S_0$, $S_1$ have BSDFs $f_0$, $f_1$ respectively, then the BSDF of $\mathrm{\mathbf{mix}}(S_0, S_1, w_1)$ can be mapped to [^lerp]
 \begin{equation}
