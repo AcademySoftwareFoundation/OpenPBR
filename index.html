@@ -88,7 +88,7 @@ We assume that the renderer is aware that the volumetric properties may vary fro
 
 It is understood that in principle the medium $V$ specifies its own depth, or it may be a semi-infinite "bulk" volumetric medium at the bottom of the structure which is conceptually unbounded below, denoted $V^\infty$. This is an abstraction of course, where we understand that such a semi-infinite medium actually just represents the bottom layer of the local surface structure and the medium will most likely terminate somewhere (but remote from the surface on the mesoscopic scale). Note that the BSDF of the bottom interface of a slab $S$, if its depth is finite, does not need to be specified as it will be derivable from the BSDF of the underlying slab in combination with the properties of the medium of $S$ (as discussed in the Layering section).
 
-If the bounding BSDFs of a slab are completely non-transmissive and opaque (e.g. metallic), the internal medium is irrelevant for light transport purposes. For convenience, it can be omitted:
+If the bounding BSDFs of a slab are completely non-transmissive and opaque (e.g. metallic or diffuse), the internal medium is irrelevant for light transport purposes. For convenience, it can be omitted:
 \begin{equation}
 S_\mathrm{opaque} = \mathrm{Slab}(f) \ .
 \end{equation}
