@@ -195,7 +195,6 @@ where $T_\mathrm{coat}(\omega_i, \omega_o)$ accounts for the total volumetric ab
 Complete conformance to the spec is defined as reproducing all the physical inter-layer light transport effects, though this is not typically practical. In practice, each implementation must decide what level of approximation to use for the light transport within layers, trading off accuracy for efficiency according to its own particular use case.
 
 
-
 Mixing
 -------------------------------------
 
@@ -265,7 +264,6 @@ which, for example, is the formula used in the Autodesk Standard Surface [#Georg
 
 In this fashion the abstract mix and layer operations can be mapped to a more computationally convenient approximate representation in terms of a weighted sum of BSDF lobes (see the Reduction to a mixture of lobes section for more details).
 
-
 Emission model
 -------------------------------------
 
@@ -277,14 +275,6 @@ The conversion to radiometric units is the responsibility of the renderer. For R
 We will generally assume in this model that the emission is uniformly distributed in all directions into the hemisphere. The emission from the structure as a whole is then physically determined (in principle) by the propagation of this emitted light from the emitting slabs through their neighbors into the ambient space.
 
 As for the BSDFs, we remain agnostic about the specific functional form of the EDFs, giving enough information from a verbal description combined with parameters to make the implementation reasonably unambiguous.
-
-
-
-!!! WARNING
-   There is an ongoing discussion in the [MaterialX](https://github.com/AcademySoftwareFoundation/MaterialX) and [USD](https://github.com/PixarAnimationStudios/OpenUSD) working groups regarding the description of lights and emissive objects. This part of the specification may be subject to change if it doesn't align with those standards.
-
-!!! WARNING
-   A richer emission model such as the one described in the MaterialX spec might be worth adding to OpenPBR. This would require a more detailed description of the EDF.
 
 
 Metadata
@@ -306,6 +296,7 @@ However the parameters of the physical model that we describe do not specify all
    - The assumed convention for converting the input **`geometry_normal`**, **`geometry_tangent`** and **`geometry_coat_normal`** maps, if present, to the final shading normal of the local surface at each point.
 
 As in practice OpenPBR will be integrated within data exchange frameworks such as MaterialX and USD, the specific form and content of this metadata is outside the scope of this specification.
+
 
 Model
 ============================================
@@ -393,7 +384,7 @@ where $h = (\omega_i+\omega_o)/|\omega_i+\omega_o|$ is the half-vector, i.e. the
 The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section. The _masking-shadowing function_ $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF equation [GGX] the masking-shadowing function then has a well-known form [#Heitz2014b].
 
 The Normal Distribution Function (NDF) $D(m)$ describes the relative probability of occurrence of micronormal $m$ on the surface, and thus the roughness characteristics.
-A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution ([#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
+A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution (originally "Ground Glass unknown": [#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
 \begin{equation} \label{GGX}
 D_\mathrm{GGX}(m) \propto \left( 1 + \frac{\tan^2\theta_m}{\alpha^2} \right)^{-2}
 \end{equation}
@@ -409,8 +400,8 @@ D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \left(\frac{\cos^2\phi_m}{\a
 \end{equation}
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 
-!!! WARNING
-   GGX (originally "Ground Glass unknown" [#Walter2007]) is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed Generalized-Trowbridge-Reitz (GTR) which has an exponent $\gamma$, where GGX is the special case $\gamma=2$. This gives more control over the tail of the NDF. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
+!!! Note: Future work
+   The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) NDF which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
 
 The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$, to preserve the average roughness regardless of the anisotropy. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. This formulation verifies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$ regardless of anisotropy $a$:
 \begin{equation}
@@ -425,29 +416,9 @@ The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as th
 ![Figure [ndf_anisotropy]: NDF shapes as a function of roughness $r$ and anisotropy $a$.](images/anisotropy.png width=60%)
 
 
-!!! WARNING
-   The exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet, and the formulation described needs validation from artists. Other possible parametrizations are worth considering.
-   In some models, modifying the anisotropy has the effect of increasing the roughness along one axis, while reducing it along the other, so the average roughness is preserved. For example, [#Burley2012] propose the mapping
-   $$
-   \alpha_t = \frac{r^2}{\sqrt{1 - 0.9 a}}, \quad\alpha_b = r^2 \sqrt{1 - 0.9 a}
-   $$
-   where $0.9$ is a value chosen to limit the aspect ratio of the specular highlight to $10:1$.
-   [#Georgiev2019] use a very similar mapping, without limiting the aspect ratio:
-   $$
-   \alpha_t = \mathrm{min}\bigl(\frac{r^2}{\sqrt{1-a}}, 1\bigr), \quad\alpha_b = r^2 \sqrt{1-a} \ .
-   $$
-   [#Kulla2017] also use a similar, but simpler mapping:
-   $$
-   \alpha_t = r^2 \, (1 + a), \quad\alpha_b = r^2 \, (1 - a) \ .
-   $$
-   Some models prefer instead to set the roughness along one axis, and modify the roughness along the other axis based on the anisotropy. This allows to stretch the specular highlight without squeezing it in the other direction. [#Neubelt13] propose:
-   $$
-   \alpha_t = r^2, \quad\alpha_b = \mathrm{lerp}(0, r^2, 1 - a) \ .
-   $$
-   [#Kutz2021] use the following mapping, one reason being to allow expressing anisotropy even with a roughness at zero.
-   $$
-   \alpha_t = r^2 + a^4, \quad\alpha_b = r^2 \ .
-   $$
+!!! Note: Future work
+   The exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet, and the formulation described needs validation from artists.
+   Other possible parametrizations are worth considering, but our tests indicate that finding a parametrization that offers a good control while remaining predictable requires more work.
 
 
 To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{dielectric}$ and metal-base BRDF $f_\mathrm{conductor}$ share the same parameters, while the coat BSDF $f_\mathrm{coat}$ uses an independent set:
@@ -484,10 +455,8 @@ where $\mathtt{M} = \mathtt{base\_metalness}$, which controls the fraction of mi
 Rainbow-like iridescence effects occur due to interference when a thin refractive film with thickness on the order of the light wavelength is placed on top of a material. To model this, there is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by its thickness and the film IOR.
 In practice, these effects are most easily incorporated directly into the microfacet BSDFs of both the metal and dielectric-base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
 
-!!! WARNING
-   It is currently not clear enough how the IOR of the surrounding media affects the thin-film interference.
-   Also the behavior of the current parametrization is arguably unintuitive, as the effect of the thickness is not obvious.
-   It may be useful to have a more artist-friendly dial of the "iridescence".
+!!! Note: Future work
+   It is currently not clear enough how the IOR of the surrounding media affects the thin-film interference. Moreover, the behavior of the current parametrization is arguably unintuitive, as the effect of the thickness is not obvious. It may be useful to have a more artist-friendly dial of the "iridescence".
 
 
 Thin-film params          | Label     | Type     | Range           | Norm          | Default | Description
@@ -499,10 +468,6 @@ Thin-film params          | Label     | Type     | Range           | Norm       
 <div class="shifted-caption">
    ![Figure [thinfilm]: **`thin_film_thickness`** varying over 0, 500, 1000 nanometers](dummy)
 </div>
-
-!!! WARNING
-   For the images generally, should we include some more systematic wedges of the parameter effects (perhaps done concisely using grids of shader balls)? Or is it sufficient to just include some limited examples for the purposes of orientation and explanation, as in the current document?
-
 
 
 Dielectric base
@@ -667,15 +632,10 @@ Note that due to the singularity at $g=1$, in practice the anisotropy needs to b
 
 Implementations may choose to compute light transport in the subsurface medium either via a fast, approximate bidirectional scattering surface reflectance distribution (BSSRDF) model using e.g. the dipole approximation [#Jensen2001], or more accurately via volumetric path tracing.
 
-!!! WARNING
-   The similarity-theory based remapping introduced here is designed to decouple the effect of the anisotropy from the extinction (which is controlled by the subsurface radii). The effect of the anisotropy is thus quite different from the usual parametrization, but we think it is more useful in this form as otherwise the anisotropy control primarily effectively reduces extinction, which seems redundant with the radii. With the new mapping, the anisotropy has a more subtle effect, where shadow edges are more blurred/crisp for forward/backward scattering respectively. However we need to better describe and give some images making more clear the resulting behavior.
+!!! Note: Future work
+   The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface. 
 
-!!! WARNING
-   The particular equations for $S(\mathbf{A})$ and $\boldsymbol{\alpha}(\mathbf{A})$ presented here are just what is available in the current papers, but make certain approximations (e.g. assumptions about the dielectric interface IOR). Ideally the mapping would be generalized to an arbitrary dielectric interface. 
-
-!!! WARNING
-   Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, though we didn't make this explicit.
-
+   Since the scattered ray will in emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, but how to model subsurface scattering in the presence of varying subsurface properties is an open question.
 
 Note that the default value of **`subsurface_radius_scale`** is set at $(1, 0.5, 0.25)$ to approximate the effect of Rayleigh scattering. If we roughly approximate the wavelength corresponding to each of the RGB channels as $\lambda/\mathrm{nm} \approx 650, 550, 450$ and assume the radii scale like the reciprocal of the extinction, then since in Rayleigh scattering the extinction scales like $\lambda^{-4}$ for light of wavelength $\lambda$ the expected relative magnitudes of the radii are $(1,  (550/650)^4, (450/650)^4) \approx (1, 0.5, 0.25)$, hence the chosen default. This provides a slightly more realistic default look for the subsurface than resulting from gray radii.
 
@@ -729,12 +689,9 @@ If any component of $\boldsymbol{\mu}_a$ is negative, then $\boldsymbol{\mu}_a$ 
 After this shifting, the final extinction coefficient is given by the new $\boldsymbol{\mu}_a + \boldsymbol{\mu}_s$.
 This formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light. Finally the medium phase function anisotropy $g \in [-1, 1]$ is given by **`transmission_scatter_anisotropy`** (the standard Henyey-Greenstein phase function is assumed).
 
-!!! WARNING
-   The use of **`transmission_depth`** to control the medium extinction is arguably unintuitive, compared to its inverse, the medium density (which is standard in heterogeneous volume rendering). The use of **`transmission_depth`** also requires that depth zero be considered a special case corresponding to zero (rather than infinite) extinction, which is a bit clumsy.
-   Also if we used **`transmission_density`** then the volume could be enabled with a single change to this density slider (by making **`transmission_color`** gray), instead of the two changes currently required (i.e. one has to make **`transmission_depth`** non-zero, and then make **`transmission_color`** non-white).
+!!! Note: Future work
+   The Henyey-Greenstein phase function is not ideal for representing media with both forward and back scattering lobes (as in the Mie phase function). A richer model such as [#Jendersie2023] could be considered in a future version.
 
-!!! WARNING
-   The Henyey-Greenstein phase function is not ideal for representing media with both forward and back scattering lobes (as in the Mie phase function). We might consider a richer model such as a dual-lobe approximation as in Arnold volumes.
 
 ![](images/transmission1.jpg width=99%) ![](images/transmission2.jpg width=99%) ![](images/transmission3.jpg width=99%)
 <div class="shifted-caption">
@@ -769,19 +726,7 @@ At the default **`transmission_dispersion_scale`** of zero, the Abbe number is i
 <div class="shifted-caption">
       ![Figure [fuzz]: Increasing the **`transmission_dispersion_scale`** of glass from 0 to 1](dummy)
 </div>
-
-!!! WARNING
-   If the translucent-base is entered, and the ray emerges at another point where the metal or glossy-diffuse base is present, then it would be convenient to make the assumption that the opaque-base consists of thin "flakes" or "foil" of thin opaque material on top of the dielectric, and reflect the ray accordingly. This would allow for the rendering of e.g. metallic foil on glass, viewed from the back-side of the glass. Presumably the base would be considered to be a mirrored thin-wall, as in the symmetric interpretation of the thin-wall mode.
-
-
-!!! WARNING
-   Consider restoring non-physical control **`​transmission_extra_roughness`**, i.e. additional (positive or negative) roughness on top of **`specular_roughness`**
-
-   However, **`​transmission_extra_roughness`** is inconvenient to implement because it requires an extra microfacet model evaluation. Without it, one microfacet model can be used for both reflection and refraction.
-   Instead of using **`​transmission_extra_roughness`,** why not use rough transmission and then add a coat (with the coat's effect on the underlying roughness disabled)?
-
-   If **`​transmission_extra_roughness`** is restored, should it also apply to the interface of the subsurface-scattering substrate?
-
+   
 
 Translucent base params                   | Label            | Type     | Range           |  Norm       | Default       | Description
 ------------------------------------------|------------------|----------|:---------------:|:-----------:|:-------------:|----------------------------------------------
@@ -826,11 +771,8 @@ where $\bar{\mu} = 1/7$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic ref
 \end{equation}
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of $\mathtt{specular\_weight}$ and $\mathtt{specular\_color}$. Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
-!!! WARNING
-   Should we allow the tint to be a soft-max at the upper bound, i.e. $[0, 1)$ range, to support "exotic" metals?
-
-!!! WARNING
-   The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately. (Is this a defect of the models based on a fitted modification to the Schlick formula?) (Is the visual impact noticeable or negligible?)
+!!! Note: Future work
+   The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately. It is also not clear if taking it into account would cause a significant visual difference.
 
 
 Metal params              | Label      | Type     | Range           |  Norm      | Default             | Description
@@ -1005,9 +947,11 @@ Moreover, the overall material luminance may be further reduced in the presence 
 
 Being an intensity, **`emission_luminance`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1000]$, corresponding to the typical range of home appliances.
 
-!!! WARNING
-   The interaction of emission and fuzz should be specified, either here or preferably in the Fuzz section.
-   In addition, there probably needs to be a more detailed discussion of how the transmittance of the EDF through the coat and fuzz is computed.
+!!! Note: Future work
+   There is an ongoing discussion in the [MaterialX](https://github.com/AcademySoftwareFoundation/MaterialX) and [USD](https://github.com/PixarAnimationStudios/OpenUSD) working groups regarding the description of lights and emissive objects. This part of the specification may be subject to change if it doesn't align with those standards. Moreover, a richer emission model such as the one described in the [MaterialX specification](https://materialx.org/Specification.html) could be considered in a future version of OpenPBR, but would require a more detailed description of the EDF.
+
+   In addition, the transmittance of the EDF through the coat and fuzz is currently underspecified.
+
 
 Emission params          | Label     | Type     | Range           | Norm          | Default       | Description
 -------------------------|-----------|----------|:---------------:|:-------------:|:-------------:|----------------------------------------------
@@ -1039,9 +983,6 @@ where $\mathtt{\alpha} = \mathtt{geometry\_opacity}$ is the presence weight of t
 ****************************************************************************************************
 
 Note that in the case of a non-thin-walled material, $\mathtt{\alpha} < 1$ doesn't make strict physical sense unless the entire surface is removed, whereas in the [thin-walled case](index.html#thin-walledcase) the opacity has a clear physical interpretation as the presence weight of the wall (or "cutout" areas where $\mathtt{\alpha} = 0$) like in the leaf render below.
-
-!!! WARNING
-      It is arguable therefore that $\mathtt{geometry\_opacity}$ is only useful in the thin-walled case, and could be disabled/removed in the bulk case. Though perhaps it is still useful in the bulk case, to do (non-physical) effects that would otherwise require compositing, like a fade-in, a ghost or a holographic display?
 
 We generally leave it as an implementation detail for a renderer to determine how connections to light sources be made through the surface. However a very common approximation used by many renderers is "transparent shadows", where a straight-line connection is made to lights and the contribution of the light determined by the total transmittance along the ray, ignoring any refraction events. We give here a suggested form for this shadow ray transmittance.
 
@@ -1076,12 +1017,6 @@ The **`geometry_tangent`** may also be specified, which controls the direction o
 
 The perturbed normals and tangent will of course be specified by input textures (or possibly procedurally). As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
 
-!!! WARNING:
-   An alternative representation to normal maps is bump maps (i.e. heightfields). Should this be explicitly supported, or is it sufficient to assume that bump maps are converted into normals before passing to the shader?
-
-!!! WARNING:
-   How the base and coat normal maps are composed is not specified, but perhaps it needs to be?
-
 
 Thin-walled case
 -------------------------------------
@@ -1112,9 +1047,6 @@ A convenient rough approximation of this is to ignore the coat and fuzz layers o
 
 A more general interpretation would be to allow each side of the thin-wall to be defined by a distinct thin-walled OpenPBR Surface (one associated to the top, in the direction of the normal, and one to the bottom in the opposite direction) so that the thin base slabs meet in the middle. Then if there are different translucent-base or subsurface parameters on each side, these need to be resolved somehow (e.g. the parameters could be blended, or the light transport could model the presence of the two distinct thin layers of dielectric). If this is supported, we assume it is dealt with in a renderer-specific fashion by assigning separate shaders to each side.
 
-!!! WARNING
-      It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
-
 In the thin-wall structure, the base slabs are interpreted as infinitesimally thin sheets, thus their behavior is assumed to change as follows:
 
    - As noted above, **`geometry_opacity`** makes physical sense as a fractional value in the thin-walled case (unlike the bulk case), controlling the overall presence weight of the thin wall.
@@ -1135,9 +1067,9 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
       At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission.
       The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this). This model is useful for rendering cases such as light scattering through a thin sheet of paper.
 
-!!! WARNING
-   The thin-walled limit of the subsurface slab has been introduced as a convenient, slightly more physically based model than the diffuse-transmission of the Autodesk Standard Surface. It does not really correspond to the thin-walled limit of a volumetric medium (bounded by dielectrics) though.
-   The thin-walled limit of the translucent slab described above is closer to that, though it explicitly ignores scattering. It might be worth attempting to unify these two representations into a single thin-wall dielectric volume model.
+!!! Note: Future work
+   It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
+
 
 ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
 <div class="shifted-caption">
@@ -1351,6 +1283,8 @@ References
 [#Hoffman2019]: Naty Hoffman. *Fresnel Equations Considered Harmful*, EGSR (2019).
 
 [#Jakob2014]: Wenzel Jakob, Eugene d'Eon, Otto Jakob, and Steve Marschner. *A Comprehensive Framework for Rendering Layered Materials*, ACM Transactions on Graphics (2014).
+
+[#Jendersie2023]: Johannes Jendersie1 and Eugene d'Eon. *An Approximate Mie Scattering Function for Fog and Cloud Rendering*, ACM SIGGRAPH (2023).
 
 [#Jensen2001]: Henrik Wann Jensen, Stephen R. Marschner, Marc Levoy, and Pat Hanrahan. *A Practical Model for Subsurface Light Transport*, ACM SIGGRAPH (2001).
 
