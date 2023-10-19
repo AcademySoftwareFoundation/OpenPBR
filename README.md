@@ -1,7 +1,7 @@
 # OpenPBR Surface
 
 <p align="center">
-    <img src="images/title.jpg" width="70%" title="OpenPBR logo (placeholder)"/>
+    <img src="images/OpenPBR title.jpg" title="OpenPBR demonstration scene"/>
 </p>
 
 A white paper specifying an über-surface shader that aims to provide a material representation capable of accurately modeling the vast majority of materials used in practical visual effects and feature animation productions.
