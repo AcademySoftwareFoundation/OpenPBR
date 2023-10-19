@@ -1049,14 +1049,15 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
 
    - The $\textrm{translucent-base}$ slab can be considered an infinitesimally thin sheet of dielectric (absorbing but non-scattering), with the BSDF $f_\mathrm{dielectric}$ on both sides. A ladder of inter-reflections occurs inside this slab producing a reflected lobe and un-deflected refracted lobe. The **`transmission_color`** can be assumed to give the transmittance through the thin sheet at normal incidence (due to absorption). In the smooth case the BRDF and BTDF of this sheet can be solved exactly by summing over a geometrical series of terms containing Fresnel and absorption factors, and this can be extended to a good approximation of the rough case by appropriately roughening the transmission lobe (as described in [#Kulla2017]). This model of thin-walled glass is a cheaper, much more convenient way to render windows than a finite thickness non-thin-walled mesh.
 
-   - The $\textrm{subsurface}$ slab is considered to degenerate into an infinitesimally thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$), which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_anisotropy} \in [-1, 1]$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
+   - The $\textrm{subsurface}$ slab is considered to degenerate into an infinitesimally thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$) which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, modeled as the sum of a diffuse BRDF lobe $f^R_\textrm{SSS}$ and diffuse BTDF lobe $f^T_\textrm{SSS}$ which vary according to the $\texttt{subsurface_anisotropy}$ $g \in [-1, 1]$ as follows:
       \begin{eqnarray}
-            f^R_\mathrm{diffuse} &=& \frac{1}{2} S (1 - g)\, f_+ \ , \nonumber \\
-            f^T_\mathrm{diffuse} &=& \frac{1}{2} S (1 + g)\, f_- \ . \label{thin_wall_subsurface}
+            f^R_\textrm{SSS} &=& \frac{1}{2} S (1 - g)\, f_+ \ , \nonumber \\
+            f^T_\textrm{SSS} &=& \frac{1}{2} S (1 + g)\, f_-  \label{thin_wall_subsurface}
       \end{eqnarray}
-      This form ensures total energy conservation, i.e. the sum of the reflection and transmission albedos is less than 1:
+      where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively.
+      This form ensures total energy conservation, i.e. the sum of the reflection albedo and transmittance is $\le 1$:
       \begin{equation}
-         E_R[f^R_\mathrm{diffuse}] + E_T[f^T_\mathrm{diffuse}] = S \le 1 \ .
+         E[f^R_\mathrm{SSS}] + T[f^T_\mathrm{SSS}] = S \le 1 \ .
       \end{equation}
       At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission.
       The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this). This model is useful for rendering cases such as light scattering through a thin sheet of paper (Figure [thinwalled]).
@@ -1181,8 +1182,8 @@ Where the component lobes are listed below.
    | Coating                | $\color{darkblue}{f_\mathrm{coat}}$         | coat BRDF                  | as in the Coat section                     |
    | Emission               | $\color{darkblue}{L_e}$                     | emission EDF               | as in the Emission section                 |
    | Metal                  | $\color{darkblue}{f_\mathrm{conductor}}$    | metal BRDF                 | as in the Metal section                    |
-   | Specular reflection    | $\color{darkblue}{f^R_\textrm{specular}}$   | specular BRDF              | as in the Dielectric-base section          |
-   | Specular transmission  | $\color{darkblue}{f^T_\textrm{specular}}$   | specular BTDF/BSSRDF       | as in the Translucent-base section         |
+   | Specular reflection    | $\color{darkblue}{f^R_\textrm{specular}}$   | specular BRDF              | as in the Dielectric base section          |
+   | Specular transmission  | $\color{darkblue}{f^T_\textrm{specular}}$   | specular BTDF/BSSRDF       | as in the Translucent base section         |
    | Fuzz                   | $\color{darkblue}{f_\mathrm{fuzz}}$         | fuzz BRDF                  | as in the Fuzz section                     |
    | Subsurface scattering  | $\color{darkblue}{f_\textrm{SSS}}$          | subsurface BSSRDF          | as in the Subsurface section               |
    | Diffuse reflection     | $\color{darkblue}{f_\mathrm{diffuse}}$      | diffuse BRDF               | as in the Glossy-diffuse section           |
@@ -1192,7 +1193,7 @@ In the thin walled case (i.e. when **`geometry_thin_walled`** is true), we will 
 
    - The translucent-base reduces to a thin sheet of dielectric. This can just be considered the thin-wall limit of the BTDF $\color{darkblue}{f^T_\textrm{specular}}$. Note that in this limit, the reflection lobe from the dielectric $\color{darkblue}{f^R_\textrm{specular}}$ will also technically be modified due to the internal bounces in the sheet.
 
-   - The subsurface lobe $\color{darkblue}{f_\textrm{SSS}}$ degenerates into diffuse reflection and transmission lobes ${f^R_\textrm{diffuse}}$, ${f^T_\textrm{diffuse}}$ as given in equation [thin_wall_subsurface].
+   - The subsurface lobe $\color{darkblue}{f_\textrm{SSS}}$ degenerates into diffuse reflection and transmission lobes ${f^R_\textrm{SSS}}$, ${f^T_\textrm{SSS}}$ as given in equation [thin_wall_subsurface].
 
 The full representation in code of this linear combination of BRDF/BTDF/BSSRDF lobes will depend on renderer-specific details.
 
