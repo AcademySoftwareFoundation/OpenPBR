@@ -1,11 +1,13 @@
 # OpenPBR Surface
 
+<p align="center">
+<img src="images/OpenPBR title.jpg" title="OpenPBR demonstration scene" />
+<sub><i>Shader Playground, rendered in Arnold for Maya, using OpenPBR Surface. Artwork by Nikie Monteleone.</i></sub>
+</p>
+
 A white paper specifying an über-surface shader that aims to provide a material representation capable of accurately modeling the vast majority of materials used in practical visual effects and feature animation productions.
 
 OpenPBR is an open standard hosted by the Academy Software Foundation (ASWF), and is organized as a subproject of MaterialX.
-
-**Figure 1:** Shader Playground, rendered in Arnold for Maya. Artwork by Nikie Monteleone.
-<img src="images/OpenPBR title.jpg" title="OpenPBR demonstration scene"/>
 
 
 ### Resources
