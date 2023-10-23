@@ -4,6 +4,7 @@
 <img src="images/OpenPBR title.jpg" title="OpenPBR demonstration scene" />
 <sub><i>Shader Playground, rendered in Arnold for Maya, using OpenPBR Surface. Artwork by Nikie Monteleone.</i></sub>
 </p>
+<br>
 
 A white paper specifying an über-shader that aims to provide a material representation capable of accurately modeling the vast majority of materials used in practical visual effects and feature animation productions.
 
