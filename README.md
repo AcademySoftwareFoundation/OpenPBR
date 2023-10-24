@@ -21,4 +21,4 @@ OpenPBR is an open standard hosted by the [Academy Software Foundation](https://
 
 <br/>
 
-[![License: CC BY-SA 4.0](https://img.shields.io/badge/License-Apache%202.0-informational.svg)](LICENSE.txt)
+[![License: CC BY-SA 4.0](https://img.shields.io/badge/License-Apache%202.0-informational.svg)](LICENSE)
