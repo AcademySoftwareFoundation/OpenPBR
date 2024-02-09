@@ -117,7 +117,7 @@ S_\mathrm{bulk} = \mathrm{Slab}(f, V^\infty) \ .
 For completeness, the absence of a slab (i.e. no surface or underlying medium), which corresponds just to the ambient dielectric medium, is denoted $\mathrm{Slab}(\emptyset)$.
 
 A slab does not itself specify anything about other slabs in relation to itself (e.g. its substrate slab or overlying slab).
-The adjacent medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top of the entire structure (and bottom if thin-walled) is also assumed to be given and unspecified by the model. If the renderer keeps track of the dielectric medium in which the surface is embedded (via a scheme such as "nested dielectrics" [#Budge2002]) which may be the interior dielectric bulk of some transparent object in the scene such as a piece of glass or body of water, then the surrounding ambient medium is a dielectric whose IOR we denote **`ambient_ior`**, or if dielectric medium tracking is not done then **`ambient_ior`** can be assumed to be 1 corresponding to air or vacuum.
+The adjacent medium above and below the slab will depend on where it sits in the eventual layer structure. The ambient dielectric medium of the very top of the entire structure (and bottom if thin-walled) is also assumed to be given and unspecified by the model. If the renderer keeps track of the dielectric medium in which the surface is embedded (via a scheme such as "nested dielectrics" [#Budge2002]) which may be the interior dielectric bulk of some transparent object in the scene such as a piece of glass or body of water, then the surrounding ambient medium is a dielectric whose IOR we denote $n_\mathrm{ambient}$, or if dielectric medium tracking is not done then $n_\mathrm{ambient}$ can be assumed to be 1 corresponding to air or vacuum.
 
 Given constituent slabs, we then build a more complex composite material by "vertically" [layering](index.html#formalism/layering) and "horizontally" [mixing](index.html#formalism/mixing) slabs, as described below.
 
@@ -200,7 +200,7 @@ Mixing
 
 Many real-world objects are made of several different materials arranged in patches, e.g. metal and oxide regions on a rusty object, and it is convenient to model the appearance of such objects by texturing the type of each material on their surfaces. While the material transitions are typically abrupt in reality, the ability to continuously mix materials is useful for artistic purposes as well as for anti-aliasing.
 
-The mix operation models this as a linear blend between two materials at the mesoscopic level. The physical picture is that the mesosurface consists of randomly distributed patches of each material in proportion to the blend weight, which thus exhibits heterogeneity in the "horizontal" direction. 
+The mix operation models this as a linear blend between two materials at the mesoscopic level. The physical picture is that the mesosurface consists of randomly distributed patches of each material in proportion to the blend weight, which thus exhibits heterogeneity in the "horizontal" direction.
 The mix operation of two slabs $S_0$ and $S_1$ with weight $w_1$, generating a new “horizontally” heterogeneous composite material $M$, is denoted:
 \begin{equation}
 M = \mathrm{\mathbf{mix}}(S_0, S_1, w_1)
@@ -405,7 +405,7 @@ The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as th
 \begin{equation}  \label{openpbr-anisotropy-formula}
 \alpha_t = r^2 \sqrt{\frac{2}{1 + (1 - a)^2}} \;\ , \quad \alpha_b = (1 - a) \, \alpha_t \ .
 \end{equation}
-This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve the average roughness regardless of the anisotropy. A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). 
+This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve the average roughness regardless of the anisotropy. A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space).
 
 ![Figure [ndf_anisotropy]: NDF shapes as a function of roughness $r$ and anisotropy $a$.](images/anisotropy.png width=60%)
 
@@ -505,32 +505,32 @@ where $\mathtt{S} = \mathtt{subsurface\_weight}$.
 
 Both the opaque and translucent dielectric-base share the same dielectric interface BSDF $f_\mathrm{dielectric}$, whose parameters are termed "specular" since they control the primary specular reflection lobe which is provided by the base dielectric (and the coat provides a secondary specular lobe, see the Coat section):
 
- - The **`specular_weight`** and **`specular_color`** parameters modulate the Fresnel factor of $f_\mathrm{dielectric}$. Note that these are technically unphysical if altered from the defaults (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice (for example, to simulate green or purple anti-reflective coatings on lenses). The light transmitted through the dielectric will be compensated accordingly to preserve the energy balance (thus generating a complementary color if **`specular_color`** is not white).
+- The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`** (see the section on the [Microfacet model](index.html#model/microfacetmodel) NDF).
 
- - The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`** (see the section on the [Microfacet model](index.html#model/microfacetmodel) NDF).
+- The **`specular_ior`** parameter controls the index of refraction (IOR) of the dielectric. The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the dielectric reflectivity at normal incidence via modulation of this reference IOR.
 
- - The **`specular_ior`** parameter controls the index of refraction of the dielectric, which in this case only affects the Fresnel factor. The **`specular_ior_level`** parameter additionally provides a convenient $[0, 1]$ control for dialing the dielectric reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum, by modulating the IOR.  This is useful for texturing the specular reflectivity in a more physically correct way than via the **`specular_weight`** (since low **`specular_weight`** suppresses the entire specular lobe at all viewing angles, while low **`specular_ior_level`** still retains the Fresnel highlights at grazing angles). 
+- The **`specular_color`** parameter modulates the Fresnel factor of $f_\mathrm{dielectric}$, but only for the initial reflection of light incident from above, while the light transmitted from above or below (or reflected from below) is assumed to be unaffected [^specular_color]. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight without disturbing other aspects of the light transport (i.e. the reflection due to scattering from the internal medium, or the reflection from below, or the transmission from above or below).
 
-The formula for the specular IOR modulation is as follows. Given the existing **`specular_ior`**, the ratio $\eta_s$ of this to the IOR of the surrounding medium is computed (which should take into account the presence of the coat, according to equation [effective_coat_ior] in the Coat section).
+The formula for the specular IOR modulation controlled via **`specular_weight`** is as follows. Given the existing **`specular_ior`**, the ratio $\eta_s$ of this to the IOR of the surrounding medium is computed (which should take into account the presence of the coat, according to equation [effective_coat_ior] in the Coat section).
 Given this ratio, the dielectric Fresnel reflection factor of $f_\mathrm{dielectric}$ at normal incidence is given by
 \begin{equation}
 F_s = \frac{|\eta_s - 1|^2}{(\eta_s + 1)^2} \ .
 \end{equation}
-This Fresnel factor is then modulated by multiplying by twice $\xi_s = \mathtt{specular\_ior\_level}$. Thus solving for the new IOR ratio $\eta^\prime_s$ after the modulation:
+This Fresnel factor (of the initial reflection from above) is then modulated by multiplying by $\xi_s = \mathtt{specular\_weight}$. Thus solving for the new IOR ratio $\eta^\prime_s$ after the modulation:
 \begin{equation} \label{modulated_ior}
-\eta^\prime_s = \frac{1 + \mathrm{sgn}(\eta_s-1)\sqrt{2\,\xi_s F_s}} {1 - \mathrm{sgn}(\eta_s-1)\sqrt{2\, \xi_s F_s}} \ .
+\eta^\prime_s = \frac{1 + \mathrm{sgn}(\eta_s-1)\sqrt{\xi_s F_s}} {1 - \mathrm{sgn}(\eta_s-1)\sqrt{\xi_s F_s}} \ .
 \end{equation}
-Note there is a constraint $\xi_s < 1/(2 F_s)$ since the scaled reflection coefficient cannot exceed $1$. So the range of $\xi_s$ needs to be clamped: $\xi_s \in [0, \mathrm{min}(1, 1/(2 F_s)]$. Applying this modulated IOR ratio $\eta^\prime_s$ in the dielectric Fresnel factor then produces the desired reflectivity modulation at any incident angle (according to the standard formula for the dielectric Fresnel factor, assuming unpolarized light).
+For convenience, we also allow $\xi_s = \mathtt{specular\_weight}$ to exceed 1 so that the reflectivity is increased above the level set by **`specular_ior`**.
+However there is a constraint $\xi_s \le 1/F_s$ since the scaled reflection coefficient cannot exceed $1$. So the range of $\xi_s$ needs to be clamped internally: $\xi_s \in [0, \mathrm{min}(1, 1/F_s)]$. Applying this modulated IOR ratio $\eta^\prime_s$ in the dielectric Fresnel formula then produces the desired reflectivity modulation at any incident angle.
 
 Specular params           | Label      | Type     | Range           | Norm       | Default       | Description
 --------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
-**`specular_weight`**     | Weight     | `float`  | $ [0, 1]      $ |            | $ 1         $ | Scalar multiplier to the dielectric Fresnel factor
+**`specular_weight`**     | Weight     | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 1         $ | Modulates the dielectric reflectivity at normal incidence
 **`specular_color`**      | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
 **`specular_roughness`**  | Roughness  | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0         $ | Orientation of roughness anisotropy
 **`specular_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
-**`specular_ior_level`**  | IOR level  | `float`  | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the dielectric reflectivity at normal incidence between zero and double the original
 
 ![](images/spec_ior1.png width=95%) ![](images/spec_ior2.png width=95%) ![](images/spec_ior3.png width=95%)
 <div class="shifted-caption">
@@ -660,12 +660,13 @@ S_\textrm{translucent-base} = \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mat
 The index of refraction of $V^\infty_\mathrm{dielectric}$ is specified by **`specular_ior`** (as for the entire dielectric-base).
 
 The volumetric properties of $V^\infty_\mathrm{dielectric}$ are specified as follows.
-The RGB **`transmission_color`** $\mathbf{T}$ and scalar **`transmission_depth`** $\lambda$ parameter pair is a commonly used artist-friendly way to set the volumetric medium extinction coefficient $\boldsymbol{\mu}_t$ (such that the Beer's law extinction produces the specified transmission color at the specified depth):
+The RGB **`transmission_color`** $\mathbf{T}$ and scalar **`transmission_depth`** $\lambda$ parameter pair is a commonly used artist-friendly way to set the volumetric medium extinction coefficient $\boldsymbol{\mu}_t$.
+
+The **`transmission_depth`** is the distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium $\boldsymbol{\mu}_t$ as follows:
 \begin{equation}
 \boldsymbol{\mu}_t = - \frac{\ln \mathbf{T}} {\lambda} \ .
 \end{equation}
-Being a length, **`transmission_depth`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1]$, thus covering common cases.
-However when **`transmission_depth`** $\lambda$ is zero, it is assumed that the interior medium is absent ($\boldsymbol{\mu}_t=0$) and **`transmission_color`** is used instead to non-physically tint the dielectric refraction Fresnel factor multiplicatively by a constant amount (ignoring the dielectric energy balance).
+Being a length, **`transmission_depth`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1]$, thus covering common cases. However when **`transmission_depth`** $\lambda$ is zero, it is assumed that the interior medium is absent ($\boldsymbol{\mu}_t=0$) and **`transmission_color`** is used instead to non-physically tint the dielectric refraction Fresnel factor multiplicatively by a constant amount (ignoring the dielectric energy balance).
 
 The **`transmission_scatter`** parameter $\mathbf{S}$ directly sets the medium scattering coefficient $\boldsymbol{\mu}_s$ (as a multiple of the inverse **`transmission_depth`**):
 \begin{equation}
@@ -705,14 +706,14 @@ It follows that if the Abbe number $V_d$ and IOR $n_d = n(\lambda_d)$ are given,
 B &=& \frac{n_d - 1}{V_d \; (\lambda^{-2}_F - \lambda^{-2}_C)} \ , \nonumber \\
 A &=& n_d - \frac{B}{\lambda^2_d} \ .
 \end{eqnarray}
-We assume that **`specular_ior`** (including any modulation via **`specular_ior_level`** as in equation [modulated_ior]) defines $n(\lambda_d)$.
+We assume that **`specular_ior`** (including any modulation via **`specular_weight`** as in equation [modulated_ior]) defines $n(\lambda_d)$.
 Thus the IOR $n$ at any wavelength $\lambda$ is determined, given $V_d$. A renderer can use this known $n(\lambda)$ function to model the effect of dispersion, for example by stochastically choosing a wavelength sample and tracing the refracted ray direction according to the corresponding IOR.
 
 However the Abbe number itself is not very intuitive to work with, as the dispersion effect increases as the Abbe number decreases (zero dispersion occurs at infinite Abbe number). We therefore prefer to use a more artist-friendly parametrization, where the Abbe number is specified by
 \begin{equation}
 V_d = \frac{\mathtt{transmission\_dispersion\_abbe\_number}} {\mathtt{transmission\_dispersion\_scale}} \ .
 \end{equation}
-At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20. 
+At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d$ = **`transmission_dispersion_abbe_number`** which defaults to 20.
 
 The default 20 was chosen since common real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], water and diamond both have Abbe numbers between 55 and 56, while the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the Abbe number itself can be changed via **`transmission_dispersion_abbe_number`**.
 
@@ -726,11 +727,11 @@ Translucent base params                   | Label            | Type     | Range 
 ------------------------------------------|------------------|----------|:---------------:|:-----------:|:-------------:|----------------------------------------------
 **`transmission_weight`**                 | Weight           | `float`  | $ [0, 1]      $ |             | $ 0         $ | Mix weight between translucent base and opaque base slabs
 **`transmission_color`**                  | Color            | `color3` | $ [0, 1]^3    $ |             | $ (1, 1, 1) $ | Transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
-**`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty) $ | $ [0, 1]  $ | $ 0         $ | Distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
+**`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty) $ | $ [0, 1]  $ | $ 0         $ | Controls the depth into the volume at which the **`transmission_color`** is realized; if zero, acts as a constant (on-surface) transmission tint
 **`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3    $ |             | $ (0, 0, 0) $ | Scattering coefficient of the interior medium
 **`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]    $ |             | $ 0         $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
-**`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [0, \infty) $ | $ [9, 91] $ | $ 20        $ | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in $[0, 1]$
-**`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]     $ |             | $ 0         $ | Linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
+**`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]     $ |             | $ 0         $ | Linearly scales the amount of dispersion
+**`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [0, \infty) $ | $ [9, 91] $ | $ 20        $ | Physical Abbe number of the base dielectric medium
 
 
 Metal
@@ -816,21 +817,11 @@ In reality, coats can darken the underlying surface also due to a different mech
 
 We leave it up to the implementation to decide what level of approximation to use for this (in the simplest approximation, the **`coat_color`** can just be multiplied into the substrate lobes).
 
-The IOR of the coat medium $V_\mathrm{coat}$, controlled by the **`coat_ior`** parameter, will alter the Fresnel factor of both the coat top interface and the underlying metal or dielectric. The **`coat_ior_level`** parameter in $[0, 1]$ modulates the coat top interface Fresnel reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum. This works similarly to the formula for **`specular_ior_level`** in equation [modulated_ior]. In detail, the coat Fresnel reflection factor at normal incidence is given by
-\begin{equation}
-F_c = \frac{|\eta_c - 1|^2}{(\eta_c + 1)^2} \ .
-\end{equation}
-where $\eta_c = n_\mathrm{coat} / n_\mathrm{ambient}$ (with $n_\mathrm{coat} = \mathtt{coat\_ior}$, $n_\mathrm{ambient}$ = $\mathtt{ambient\_ior}$).
-The factor $F_c$ is then modulated by multiplying by twice $\xi_c = \mathtt{coat\_ior\_level}$, giving the new IOR ratio $\eta^\prime_c$ after the modulation:
-\begin{equation}  \label{modulated_coat_ior}
-\eta^\prime_c = \frac{1 + \mathrm{sgn}(\eta_c-1)\sqrt{2\, \xi_c F_c}}{1 - \mathrm{sgn}(\eta_c-1)\sqrt{2\, \xi_c F_c}} \ ,
-\end{equation}
-where the range of $\xi_c$ is clamped according to $\xi_c \in [0, \mathrm{min}(1, 1/(2 F_c)]$. Inserting this modulated IOR ratio $\eta^\prime_c$ in the coat Fresnel factor then produces the desired reflectivity modulation.
-
-If there is a fractional $\mathtt{coat\_weight}$ $\mathtt{C}$, then the surrounding IOR of the base dielectric or metal varies statistically across the surface depending on whether the coat is locally present (the fuzz layer can be assumed to have the ambient IOR $n_\mathrm{ambient}$). A reasonable approximation of this is to take the surrounding effective coat IOR to be a linear blend [^lerp] between the ambient and modulated coat IORs according to the coat weight:
+The IOR of the coat medium $V_\mathrm{coat}$, controlled by the **`coat_ior`** parameter, will alter the Fresnel factor of both the coat top interface and the underlying metal or dielectric. If there is a fractional $\mathtt{coat\_weight}$ $\mathtt{C}$, then the surrounding IOR of the base dielectric or metal varies statistically across the surface depending on whether the coat is locally present (the fuzz layer can be assumed to have the ambient IOR $n_\mathrm{ambient}$). A reasonable approximation of this is to take the surrounding effective coat IOR to be a linear blend [^lerp] between the ambient and coat IORs according to the coat weight:
 \begin{equation} \label{effective_coat_ior}
-n_\mathrm{coat} = n_\mathrm{ambient} \; \mathrm{lerp}(1, \eta^\prime_c, \mathtt{C}) \ .
+n_\mathrm{coat} = \mathrm{lerp}(n_\mathrm{ambient}, n_\mathrm{coat}, \mathtt{C}) \ .
 \end{equation}
+with $n_\mathrm{coat} = \mathtt{coat\_ior}$.
 
 The ratio between the specular IOR ($n_\mathrm{specular} = \mathtt{specular\_ior}$) and the coat IOR, $\eta_s = n_\mathrm{specular} / n_\mathrm{coat}$ then determines the specular Fresnel factor, as in equation [modulated_ior].
 
@@ -843,7 +834,6 @@ Coat params           | Label      | Type     | Range           |  Norm      | D
 **`coat_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
 **`coat_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0         $ | Orientation of roughness anisotropy
 **`coat_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
-**`coat_ior_level`**  | IOR level  | `float`  | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the coat reflectivity at normal incidence between zero and double the original
 
 <!-- Markdeep:
 **`coat_affect_color`**     | Affect Color     | `float`  | $ [0, 1]   $ | $ 1         $ | How much to prevent the coat from affecting the brightness and saturation of layers below
@@ -1118,7 +1108,7 @@ where, as described in the Slabs section, $E[f_X]$ denotes the directional albed
 Here the substrate lobes $\color{darkblue}{f^T_\textrm{specular}}$ and $\color{darkblue}{f_\textrm{SSS}}$ are technically BSSRDFs, which model the entry into the internal medium via the dielectric interface, transport of light from entry point to exit points including absorption and scattering processes, and exit from the medium back though the interface, generating both a reflection and transmission component. [^BSDF_BSSRDF_sum]
 The "specular" BTDF/BSSRDF $\color{darkblue}{f^T_\textrm{specular}}$ corresponds to transmission into the medium parametrized in the Translucent base section, and BSSRDF $\color{darkblue}{f_\textrm{SSS}}$ corresponds to transmission into the medium parametrized in the Subsurface section. In the case of $f_\textrm{glossy-diffuse}$, the BSSRDF degenerates into the BRDF $\color{darkblue}{f_\mathrm{diffuse}}$ as described in the Glossy-diffuse section.
 
-Note that in this albedo-scaling approximation, the transmission Fresnel factor associated with $\color{darkblue}{f^T_\textrm{specular}}$ and $f_\textrm{SSS}$ can be *omitted* as the energy conservation of the dielectric BSDF as a whole is maintained automatically, even without explicit multiple scattering compensation or in the presence of modifications to the reflection Fresnel factor via **`specular_weight`** and **`specular_color`**.
+Note that in this albedo-scaling approximation, the transmission Fresnel factor associated with $\color{darkblue}{f^T_\textrm{specular}}$ and $f_\textrm{SSS}$ can be *omitted* as the energy conservation of the dielectric BSDF as a whole is maintained automatically, even without explicit multiple scattering compensation or in the presence of modifications to the reflection Fresnel factor via **`specular_color`**.
 
 Since $\color{darkblue}{f^R_\textrm{specular}}$ appears in each of the three components slab of the dielectric base, it follows that on collecting terms, $f_\textrm{dielectric-base}$ reduces to:
 \begin{equation}
