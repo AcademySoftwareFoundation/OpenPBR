@@ -200,7 +200,7 @@ Mixing
 
 Many real-world objects are made of several different materials arranged in patches, e.g. metal and oxide regions on a rusty object, and it is convenient to model the appearance of such objects by texturing the type of each material on their surfaces. While the material transitions are typically abrupt in reality, the ability to continuously mix materials is useful for artistic purposes as well as for anti-aliasing.
 
-The mix operation models this as a linear blend between two materials at the mesoscopic level. The physical picture is that the mesosurface consists of randomly distributed patches of each material in proportion to the blend weight, which thus exhibits heterogeneity in the "horizontal" direction. 
+The mix operation models this as a linear blend between two materials at the mesoscopic level. The physical picture is that the mesosurface consists of randomly distributed patches of each material in proportion to the blend weight, which thus exhibits heterogeneity in the "horizontal" direction.
 The mix operation of two slabs $S_0$ and $S_1$ with weight $w_1$, generating a new “horizontally” heterogeneous composite material $M$, is denoted:
 \begin{equation}
 M = \mathrm{\mathbf{mix}}(S_0, S_1, w_1)
@@ -405,7 +405,7 @@ The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as th
 \begin{equation}  \label{openpbr-anisotropy-formula}
 \alpha_t = r^2 \sqrt{\frac{2}{1 + (1 - a)^2}} \;\ , \quad \alpha_b = (1 - a) \, \alpha_t \ .
 \end{equation}
-This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve the average roughness regardless of the anisotropy. A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space). 
+This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve the average roughness regardless of the anisotropy. A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space).
 
 ![Figure [ndf_anisotropy]: NDF shapes as a function of roughness $r$ and anisotropy $a$.](images/anisotropy.png width=60%)
 
@@ -417,7 +417,7 @@ This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve th
 
 To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{dielectric}$ and metal-base BRDF $f_\mathrm{conductor}$ share the same parameters, while the coat BSDF $f_\mathrm{coat}$ uses an independent set:
 
-- **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$. These roughnesses are given a soft-maximum at 1, since $r=1$ corresponds to a perceptually very rough surface.
+- **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$. These roughnesses are limited to the range $[0,1]$, since $r=1$ corresponds to a perceptually very rough surface.
 
 - **`specular_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the specular highlight is stretched in the direction of anisotropic rotation). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula].
 
@@ -509,7 +509,7 @@ Both the opaque and translucent dielectric-base share the same dielectric interf
 
  - The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`** (see the section on the [Microfacet model](index.html#model/microfacetmodel) NDF).
 
- - The **`specular_ior`** parameter controls the index of refraction of the dielectric, which in this case only affects the Fresnel factor. The **`specular_ior_level`** parameter additionally provides a convenient $[0, 1]$ control for dialing the dielectric reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum, by modulating the IOR.  This is useful for texturing the specular reflectivity in a more physically correct way than via the **`specular_weight`** (since low **`specular_weight`** suppresses the entire specular lobe at all viewing angles, while low **`specular_ior_level`** still retains the Fresnel highlights at grazing angles). 
+ - The **`specular_ior`** parameter controls the index of refraction of the dielectric, which in this case only affects the Fresnel factor. The **`specular_ior_level`** parameter additionally provides a convenient $[0, 1]$ control for dialing the dielectric reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum, by modulating the IOR.  This is useful for texturing the specular reflectivity in a more physically correct way than via the **`specular_weight`** (since low **`specular_weight`** suppresses the entire specular lobe at all viewing angles, while low **`specular_ior_level`** still retains the Fresnel highlights at grazing angles).
 
 The formula for the specular IOR modulation is as follows. Given the existing **`specular_ior`**, the ratio $\eta_s$ of this to the IOR of the surrounding medium is computed (which should take into account the presence of the coat, according to equation [effective_coat_ior] in the Coat section).
 Given this ratio, the dielectric Fresnel reflection factor of $f_\mathrm{dielectric}$ at normal incidence is given by
@@ -526,7 +526,7 @@ Specular params           | Label      | Type     | Range           | Norm      
 --------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
 **`specular_weight`**     | Weight     | `float`  | $ [0, 1]      $ |            | $ 1         $ | Scalar multiplier to the dielectric Fresnel factor
 **`specular_color`**      | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
-**`specular_roughness`**  | Roughness  | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_roughness`**  | Roughness  | `float`  | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0         $ | Orientation of roughness anisotropy
 **`specular_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
@@ -562,7 +562,7 @@ The opaque substrate slab has a diffuse BRDF lobe:
 \begin{eqnarray}
 S_\textrm{diffuse}    = \mathrm{Slab}(f_\mathrm{diffuse})
 \end{eqnarray}
-where $f_\mathrm{diffuse}$ is defined to be the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a microfacet model where the microfacets are individually Lambertian, with albedo specified by **`base_weight`** multiplied by **`base_color`**, and a roughness parameter given by **`base_roughness`**.
+where $f_\mathrm{diffuse}$ is defined to be the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a microfacet model where the microfacets are individually Lambertian, with albedo specified by **`base_weight`** multiplied by **`base_color`**, and a microfacet roughness parameter in $[0,1]$ given by **`base_roughness`**.
 
 The resulting BRDF of the glossy-diffuse slab is the combination of a "glossy" specular lobe provided by reflection from the dielectric interface, and a diffuse lobe provided by bounces off the substrate. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete. This form of BRDF model is classic in computer graphics and typically termed the Ashikhmin-Shirley or Kelemen model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]).
 
@@ -573,11 +573,11 @@ f_\textrm{glossy-diffuse}(\omega_i, \omega_o) \approx f_\mathrm{dielectric}(\ome
 obtained via the non-reciprocal albedo-scaling approximation of equation [non-reciprocal-albedo-scaling].
 
 
-Glossy-diffuse params | Label     | Type     | Range            |  Norm      | Default             | Description
-----------------------|-----------|----------|:----------------:|:----------:|:-------------------:|----------------------------------------------
-**`base_weight`**     | Weight    | `float`  | $ [0, 1]       $ |            | $ 1               $ | Scalar multiplier to **`base_color`**
-**`base_color`**      | Color     | `color3` | $ [0, 1]^3     $ |            | $ (0.8, 0.8, 0.8) $ | Reflection albedo color of $f_\mathrm{diffuse}$
-**`base_roughness`**  | Roughness | `float`  | $ [0, \infty)  $ | $ [0, 1] $ | $ 0               $ | Roughness of the diffuse lobe $f_\mathrm{diffuse}$
+Glossy-diffuse params | Label     | Type     | Range            | Default             | Description
+----------------------|-----------|----------|:----------------:|:-------------------:|----------------------------------------------
+**`base_weight`**     | Weight    | `float`  | $ [0, 1]       $ | $ 1               $ | Scalar multiplier to **`base_color`**
+**`base_color`**      | Color     | `color3` | $ [0, 1]^3     $ | $ (0.8, 0.8, 0.8) $ | Reflection albedo color of $f_\mathrm{diffuse}$
+**`base_roughness`**  | Roughness | `float`  | $ [0, 1]       $ | $ 0               $ | Roughness of the diffuse lobe $f_\mathrm{diffuse}$
 
 
 ![](images/glossy_diffuse_diffuseonly.png width=99%) ![](images/glossy_diffuse_speconly.png width=99%) ![](images/glossy_diffuse_sum.png width=99%)
@@ -712,7 +712,7 @@ However the Abbe number itself is not very intuitive to work with, as the disper
 \begin{equation}
 V_d = \frac{\mathtt{transmission\_dispersion\_abbe\_number}} {\mathtt{transmission\_dispersion\_scale}} \ .
 \end{equation}
-At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20. 
+At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20.
 
 The default 20 was chosen since common real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], water and diamond both have Abbe numbers between 55 and 56, while the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the Abbe number itself can be changed via **`transmission_dispersion_abbe_number`**.
 
@@ -769,15 +769,15 @@ This formulation has the useful property that it reduces to the regular Schlick 
    The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately. It is also not clear if taking it into account would cause a significant visual difference.
 
 
-Metal params              | Label      | Type     | Range           |  Norm      | Default             | Description
---------------------------|------------|----------|:---------------:|:----------:|:-------------------:|----------------------------------------------
-**`base_weight`**         | Weight     | `float`  | $ [0, 1]      $ |            | $ 1               $ | Scalar multiplier to **`base_color`**
-**`base_color`**          | Color      | `color3` | $ [0, 1]^3    $ |            | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
-**`specular_weight`**     | Weight     | `float`  | $ [0, 1]      $ |            | $ 1               $ | Scalar multiplier to **`specular_color`**
-**`specular_color`**      | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1)       $ | Tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
-**`specular_roughness`**  | Roughness  | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
-**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
-**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0               $ | Orientation of roughness anisotropy
+Metal params              | Label      | Type     | Range           | Default             | Description
+--------------------------|------------|----------|:---------------:|:-------------------:|----------------------------------------------
+**`base_weight`**         | Weight     | `float`  | $ [0, 1]      $ | $ 1               $ | Scalar multiplier to **`base_color`**
+**`base_color`**          | Color      | `color3` | $ [0, 1]^3    $ | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
+**`specular_weight`**     | Weight     | `float`  | $ [0, 1]      $ | $ 1               $ | Scalar multiplier to **`specular_color`**
+**`specular_color`**      | Color      | `color3` | $ [0, 1]^3    $ | $ (1, 1, 1)       $ | Tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_roughness`**  | Roughness  | `float`  | $ [0, 1]      $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ | $ 0               $ | Orientation of roughness anisotropy
 
 
 ![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
@@ -839,7 +839,7 @@ Coat params           | Label      | Type     | Range           |  Norm      | D
 ----------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
 **`coat_weight`**     | Weight     | `float`  | $ [0, 1]      $ |            | $ 0         $ | Coverage weight of coat slab
 **`coat_color`**      | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Square of normal-incidence transmittance of $V_\mathrm{coat}$
-**`coat_roughness`**  | Roughness  | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 0         $ | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
+**`coat_roughness`**  | Roughness  | `float`  | $ [0, 1]      $ |            | $ 0         $ | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
 **`coat_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
 **`coat_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0         $ | Orientation of roughness anisotropy
 **`coat_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
