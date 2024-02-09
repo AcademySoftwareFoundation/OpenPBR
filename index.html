@@ -794,7 +794,7 @@ The coat slab is a layer of dielectric that transmits light without scattering, 
 \begin{equation}
 S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat}) \ .
 \end{equation}
-The BSDF of the interface $f_\mathrm{coat}$ is that of a GGX microfacet dielectric parametrized by **`coat_roughness`**, **`coat_anisotropy`**, and **`coat_rotation`** (see the [Microfacet model](index.html#model/microfacetmodel) section). The IOR **`coat_ior`** of this dielectric layer is distinct from that of the base dielectric, as described below (modulated by **`coat_ior_level`** in a similar fashion to **`specular_ior_level`** described in the Dielectric base section). There is also assumed to be an embedded *purely absorbing* medium $V_\mathrm{coat}$.
+The BSDF of the interface $f_\mathrm{coat}$ is that of a GGX microfacet dielectric parametrized by **`coat_roughness`**, **`coat_anisotropy`**, and **`coat_rotation`** (see the [Microfacet model](index.html#model/microfacetmodel) section). The IOR **`coat_ior`** of this dielectric layer is distinct from that of the base dielectric, as described below. There is also assumed to be an embedded *purely absorbing* medium $V_\mathrm{coat}$.
 
 The coat is applied on top of the base substrate, with a coverage weight $\mathtt{C}$ = **`coat_weight`** as follows:
 \begin{equation}
