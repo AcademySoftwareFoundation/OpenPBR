@@ -660,12 +660,13 @@ S_\textrm{translucent-base} = \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mat
 The index of refraction of $V^\infty_\mathrm{dielectric}$ is specified by **`specular_ior`** (as for the entire dielectric-base).
 
 The volumetric properties of $V^\infty_\mathrm{dielectric}$ are specified as follows.
-The RGB **`transmission_color`** $\mathbf{T}$ and scalar **`transmission_depth`** $\lambda$ parameter pair is a commonly used artist-friendly way to set the volumetric medium extinction coefficient $\boldsymbol{\mu}_t$ (such that the Beer's law extinction produces the specified transmission color at the specified depth):
+The RGB **`transmission_color`** $\mathbf{T}$ and scalar **`transmission_depth`** $\lambda$ parameter pair is a commonly used artist-friendly way to set the volumetric medium extinction coefficient $\boldsymbol{\mu}_t$.
+
+The **`transmission_depth`** is the distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium $\boldsymbol{\mu}_t$ as follows:
 \begin{equation}
 \boldsymbol{\mu}_t = - \frac{\ln \mathbf{T}} {\lambda} \ .
 \end{equation}
-Being a length, **`transmission_depth`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1]$, thus covering common cases.
-However when **`transmission_depth`** $\lambda$ is zero, it is assumed that the interior medium is absent ($\boldsymbol{\mu}_t=0$) and **`transmission_color`** is used instead to non-physically tint the dielectric refraction Fresnel factor multiplicatively by a constant amount (ignoring the dielectric energy balance).
+Being a length, **`transmission_depth`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1]$, thus covering common cases. However when **`transmission_depth`** $\lambda$ is zero, it is assumed that the interior medium is absent ($\boldsymbol{\mu}_t=0$) and **`transmission_color`** is used instead to non-physically tint the dielectric refraction Fresnel factor multiplicatively by a constant amount (ignoring the dielectric energy balance).
 
 The **`transmission_scatter`** parameter $\mathbf{S}$ directly sets the medium scattering coefficient $\boldsymbol{\mu}_s$ (as a multiple of the inverse **`transmission_depth`**):
 \begin{equation}
@@ -726,11 +727,11 @@ Translucent base params                   | Label            | Type     | Range 
 ------------------------------------------|------------------|----------|:---------------:|:-----------:|:-------------:|----------------------------------------------
 **`transmission_weight`**                 | Weight           | `float`  | $ [0, 1]      $ |             | $ 0         $ | Mix weight between translucent base and opaque base slabs
 **`transmission_color`**                  | Color            | `color3` | $ [0, 1]^3    $ |             | $ (1, 1, 1) $ | Transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
-**`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty) $ | $ [0, 1]  $ | $ 0         $ | Distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium; if zero, **`transmission_color`** acts as a constant (on-surface) transmission tint
+**`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty) $ | $ [0, 1]  $ | $ 0         $ | Controls the depth into the volume at which the **`transmission_color`** is realized; if zero, acts as a constant (on-surface) transmission tint
 **`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3    $ |             | $ (0, 0, 0) $ | Scattering coefficient of the interior medium
 **`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]    $ |             | $ 0         $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
-**`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [0, \infty) $ | $ [9, 91] $ | $ 20        $ | Abbe number of the medium, inversely proportional to how much the index of refraction varies across wavelengths when **`transmission_dispersion_scale`** is `1`; defaults to approximately the highest Abbe number of any real clear dielectric so that any realistic amount of dispersion can be achieved by varying **`transmission_dispersion_scale`** in $[0, 1]$
-**`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]     $ |             | $ 0         $ | Linearly scales the amount of dispersion by setting the final Abbe number for rendering to **`transmission_abbe_number`** divided by **`transmission_dispersion_scale`**
+**`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]     $ |             | $ 0         $ | Linearly scales the amount of dispersion
+**`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [0, \infty) $ | $ [9, 91] $ | $ 20        $ | Physical Abbe number of the base dielectric medium
 
 
 Metal
