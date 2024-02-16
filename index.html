@@ -855,9 +855,9 @@ In the full light transport, the observed color of the coated base is darkened a
 
 ### Darkening
 
-Figure [coat_darkening_grid] shows the physically-correct change in appearance (at normal incidence) of a textured diffuse base with a wood texture and smooth clear-coat, as the IOR of the clear-coat is varied (with the default $\mathtt{coat\_darkening}=1$), exhibiting darkening due to the internal reflections which increases as IOR increases.
+Figure [coat_darkening_grid] shows the physically-correct change in appearance (at normal incidence) of a textured diffuse base with a wood texture and smooth clear-coat, as the IOR of the clear-coat is varied (with the default **`coat_darkening`**=1), exhibiting darkening due to the internal reflections which increases as IOR increases.
 
-![Figure [coat_darkening_grid]: Diffuse base with a clear-coat, for coats of different $\mathtt{coat\_ior}$ $\eta_c$](images/coat_darkening_grid.png width="60%")
+![Figure [coat_darkening_grid]: Diffuse base with a clear-coat, for coats of different coat IOR $\eta_c$](images/coat_darkening_grid.png width="60%")
 
 However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$, which defaults to 1, meaning the physical darkening effect due to internal reflections occurs as normal. In the case **`coat_darkening`** $\delta$ = $0$, the base albedo is _boosted_ (uniformly) by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
 
@@ -874,7 +874,7 @@ While this can be implementation dependent, we suggest here a reasonably simple,
 
 It can be shown that in the case of a Lambertian base with (constant) albedo $E_b$ and a perfectly smooth dielectric clear-coat -- the so-called _interfaced Lambertian_ model ([#Elias2001], [#d'Eon2021], [#Portsmouth2024]) -- that the exact directional albedo of the coated base has the albedo-scaling-like form (where $\eta_c$ is the ratio of the coat IOR to the ambient IOR, and $F$ is the corresponding coat Fresnel factor):
 \begin{equation}
-E_c(\omega_o) = F(\omega_o, \eta_c) + E_b \Bigl(1 - F(\omega_o, \eta)\Bigr) \Delta(\rho_d, \eta_c)
+E_c(\omega_o) = F(\omega_o, \eta_c) + E_b \Bigl(1 - F(\omega_o, \eta_c)\Bigr) \Delta(\rho_d, \eta_c)
 \end{equation}
 where $\Delta(E_b, \eta_c)$ is a darkening factor given by
 \begin{equation} \label{lambertian_darkening}
@@ -885,7 +885,7 @@ We can thus approximate the required boost factor as the reciprocal of this, i.e
 Here $K \in [0,1]$ is the _internal diffuse reflection coefficient_, which corresponds to the fraction of the energy leaving the base which returns
 to the base due to internal reflection from the coat. Higher values of $K$ lead to more internal reflections, thus more darkening and saturation. In the case of a Lambertian base, $K = K_r$ where
 \begin{equation} \label{internal_diffuse_reflection_coefficient}
-K_r = 1 - \Bigl(1 - E_F(\eta_c)\Bigr)/\eta^2 \ .
+K_r = 1 - \Bigl(1 - E_F(\eta_c)\Bigr)/\eta_c^2 \ .
 \end{equation}
 The albedo $E_F(\eta_c)$ is the _hemispherical_ (or _average_) albedo of the coat Fresnel factor (this is easily tabulated, or one can use a convenient analytical approximation [^avg_fresnel]).
 
@@ -1441,7 +1441,14 @@ References
 
 [^porosity]: In reality, coats can also darken the underlying surface due to a different mechanism where the coat modifies the Fresnel factor of the base due to the coat material filling in air gaps between granules or threads of a porous base material, which reduces the relative IORs at the internal interfaces. This occurs e.g. on adding water to sand or fabric, or adding a penetrating wood finish. We assume here that this effect explicitly does _not_ occur, at present, since we do not have enough knowledge about the properties of the underlying substance to model it. We can only safely assume that the first mechanism of darkening, i.e. internal reflections, occurs.
 
-[^avg_fresnel]: The hemispherical (average) albedo of the Fresnel factor is defined as $E_F(\eta_c) \equiv 2 \int_0^1 F(\mu, \eta_c)\,\mu\,\mathrm{d}\mu$.
+[^avg_fresnel]: The hemispherical (average) albedo of the Fresnel factor is defined as $E_F(\eta) \equiv 2 \int_0^1 F(\mu, \eta)\,\mu\,\mathrm{d}\mu$. A good approximation to $E_F(\eta)$ (in the limited range $\eta \in [1,3]$) is ([#d'Eon2021]):
+\begin{equation}
+  E_F(\eta) \approx \ln \biggl( \frac{10893\eta - 1438.2}{-774.4\eta^2 + 10212\eta + 1} \biggr) \ ,
+\end{equation}
+and $E_F(\eta)$ for $\eta < 1$ is related to the value for $\eta > 1$ by:
+\begin{equation}
+    E_F(\eta) = 1 - \eta^2 \bigl(1 - E_F(1/\eta)\bigr) \ .
+\end{equation}
 
 [^absorption_effect_on_K]: Technically, the coefficient $K$ should also be modified to account for the absorption, but the effect of this can reasonably be ignored.
 
