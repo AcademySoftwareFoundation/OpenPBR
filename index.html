@@ -394,7 +394,7 @@ where $r \in [0,1]$ is the user-facing _roughness_, as this produces a more perc
 
 In the general case the roughness is anisotropic, that is the NDF is not circularly symmetric but stretched along some direction in the surface plane, producing an elongation of the specular highlight along that direction. This simulates coherent microscale groove geometry perpendicular to the stretch direction due to processes like scratches or brushing. It is assumed that a reference tangent vector field is defined (via **`geometry_tangent`**), and the surface tangent vector direction is then specified as a polar angle relative to it. The tangent direction corresponds to the direction in which the highlights are elongated (equivalently, the surface grooves lie along the orthogonal bitangent). The GGX distribution in the anisotropic case is then parametrized by two separate $\alpha$-roughnesses $\alpha_t$ and $\alpha_b$ along the tangent and bitangent vectors as follows, given the polar angle $\phi_m$ of the micronormal $m$ relative to the tangent (counterclockwise about the normal):
 \begin{equation}
-D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \left(\frac{\cos^2\phi_m}{\alpha_t^2} + \frac{\sin^2\phi_m}{\alpha_b^2}\right) \right)^{-2}
+D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \Bigl(\frac{\cos^2\phi_m}{\alpha_t^2} + \frac{\sin^2\phi_m}{\alpha_b^2}\Bigr) \right)^{-2}
 \end{equation}
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 
@@ -851,15 +851,15 @@ Coat params           | Label      | Type     | Range           |  Norm      | D
     ![Figure [coat]: Coat adds a secondary specular highlight and optional absorption tint](dummy)
 </div>
 
-In the full light transport, the observed color of the coated base is darkened and saturated due to multiple internal reflections from the inside of the coat, which causes light to strike the underlying material multiple times and undergo more absorption, and the observed tint color should vary away from **`coat_color`** as the incidence angle changes, due to the change in path length in the medium. Also, the presence of a rough coat will increase the apparent roughness of the BSDF lobes of the underlying base. We assume that in the ground truth appearance, all these physical effects are accounted for. In the following sub-sections, we detail recommendations for implementation of them. [^porosity]
+In the full light transport, the observed color of the coated base is darkened and saturated due to multiple internal reflections from the inside of the coat, which causes light to strike the underlying material multiple times and undergo more absorption, and the observed **`coat_color`** tint also darkens as the incidence angle changes due to the change in path length in the medium. Also, the presence of a rough coat will increase the apparent roughness of the BSDF lobes of the underlying base. We assume that in the ground truth appearance, all these physical effects are accounted for. In the following sub-sections, we detail recommendations for implementation of them. [^porosity]
 
 ### Darkening
 
-Figure [coat_darkening_grid] shows the physically-correct change in appearance (at normal incidence) of a textured diffuse base with a wood texture and smooth clear-coat, as the IOR of the clear-coat is varied (with the default **`coat_darkening`**=1), exhibiting darkening due to the internal reflections which increases as IOR increases.
+Figure [coat_darkening_grid] shows the physically-correct change in appearance (at normal incidence) of a textured diffuse base with a wood texture and smooth clear-coat as the IOR of the clear-coat is varied, exhibiting darkening due to the internal reflections which increases as IOR increases.
 
 ![Figure [coat_darkening_grid]: Diffuse base with a clear-coat, for coats of different coat IOR $\eta_c$](images/coat_darkening_grid.png width="60%")
 
-However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$, which defaults to 1, meaning the physical darkening effect due to internal reflections occurs as normal. In the case **`coat_darkening`** $\delta$ = $0$, the base albedo is _boosted_ (uniformly) by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
+However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$, which defaults to 1, meaning the physical darkening effect due to internal reflections occurs as normal. In the case **`coat_darkening`** $\delta$ = $0$, the base albedo is instead _boosted_ (uniformly) by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
 
 What we mean by "counteract the darkening" is defined as the albedo of the coated base viewed at normal incidence, $E_c$, being equal to the "undarkened" albedo
 \begin{equation} \label{undarkened_coat_albedo}
@@ -873,34 +873,27 @@ While this defines the behavior at a physical level, in practice implementations
 While this can be implementation dependent, we suggest here a reasonably simple, efficient scheme which captures the essential behavior.
 
 It can be shown that in the case of a Lambertian base with (constant) albedo $E_b$ and a perfectly smooth dielectric clear-coat -- the so-called _interfaced Lambertian_ model ([#Elias2001], [#d'Eon2021], [#Portsmouth2024]) -- that the exact directional albedo of the coated base has the albedo-scaling-like form (where $\eta_c$ is the ratio of the coat IOR to the ambient IOR, and $F$ is the corresponding coat Fresnel factor):
-\begin{equation}
-E_c(\omega_o) = F(\omega_o, \eta_c) + E_b \Bigl(1 - F(\omega_o, \eta_c)\Bigr) \Delta(\rho_d, \eta_c)
+\begin{equation} \label{interfaced_lambertian_albedo}
+E_c(\omega_o) = F(\omega_o, \eta_c) + E_b \Bigl(1 - F(\omega_o, \eta_c)\Bigr) \Delta(E_b, \eta_c)
 \end{equation}
 where $\Delta(E_b, \eta_c)$ is a darkening factor given by
-\begin{equation} \label{lambertian_darkening}
+\begin{equation} \label{general_darkening_formula}
 \Delta(E_b, \eta_c) = \frac{1 - K}{1 - E_b K} \ .
 \end{equation}
 We can thus approximate the required boost factor as the reciprocal of this, i.e. $B_0 \approx \Delta^{-1}$. Note that as $E_b \rightarrow 1$, the darkening factor $\Delta \rightarrow 1$, as required since physically no energy is lost if the base reflects all incident energy (in the clear-coat case). If the base albedo $E_b$ is boosted by $B(\delta)$, then clearly at $\delta=0$ the darkening factor cancels and equation [undarkened_coat_albedo] is satisfied as required.
 
 Here $K \in [0,1]$ is the _internal diffuse reflection coefficient_, which corresponds to the fraction of the energy leaving the base which returns
-to the base due to internal reflection from the coat. Higher values of $K$ lead to more internal reflections, thus more darkening and saturation. In the case of a Lambertian base, $K = K_r$ where
-\begin{equation} \label{internal_diffuse_reflection_coefficient}
+to the base due to internal reflection from the coat. Higher values of $K$ lead to more internal reflections, thus more darkening and saturation. In the case of a Lambertian base (which should be a reasonable approximation to the rough metal, dielectric, or diffuse cases), $K = K_r$ where (with relative coat IOR $\eta_c$)
+\begin{equation} \label{internal_diffuse_reflection_coefficient_for_rough_base}
 K_r = 1 - \Bigl(1 - E_F(\eta_c)\Bigr)/\eta_c^2 \ .
 \end{equation}
-The albedo $E_F(\eta_c)$ is the _hemispherical_ (or _average_) albedo of the coat Fresnel factor (this is easily tabulated, or one can use a convenient analytical approximation [^avg_fresnel]).
-
-In the general case of a rough base (i.e. rough metal or dielectric, or diffuse), a reasonable scheme for approximating the darkening effect (assuming no other compensation is made to approximate the effect) is therefore to multiply the base BSDF by the uniform _modulated darkening factor_:
-\begin{equation} \label{modulated_darkening_factor}
-B(\delta) \,\Delta(E_b, \eta_c) \ .
-\end{equation}
-with $K=K_r$.
-
-If the base has specular reflection (i.e. a smooth metallic or dielectric interface) then the same applies, but the appropriate value of the internal diffuse reflection coefficient $K$ should be closer to:
-\begin{equation} \label{internal_specular_reflection_coefficient}
+The albedo $E_F(\eta_c)$ is the _hemispherical_ (or _average_) albedo of the coat Fresnel factor (this is easily tabulated, or one can use a convenient analytical approximation [^avg_fresnel]). If the base has specular reflection (i.e. a smooth metallic or dielectric interface) then equation [general_darkening_formula] still applies, but the appropriate value of the internal diffuse reflection coefficient $K$ should be closer to:
+\begin{equation} \label{internal_diffuse_reflection_coefficient_for_smooth_base}
 K_s = F(\omega_o, \eta_c) \ ,
 \end{equation}
-which becomes exact in the limit of a perfectly smooth (metallic or dielectric) base. There is significantly less darkening in the case of a smooth base, as the specular reflection from the base is less likely to generate total internal reflection at the coat boundary. We thus recommend that the darkening factor of equation [lambertian_darkening] be applied, but taking
-\begin{equation}
+which becomes exact in the limit of a perfectly smooth (metallic or dielectric) base. There is significantly less darkening in the case of a smooth base, as the specular reflection from the base is less likely to generate total internal reflection at the coat boundary.
+We thus recommend in the general case that the darkening factor of equation [general_darkening_formula] be applied, but taking
+\begin{equation} \label{internal_diffuse_reflection_coefficient_for_general_base}
 K = \mathrm{lerp}(K_s, K_r, r_b)
 \end{equation}
 where $r_b$ is the roughness parameter of the base (metal or dielectric) modulated according to the **`specular_weight`**:
@@ -908,7 +901,13 @@ where $r_b$ is the roughness parameter of the base (metal or dielectric) modulat
 r_b = \mathrm{lerp}(1, \mathtt{specular\_roughness}, \mathtt{specular\_weight}) \ .
 \end{equation}
 
-The base albedo $E_b$ which appears in equation [lambertian_darkening] represents the normal-incidence albedo of the entire base beneath the coat. This albedo can be approximated as the normal-incidence albedos of the individual slabs of the base, blended according to their mix weights.
+Given the general formula equation [general_darkening_formula] for the darkening, a reasonable approximate scheme (assuming no other compensation is made to approximate the effect) is therefore to multiply the base BSDF by the uniform _modulated darkening factor_ (taking into account the presence weight of the coat, $\mathtt{C}$ = **`coat_weight`**):
+\begin{equation} \label{modulated_darkening_factor}
+(1-\mathtt{C}) + \mathtt{C} \, B(\delta) \,\Delta = \mathrm{lerp}(1, \Delta, \mathtt{C}\,\delta) \ ,
+\end{equation}
+with $\Delta$ evaluated via equation [general_darkening_formula] with internal diffuse reflection coefficient given by equation [internal_diffuse_reflection_coefficient_for_general_base].
+
+The base albedo $E_b$ which appears in equation [general_darkening_formula] represents the normal-incidence albedo of the entire base beneath the coat. This albedo can be approximated as the normal-incidence albedos of the individual slabs of the base, blended according to their mix weights.
 
 
 ### View-dependent absorption color
