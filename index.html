@@ -377,9 +377,9 @@ A microfacet BRDF has the standard form [^Jacobian] ([#Walter2007], [#Pharr2023]
 \label{microfacet_brdf_ss}
 f(\omega_i, \omega_o) \propto F(\omega_i, h) \; D(h) \; G(\omega_i, \omega_o)
 \end{equation}
-where $h = (\omega_i+\omega_o)/|\omega_i+\omega_o|$ is the half-vector, i.e. the micronormal which mirror reflects $\omega_i$ into $\omega_o$. For dielectrics there is also a BTDF, i.e. the portion of the BSDF where the input and output directions lie in opposite rather than the same hemispheres, which has a similar form to the BRDF (except with a modified half-vector and Fresnel factor) [#Walter2007].
+where $h = (\omega_i+\omega_o)/|\omega_i+\omega_o|$ is the half-vector, i.e. the micronormal which mirror reflects $\omega_i$ into $\omega_o$. For dielectrics there is also a BTDF, i.e. the portion of the BSDF where the input and output directions lie in opposite rather than the same hemispheres, which has a similar form to the BRDF except with a modified half-vector and Fresnel factor [#Walter2007].
 
-The Fresnel factor $F(\omega_i, h)$ is determined by the index of refraction of the reflecting material, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section. The _masking-shadowing function_ $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF equation [GGX] the masking-shadowing function then has a well-known form [#Heitz2014b].
+The Fresnel factor $F(\omega_i, h)$ is determined by the complex index of refraction of the reflecting material of each microfacet, and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section. The _masking-shadowing function_ $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF equation [GGX] the masking-shadowing function then has a well-known form [#Heitz2014b].
 
 The Normal Distribution Function (NDF) $D(m)$ describes the relative probability of occurrence of micronormal $m$ on the surface, and thus the roughness characteristics.
 A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution (originally "Ground Glass unknown": [#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
@@ -520,7 +520,7 @@ This Fresnel factor (of the initial reflection from above) is then modulated by 
 \begin{equation} \label{modulated_ior}
 \eta^\prime_s = \frac{1 + \epsilon} {1 - \epsilon} \quad \mathrm{with} \quad \epsilon = \mathrm{sgn}(\eta_s-1)\sqrt{\xi_s F_s}  \ .
 \end{equation}
-Applying this modulated IOR ratio $\eta^\prime_s$ in the dielectric Fresnel formula then produces the desired reflectivity modulation at any incident angle.
+Applying this modulated IOR ratio $\eta^\prime_s$ in the angle-dependent dielectric Fresnel formula $F(\mu, \eta^\prime_s)$ then produces the desired reflectivity modulation at any incident angle cosine $\mu$. The Fresnel transmission factor and refraction into and out of the base dielectric should also be consistent with the IOR ratio $\eta^\prime_s$.
 
 Specular params           | Label      | Type     | Range           | Norm       | Default       | Description
 --------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
