@@ -777,9 +777,9 @@ Note that the edge cannot be brighter than the standard Schlick term, but this i
 Metal params              | Label      | Type     | Range           |  Norm      | Default             | Description
 --------------------------|------------|----------|:---------------:|:----------:|:-------------------:|----------------------------------------------
 **`base_weight`**         | Weight     | `float`  | $ [0, 1]      $ |            | $ 1               $ | Scalar multiplier to **`base_color`**
-**`base_color`**          | Color      | `color3` | $ [0, 1]^3    $ |            | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
-**`specular_weight`**     | Weight     | `float`  | $ [0, 1]      $ |            | $ 1               $ | Scalar multiplier to **`specular_color`**
-**`specular_color`**      | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1)       $ | Tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`base_color`**          | Color      | `color3` | $ [0, 1]^3    $ |            | $ (0.8, 0.8, 0.8) $ | Fresnel reflection color at normal incidence, $\mathbf{F}_0$
+**`specular_weight`**     | Weight     | `float`  | $ [0, 1]      $ |            | $ 1               $ | Overall multiplier of the metallic Fresnel
+**`specular_color`**      | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1)       $ | Tint color of metallic Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
 **`specular_roughness`**  | Roughness  | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
 **`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
 **`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0               $ | Orientation of roughness anisotropy
