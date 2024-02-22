@@ -1445,7 +1445,7 @@ References
 
 [^porosity]: In reality, coats can also darken the underlying surface due to a different mechanism where the coat modifies the Fresnel factor of the base due to the coat material filling in air gaps between granules or threads of a porous base material, which reduces the relative IORs at the internal interfaces. This occurs e.g. on adding water to sand or fabric, or adding a penetrating wood finish. We assume here that this effect explicitly does _not_ occur, at present, since we do not have enough knowledge about the properties of the underlying substance to model it. We can only safely assume that the first mechanism of darkening, i.e. internal reflections, occurs.
 
-[^avg_fresnel]: The hemispherical (or average) albedo of the Fresnel factor is defined as $E_F(\eta) \equiv 2 \int_0^1 F(\mu, \eta)\,\mu\,\mathrm{d}\mu$. This can be tabulated, or one can use the convenient analytical approximation (accurate to within 0.2% in the limited range $\eta \in [1,3]$): ([#d'Eon2021]):
+[^avg_fresnel]: The hemispherical (or average) albedo of the Fresnel factor is defined as $E_F(\eta) \equiv 2 \int_0^1 F(\mu, \eta)\,\mu\,\mathrm{d}\mu$. This can be tabulated, or one can use the convenient analytical approximation [#d'Eon2021] (accurate to within 0.2% in the limited range $\eta \in [1,3]$):
 \begin{equation}
   E_F(\eta) \approx \ln \biggl( \frac{10893\eta - 1438.2}{-774.4\eta^2 + 10212\eta + 1} \biggr) \ ,
 \end{equation}
