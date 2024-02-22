@@ -829,6 +829,7 @@ n_\mathrm{coat} = n_\mathrm{ambient} \; \mathrm{lerp}(1, \eta^\prime_c, \mathtt{
 The ratio between the specular IOR ($n_\mathrm{specular} = \mathtt{specular\_ior}$) and the coat IOR, $\eta_s = n_\mathrm{specular} / n_\mathrm{coat}$ then determines the specular Fresnel factor, as in equation [modulated_ior].
 
 
+
 Coat params           | Label      | Type     | Range           |  Norm      | Default       | Description
 ----------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
 **`coat_weight`**     | Weight     | `float`  | $ [0, 1]      $ |            | $ 0         $ | Coverage weight of coat slab
@@ -838,6 +839,7 @@ Coat params           | Label      | Type     | Range           |  Norm      | D
 **`coat_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0         $ | Orientation of roughness anisotropy
 **`coat_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
 **`coat_ior_level`**  | IOR level  | `float`  | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the coat reflectivity at normal incidence between zero and double the original
+**`coat_darkening`**  | IOR        | `float`  | $ [0, 1]      $ |            | $ 1.0       $ | Modulates the physical coat [darkening](index.html#model/coat/darkening) effect.
 
 <!-- Markdeep:
 **`coat_affect_color`**     | Affect Color     | `float`  | $ [0, 1]   $ | $ 1         $ | How much to prevent the coat from affecting the brightness and saturation of layers below
@@ -858,7 +860,7 @@ Figure [coat_darkening_grid] shows the physically-correct change in appearance (
 
 ![Figure [coat_darkening_grid]: Diffuse base with a clear-coat, for coats of different coat IOR $\eta_c$](images/coat_darkening_grid.png width="60%")
 
-However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$, which defaults to 1, meaning the physical darkening effect due to internal reflections occurs as normal. In the case **`coat_darkening`** $\delta$ = $0$, the base albedo is instead _boosted_ (uniformly) by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
+However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$, which defaults to 1, meaning the physically correct darkening effect due to internal reflections occurs as normal. In the case **`coat_darkening`** $\delta$ = $0$, the base albedo is instead _boosted_ (uniformly) by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
 
 What we mean by "counteract the darkening" is defined as the albedo of the coated base viewed at normal incidence, $E_c$, being equal to the "undarkened" albedo
 \begin{equation} \label{undarkened_coat_albedo}
