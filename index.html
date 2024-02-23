@@ -566,11 +566,19 @@ where $f_\mathrm{diffuse}$ is defined to be the classic Oren-Nayar model ([#Oren
 
 The resulting BRDF of the glossy-diffuse slab is the combination of a "glossy" specular lobe provided by reflection from the dielectric interface, and a diffuse lobe provided by bounces off the substrate. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete. This form of BRDF model is classic in computer graphics and typically termed the Ashikhmin-Shirley or Kelemen model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]).
 
-A reasonable practical albeit non-reciprocal approximation to the resulting BRDF of the glossy-diffuse slab is
+Physically there will be darkening and saturation of the observed color due to multiple inter-reflections (scattering) within the gloss layer, as described in the coat darkening section. However in this case, we wish to automatically compensate for this effect in order to make the observed color match the input `base_color`  (in a similar spirit to the albedo remapping described in the Subsurface section). We therefore stipulate that the physical base albedo should be such that the resulting normal-incidence albedo of the glossy-diffuse slab, $R_\textrm{glossy-diffuse}(1)$ is equal to
+\begin{eqnarray} \label{glossy_diffuse_albedo_constraint}
+R_\textrm{glossy-diffuse}(1) = \mathrm{lerp}(F_0, 1, \mathtt{base\_weight} * \mathtt{base\_color})
+\end{eqnarray}
+where $F_0$ is the normal-incidence Fresnel factor of the dielectric gloss.
+
+A reasonable practical, albeit non-reciprocal, approximation to the resulting BRDF of the glossy-diffuse slab, which satisfies this requirement is
 \begin{equation}
 f_\textrm{glossy-diffuse}(\omega_i, \omega_o) \approx f_\mathrm{dielectric}(\omega_i, \omega_o)  +  \bigl(1 - E_\mathrm{dielectric}(\omega_o)\bigr) \,f_\mathrm{diffuse}(\omega_i, \omega_o) \ ,
 \end{equation}
-obtained via the non-reciprocal albedo-scaling approximation of equation [non-reciprocal-albedo-scaling].
+obtained via the non-reciprocal albedo-scaling approximation of equation [non-reciprocal-albedo-scaling], where the normal-incidence albedo of this manifestly satisfies equation [glossy_diffuse_albedo_constraint].
+
+
 
 
 Glossy-diffuse params | Label     | Type     | Range            |  Norm      | Default             | Description
