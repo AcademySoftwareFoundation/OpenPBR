@@ -835,6 +835,10 @@ n_\mathrm{coat} = n_\mathrm{ambient} \; \mathrm{lerp}(1, \eta^\prime_c, \mathtt{
 
 The ratio between the specular IOR ($n_\mathrm{specular} = \mathtt{specular\_ior}$) and the coat IOR, $\eta_s = n_\mathrm{specular} / n_\mathrm{coat}$ then determines the specular Fresnel factor, as in equation [modulated_ior].
 
+![](images/coat_0.png width=90% align=right) ![](images/coat_1.png width=90% align=left)
+<div class="shifted-caption">
+    ![Figure [coat_base_schematic]: Coat adds a secondary specular highlight and optional absorption tint](dummy)
+</div>
 
 Coat params           | Label      | Type     | Range           |  Norm      | Default       | Description
 ----------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
@@ -852,10 +856,26 @@ Coat params           | Label      | Type     | Range           |  Norm      | D
 **`coat_affect_ior`**       | Affect IOR       | `float`  | $ [0, 1]   $ | $ 1         $ | How much to prevent the coat from affecting the relative IOR of layers below
  -->
 
-![](images/coat_0.png width=90% align=right) ![](images/coat_1.png width=90% align=left)
-<div class="shifted-caption">
-    ![Figure [coat]: Coat adds a secondary specular highlight and optional absorption tint](dummy)
-</div>
+
+### TIR
+
+A technical issue which can cause difficulties in the implementation of the BRDF of the coated dielectric base should also be mentioned.
+
+See Figure [coat_base_schematic] for a schematic of a ray refracting from the ambient exterior medium into the coat, and then into the base dielectric. If the coat IOR $n_c$ exceeds the IOR of the base dielectric $n_b$, then rays incident to the base can in general undergo total internal reflection (TIR) at the base-coat boundary surface $S_\mathrm{bc}$ (with IOR ratio $\eta_\mathrm{bc} = n_b/n_c$). However if the surfaces are smooth, it is easy to show that no such TIR is possible for a ray incident from the exterior due to the refraction of the ray at the upper coat-ambient boundary $S_\mathrm{ca}$ (with IOR ratio $\eta_\mathrm{ca} = n_c/n_a$). In the general case of rough boundaries, TIR can occur though it will be increasingly suppressed as the roughness decreases.
+
+Thus if the implementation of the dielectric base BSDF does not account for the refraction of the incident ray in the coat, spurious TIR will be generated, which produces an obviously incorrect appearance with a bright ring near grazing angles. In an implementation which reduces the model to a [mixture of independent lobes](index.html#model/reductiontoamixtureoflobes) sampled as a function of incident direction, it is non-obvious how to account for this.
+
+We suggest as a reasonable practical approximation to assume, within the base dielectric BRDF microfacet model, that each microfacet is coated with a smooth clear-coat with matching micro-normal (somewhat similar to the Weidlich-Wilkie layering model [#Weidlich2007]) with a presence weight given by $\mathtt{C}$ = **`coat_weight`**. Then if the coat is present, the incident angle cosine $\mu_c$ of the base dielectric BRDF is given by refraction of the incident angle cosine $\mu_i$ to the microfacet:
+\begin{equation} \label{refracted_coat_dir}
+\mu_c^2 = 1 - (1 - \mu_i^2) / \eta^2_\mathrm{ca} \ .
+\end{equation}
+The Fresnel factors evaluated at the original and refracted incident directions are then blended according to the presence weight of the coat:
+\begin{equation}
+\mathrm{lerp}(F(\mu_i, \eta_\mathrm{ca}), F(\mu_c, \eta_\mathrm{bc}), \mathtt{C}) \ ,
+\end{equation}
+and the resulting Fresnel factor substituted in the microfacet BRDF. If $\eta_\mathrm{ca} < 0$ then TIR at $S_\mathrm{ca}$ may occur (i.e. $\mu_c^2 \le 0$ in equation [refracted_coat_dir]), in which case the Fresnel factor $F(\mu_c, \eta_\mathrm{bc})$ can be assumed to be zero. This scheme ignores the effect of the coat roughness on the light transport to the base, but nevertheless produces a plausible appearance that eliminates the spurious TIR.
+
+![Figure [coat_base_schematic]: Ray configuration at coat-base boundary.](images/dielectric_tir_issue.svg width="100%")
 
 
 Fuzz
@@ -1340,6 +1360,8 @@ References
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
 
+[#Weidlich2007]: Andrea Weidlich and Alexander Wilkie. *Arbitrarily Layered Micro-Facet Surfaces*, GRAPHITE '07 (2007).
+
 [#Zeltner2018]: Tizian Zeltner and Wenzel Jakob. *The Layer Laboratory: A Calculus for Additive and Subtractive Composition of Anisotropic Surface Reflectance*, ACM Transactions on Graphics (2018).
 
 [#Zeltner2022]: Tizian Zeltner, Brent Burley, and Matt Jen-Yuan Chiang. *Practical Multiple-Scattering Sheen Using Linearly Transformed Cosines*, ACM SIGGRAPH Talks (2022).
@@ -1361,7 +1383,7 @@ References
 
 [^normalization]:  Omitting normalization factors.
 
-[^BSDF_BSSRDF_sum]: This sum of BSDF and BSSRDF can be justified mathematically by interpreting a BSDF as the special case of a BSSRDF restricted to equal exit and entry points.
+[^BSDF_BSSRDF_sum]:  This sum of BSDF and BSSRDF can be justified mathematically by interpreting a BSDF as the special case of a BSSRDF restricted to equal exit and entry points.
 
 
 <!-- Markdeep: -->
