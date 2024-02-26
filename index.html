@@ -865,7 +865,7 @@ See Figure [coat_base_schematic] for a schematic of a ray refracting from the am
 
 Thus if the implementation of the dielectric base BSDF does not account for the refraction of the incident ray in the coat, spurious TIR will be generated, which produces an obviously incorrect appearance with a bright ring near grazing angles. In an implementation which reduces the model to a [mixture of independent lobes](index.html#model/reductiontoamixtureoflobes) sampled as a function of incident direction, it is non-obvious how to account for this.
 
-We suggest as a reasonable practical approximation to assume, within the base dielectric BRDF microfacet model, that each microfacet is coated with a smooth clear-coat with matching micro-normal (somewhat similar to the Weidlich-Wilkie layering model [#Weidlich2007]) with a presence weight given by $\mathtt{C}$ = **`coat_weight`**. Then if the coat is present, the incident angle cosine $\mu_c$ of the base dielectric BRDF is given by refraction of the incident angle cosine $\mu_i$ to the microfacet:
+We suggest as a reasonable practical approximation to assume, within the base dielectric BRDF microfacet model, that each microfacet is coated with a smooth clear-coat with matching micronormal (somewhat similar to the Weidlich-Wilkie layering model [#Weidlich2007]) with a presence weight given by $\mathtt{C}$ = **`coat_weight`**. Then if the coat is present, the angle cosine $\mu_c$ to the base micronormal is given by refraction of the incident angle cosine $\mu_i$ as follows:
 \begin{equation} \label{refracted_coat_dir}
 \mu_c^2 = 1 - (1 - \mu_i^2) / \eta^2_\mathrm{ca} \ .
 \end{equation}
@@ -873,7 +873,7 @@ The Fresnel factors evaluated at the original and refracted incident directions 
 \begin{equation}
 \mathrm{lerp}(F(\mu_i, \eta_\mathrm{ca}), F(\mu_c, \eta_\mathrm{bc}), \mathtt{C}) \ ,
 \end{equation}
-and the resulting Fresnel factor substituted in the microfacet BRDF. If $\eta_\mathrm{ca} < 0$ then TIR at $S_\mathrm{ca}$ may occur (i.e. $\mu_c^2 \le 0$ in equation [refracted_coat_dir]), in which case the Fresnel factor $F(\mu_c, \eta_\mathrm{bc})$ can be assumed to be zero. This scheme ignores the effect of the coat roughness on the light transport to the base, but nevertheless produces a plausible appearance that eliminates the spurious TIR.
+and the resulting blended Fresnel factor substituted in the microfacet BRDF. If $\eta_\mathrm{ca} < 0$ then TIR at $S_\mathrm{ca}$ may occur (i.e. $\mu_c^2 \le 0$ in equation [refracted_coat_dir]), in which case the Fresnel factor $F(\mu_c, \eta_\mathrm{bc})$ can be assumed to be zero. This scheme ignores the effect of the coat roughness on the light transport to the base, but nevertheless produces a plausible appearance that eliminates the spurious TIR.
 
 ![Figure [coat_base_schematic]: Ray configuration at coat-base boundary.](images/dielectric_tir_issue.svg width="100%")
 
