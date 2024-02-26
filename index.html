@@ -873,7 +873,7 @@ The resultant Fresnel factor can then be approximated as a blend of the Fresnel 
 \begin{equation}
 \mathrm{lerp}(F(\mu_i, \eta_\mathrm{ca}), F(\mu_c, \eta_\mathrm{bc}), \mathtt{C}) \ ,
 \end{equation}
-and the resulting blended Fresnel factor substituted in the microfacet BRDF. If $\eta_\mathrm{ca} < 0$ then TIR at $S_\mathrm{ca}$ may occur (i.e. $\mu_c^2 \le 0$ in equation [refracted_coat_dir]), in which case the Fresnel factor $F(\mu_c, \eta_\mathrm{bc})$ can be assumed to be zero. This scheme ignores the effect of the coat roughness on the light transport to the base, but nevertheless produces a plausible appearance that eliminates the spurious TIR.
+and this blended Fresnel factor substituted in the microfacet BRDF. If $\eta_\mathrm{ca} < 0$ then TIR at $S_\mathrm{ca}$ may occur (i.e. $\mu_c^2 \le 0$ in equation [refracted_coat_dir]), in which case the Fresnel factor $F(\mu_c, \eta_\mathrm{bc})$ can be assumed to be zero. This scheme ignores the effect of the coat roughness on the light transport to the base, but nevertheless produces a plausible appearance that eliminates the spurious TIR.
 
 ![Figure [coat_base_schematic]: Ray configuration at coat-base boundary.](images/dielectric_tir_issue.svg width="100%")
 
