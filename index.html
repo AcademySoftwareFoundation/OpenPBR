@@ -869,7 +869,7 @@ We suggest as a reasonable practical approximation to assume, within the base di
 \begin{equation} \label{refracted_coat_dir}
 \mu_c^2 = 1 - (1 - \mu_i^2) / \eta^2_\mathrm{ca} \ .
 \end{equation}
-The Fresnel factors evaluated at the original and refracted incident directions are then blended according to the presence weight of the coat:
+The resultant Fresnel factor can then be approximated as a blend of the Fresnel factors evaluated at the original and refracted incident directions, according to the presence weight of the coat:
 \begin{equation}
 \mathrm{lerp}(F(\mu_i, \eta_\mathrm{ca}), F(\mu_c, \eta_\mathrm{bc}), \mathtt{C}) \ ,
 \end{equation}
