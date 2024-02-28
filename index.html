@@ -713,7 +713,7 @@ However the Abbe number itself is not very intuitive to work with, as the disper
 \begin{equation}
 V_d = \frac{\mathtt{transmission\_dispersion\_abbe\_number}} {\mathtt{transmission\_dispersion\_scale}} \ .
 \end{equation}
-At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d = \mathtt{transmission\_dispersion\_abbe\_number}$ which defaults to 20.
+At the default **`transmission_dispersion_scale`** of zero, the Abbe number is infinite, which corresponds to no dispersion. At the maximum of 1, the Abbe number peaks at $V_d$ = **`transmission_dispersion_abbe_number`** which defaults to 20.
 
 The default 20 was chosen since common real materials with the highest dispersion have Abbe numbers roughly greater than or equal to this (for example, different types of glass have Abbe numbers between 20 and 91 [#Schott2023], water and diamond both have Abbe numbers between 55 and 56, while the oxide mineral rutile, composed of titanium dioxide, exhibits extremely high dispersion with an Abbe number of 9.87 [#Polyanskiy2023]). In most cases the **`transmission_dispersion_scale`** therefore functions as a convenient roughly linear slider from low to high dispersion. For those special cases where the Abbe number of a specific material is wanted, the Abbe number itself can be changed via **`transmission_dispersion_abbe_number`**.
 
