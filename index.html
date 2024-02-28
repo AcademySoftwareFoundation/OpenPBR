@@ -446,17 +446,25 @@ where $\mathtt{M} = \mathtt{base\_metalness}$, which controls the fraction of mi
 ********************************************************************************************************************
 
 
-Rainbow-like iridescence effects occur due to interference when a thin refractive film with thickness on the order of the light wavelength is placed on top of a material. To model this, there is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by its thickness and the film IOR.
-In practice, these effects are most easily incorporated directly into the microfacet BSDFs of both the metal and dielectric-base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
+### Thin-film iridescence
 
-!!! Note: Future work
-   It is currently not physically clear enough how the IOR of the surrounding media affects the thin-film interference, and how the thin-film affects the Fresnel of the adjacent slabs. Moreover, the behavior of the current parametrization is arguably unintuitive, as the effect of the thickness is not obvious. It may be useful to have a more artist-friendly dial of the "iridescence".
+_Iridescence_ is the occurrence of rainbow-like color fringes when a thin dielectric film with thickness on the order of the light wavelength is placed on top of a material, due to interference between the various reflection modes within the film. To model this, there is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by:
+
+   - the coverage (presence) weight of the film, **`thin_film_weight`**
+   - the thickness of the film in nanometers, **`thin_film_thickness`**
+   - the index of refraction (IOR) of the film, **`thin_film_ior`**
+
+In practice, this wave-optics effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017]. The coverage weight functions as a blend between the BSDF with and without the presence of the film, and is necessary since neither the thickness nor the IOR of the film provide a dial of the effect without altering the shape and saturation of the color fringes.
+
+The interference within and resulting reflection from the film will be affected (as described by Belcour and Barla [#Belcour2017]) by the complex IOR of the adjacent media above and below the film, which in general are a statistical mix of metal and dielectric below and coat and ambient medium above. Modeling of the precise effect is implementation-dependent, however as described in the Metal section the Fresnel factor for metal is defined according to the Schlick-based "F82-tint" parametrization, which does not specify the underlying (complex) physical IOR. We suggest here that some reasonable approximation is employed to map the Fresnel factor to effective IOR and absorption coefficients, for example that described by [#Gulbrandsen2014].
 
 
-Thin-film params          | Label     | Type     | Range           | Norm          | Default | Description
---------------------------|-----------|----------|:---------------:|:-------------:|:-------:|----------------------------------------------
-**`thin_film_thickness`** | Thickness | `float`  | $ [0, \infty) $ | $ [0, 2000] $ | $ 0   $ | Thickness of the film in nanometers
-**`thin_film_ior`**       | IOR       | `float`  | $ (0, \infty) $ | $ [1, 3]    $ | $ 1.5 $ | Refractive index of the film
+
+Thin-film params          | Label     | Type     | Range           | Norm          | Default  | Description
+--------------------------|-----------|----------|:---------------:|:-------------:|:--------:|----------------------------------------------
+**`thin_film_weight`**    | Weight    | `float`  | $ [0, 1]      $ |               | $ 0    $ | Coverage weight of the thin film
+**`thin_film_thickness`** | Thickness | `float`  | $ [0, \infty) $ | $ [0, 2000] $ | $ 1000 $ | Thickness of the film in nanometers
+**`thin_film_ior`**       | IOR       | `float`  | $ (0, \infty) $ | $ [1, 3]    $ | $ 1.5 $  | Refractive index of the film
 
 ![](images/thin_film_0nm.png width=99%) ![](images/thin_film_300nm.png width=99%) ![](images/thin_film_600nm.png width=99%)
 <div class="shifted-caption">
@@ -1285,6 +1293,8 @@ References
 [#Georgiev2019]: Iliyan Georgiev, Jamie Portsmouth, Zap Andersson, Adrien Herubel, Alan King, Shinji Ogaki, and Frederic Servant. *Autodesk Standard Surface*, Autodesk white paper (2019).
 
 [#Gritz2010]: Larry Gritz, Clifford Stein, Chris Kulla, and Alejandro Conty. *Open Shading Language*, ACM SIGGRAPH Talks (2010).
+
+[#Gulbrandsen2014]: Ole Gulbrandsen. *Artist Friendly Metallic Fresnel*. Journal of Computer Graphics Techniques (2014).
 
 [#Heitz2014a]: Eric Heitz, Eugene d’Eon. *Importance Sampling Microfacet-Based BSDFs using the Distribution of Visible Normals*, Computer Graphics Forum (2014).
 
