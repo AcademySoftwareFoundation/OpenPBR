@@ -31,7 +31,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `specular_color`                      | Color               | `color3`  | $ [0, 1]^3      $ |               | $ (1, 1, 1)        $ |            |
 | `specular_roughness`                  | Roughness           | `float`   | $ [0, 1]        $ |               | $ 0.3              $ |            |
 | `specular_anisotropy`                 | Anisotropy          | `float`   | $ [0, 1]        $ |               | $ 0                $ |            |
-| `specular_rotation`                   | Rotation            | `float`   | $ [0, 1]        $ |               | $ 0                $ |            |
+| `specular_direction`                  | Direction           | `vector2` | Unit vector       |               | $ (1, 0)           $ |            |
 | `specular_ior`                        | IOR                 | `float`   | $ (0, \infty)   $ | $ [1, 3]    $ | $ 1.5              $ |            |
 | `specular_ior_level`                  | IOR level           | `float`   | $ [0, 1]        $ |               | $ 0.5              $ |            |
 | **Transmission**                                                                                                                                |
@@ -53,7 +53,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `coat_color`                          | Color               | `color3`  | $ [0, 1]^3      $ |               | $ (1, 1, 1)        $ |            |
 | `coat_roughness`                      | Roughness           | `float`   | $ [0, 1]        $ |               | $ 0                $ |            |
 | `coat_anisotropy`                     | Anisotropy          | `float`   | $ [0, 1]        $ |               | $ 0                $ |            |
-| `coat_rotation`                       | Rotation            | `float`   | $ [0, 1]        $ |               | $ 0                $ |            |
+| `coat_direction`                      | Direction           | `vector2` | Unit vector       |               | $ (1, 0)           $ |            |
 | `coat_ior`                            | IOR                 | `float`   | $ (0, \infty)   $ | $ [1, 3]    $ | $ 1.6              $ |            |
 | `coat_ior_level`                      | IOR level           | `float`   | $ [0, 1]        $ |               | $ 0.5              $ |            |
 | **Fuzz**                                                                                                                                        |
