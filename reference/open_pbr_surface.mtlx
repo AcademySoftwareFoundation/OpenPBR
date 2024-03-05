@@ -258,6 +258,84 @@
     </mix>
 
     <!-- Dielectric Base -->
+    <convert name="transmission_color_vector" type="vector3">
+      <input name="in" type="color3" interfacename="transmission_color" />
+    </convert>
+    <ln name="transmission_color_ln" type="vector3">
+      <input name="in" type="vector3" nodename="transmission_color_vector" />
+    </ln>
+    <multiply name="extinction_coeff_denom" type="vector3">
+      <input name="in1" type="vector3" nodename="transmission_color_ln" />
+      <input name="in2" type="float" value="-1.0" />
+    </multiply>
+    <convert name="transmission_depth_vector" type="vector3">
+      <input name="in" type="float" interfacename="transmission_depth" />
+    </convert>
+    <divide name="extinction_coeff" type="vector3">
+      <input name="in1" type="vector3" nodename="extinction_coeff_denom" />
+      <input name="in2" type="vector3" nodename="transmission_depth_vector" />
+    </divide>
+    <convert name="transmission_scatter_vector" type="vector3">
+      <input name="in" type="color3" interfacename="transmission_scatter" />
+    </convert>
+    <divide name="scattering_coeff" type="vector3">
+      <input name="in1" type="vector3" nodename="transmission_scatter_vector" />
+      <input name="in2" type="vector3" nodename="transmission_depth_vector" />
+    </divide>
+    <subtract name="absorption_coeff" type="vector3">
+      <input name="in1" type="vector3" nodename="extinction_coeff" />
+      <input name="in2" type="vector3" nodename="scattering_coeff" />
+    </subtract>
+    <extract name="absorption_coeff_x" type="float">
+      <input name="in" type="vector3" nodename="absorption_coeff" />
+      <input name="index" type="integer" value="0" />
+    </extract>
+    <extract name="absorption_coeff_y" type="float">
+      <input name="in" type="vector3" nodename="absorption_coeff" />
+      <input name="index" type="integer" value="1" />
+    </extract>
+    <extract name="absorption_coeff_z" type="float">
+      <input name="in" type="vector3" nodename="absorption_coeff" />
+      <input name="index" type="integer" value="2" />
+    </extract>
+    <min name="absorption_coeff_min_x_y" type="float">
+      <input name="in1" type="float" nodename="absorption_coeff_x" />
+      <input name="in2" type="float" nodename="absorption_coeff_y" />
+    </min>
+    <min name="absorption_coeff_min" type="float">
+      <input name="in1" type="float" nodename="absorption_coeff_min_x_y" />
+      <input name="in2" type="float" nodename="absorption_coeff_z" />
+    </min>
+    <convert name="absorption_coeff_min_vector" type="vector3">
+      <input name="in" type="float" nodename="absorption_coeff_min" />
+    </convert>
+    <subtract name="absorption_coeff_shifted" type="vector3">
+      <input name="in1" type="vector3" nodename="absorption_coeff" />
+      <input name="in2" type="vector3" nodename="absorption_coeff_min_vector" />
+    </subtract>
+    <ifgreater name="if_absorption_coeff_shifted" type="vector3">
+      <input name="value1" type="float" value="0.0" />
+      <input name="value2" type="float" nodename="absorption_coeff_min" />
+      <input name="in1" type="vector3" nodename="absorption_coeff_shifted" />
+      <input name="in2" type="vector3" nodename="absorption_coeff" />
+    </ifgreater>
+    <ifgreater name="if_volume_absorption" type="vector3">
+      <input name="value1" type="float" interfacename="transmission_depth" />
+      <input name="value2" type="float" value="0.0" />
+      <input name="in1" type="vector3" nodename="if_absorption_coeff_shifted" />
+      <input name="in2" type="vector3" value="0.0,0.0,0.0" />
+    </ifgreater>
+    <ifgreater name="if_volume_scattering" type="vector3">
+      <input name="value1" type="float" interfacename="transmission_depth" />
+      <input name="value2" type="float" value="0.0" />
+      <input name="in1" type="vector3" nodename="scattering_coeff" />
+      <input name="in2" type="vector3" value="0.0,0.0,0.0" />
+    </ifgreater>
+    <anisotropic_vdf name="dielectric_volume" type="VDF">
+      <input name="absorption" type="vector3" nodename="if_volume_absorption" />
+      <input name="scattering" type="vector3" nodename="if_volume_scattering" />
+      <input name="anisotropy" type="float" interfacename="transmission_scatter_anisotropy" />
+    </anisotropic_vdf>
     <divide name="specular_to_coat_ior_ratio" type="float">
       <input name="in1" type="float" interfacename="specular_ior" />
       <input name="in2" type="float" nodename="modulated_coat_ior" />
@@ -321,9 +399,15 @@
       <input name="in1" type="float" nodename="one_plus_modulated_specular_reflectivity3" />
       <input name="in2" type="float" nodename="one_minus_modulated_specular_reflectivity3" />
     </divide>
+    <ifgreater name="if_transmission_tint" type="color3">
+      <input name="value1" type="float" interfacename="transmission_depth" />
+      <input name="value2" type="float" value="0.0" />
+      <input name="in1" type="color3" value="1.0,1.0,1.0" />
+      <input name="in2" type="color3" interfacename="transmission_color" />
+    </ifgreater>
     <dielectric_bsdf name="dielectric_transmission" type="BSDF">
       <input name="weight" type="float" value="1.0" />
-      <input name="tint" type="color3" interfacename="transmission_color" />
+      <input name="tint" type="color3" nodename="if_transmission_tint" />
       <input name="ior" type="float" nodename="modulated_specular_ior_ratio" />
       <input name="roughness" type="vector2" nodename="transmission_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
@@ -331,8 +415,12 @@
       <input name="distribution" type="string" value="ggx" />
       <input name="scatter_mode" type="string" value="T" />
     </dielectric_bsdf>
+    <layer name="dielectric_volume_transmission" type="BSDF">
+      <input name="top" type="BSDF" nodename="dielectric_transmission" />
+      <input name="base" type="VDF" nodename="dielectric_volume" />
+    </layer>
     <mix name="dielectric_substrate" type="BSDF">
-      <input name="fg" type="BSDF" nodename="dielectric_transmission" />
+      <input name="fg" type="BSDF" nodename="dielectric_volume_transmission" />
       <input name="bg" type="BSDF" nodename="opaque_base" />
       <input name="mix" type="float" interfacename="transmission_weight" />
     </mix>
