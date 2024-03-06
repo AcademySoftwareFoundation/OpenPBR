@@ -402,7 +402,7 @@
     <ifgreater name="if_transmission_tint" type="color3">
       <input name="value1" type="float" interfacename="transmission_depth" />
       <input name="value2" type="float" value="0.0" />
-      <input name="in1" type="color3" value="1.0,1.0,1.0" />
+      <input name="in1" type="color3" value="1.0, 1.0, 1.0" />
       <input name="in2" type="color3" interfacename="transmission_color" />
     </ifgreater>
     <dielectric_bsdf name="dielectric_transmission" type="BSDF">
