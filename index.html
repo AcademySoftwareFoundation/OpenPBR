@@ -421,9 +421,9 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 
 - **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$. These roughnesses are limited to the range $[0,1]$, since $r=1$ corresponds to a perceptually very rough surface.
 
-- **`specular_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the specular highlight is stretched in the direction **`specular_direction`**). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula].
+- **`specular_roughness_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the specular highlight is stretched in the direction **`specular_roughness_direction`** and respectively **`coat_roughness_direction`**). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula].
 
-- **`specular_direction`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_direction`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The direction is specified as a normalized 2D vector, with $(1, 0)$ being the original tangent vector direction. Reconstruction filtering techniques such as texture filtering may cause the interpolated value to not be normalized, which can be corrected with a renormalization to reduce visible artifacts caused by this filtering. Note that the appearance of the specular highlight is identical for rotations between $[0°, 180°]$ and $[180°, 360°]$; this also allows the preservation of value when converting to/from other models that support directional anisotropy.
+- **`specular_roughness_direction`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_direction`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The direction is specified as a normalized 2D vector, with $(1, 0)$ being the original tangent vector direction. Reconstruction filtering techniques such as texture filtering may cause the interpolated value to not be normalized, which can be corrected with a renormalization to reduce visible artifacts caused by this filtering. Note that the appearance of the specular highlight is identical for rotations between $[0°, 180°]$ and $[180°, 360°]$; this also allows the preservation of value when converting to/from other models that support directional anisotropy.
 
 The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016], where the multiple bounces are explicitly modeled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
 
@@ -509,7 +509,7 @@ Both the opaque and translucent dielectric-base share the same dielectric interf
 
  - The **`specular_weight`** and **`specular_color`** parameters modulate the Fresnel factor of $f_\mathrm{dielectric}$. Note that these are technically unphysical if altered from the defaults (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice (for example, to simulate green or purple anti-reflective coatings on lenses). The light transmitted through the dielectric will be compensated accordingly to preserve the energy balance (thus generating a complementary color if **`specular_color`** is not white).
 
- - The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_direction`** (see the section on the [Microfacet model](index.html#model/microfacetmodel) NDF).
+ - The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`**, **`specular_roughness_anisotropy`**, and **`specular_roughness_direction`** (see the section on the [Microfacet model](index.html#model/microfacetmodel) NDF).
 
  - The **`specular_ior`** parameter controls the index of refraction of the dielectric, which in this case only affects the Fresnel factor. The **`specular_ior_level`** parameter additionally provides a convenient $[0, 1]$ control for dialing the dielectric reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum, by modulating the IOR.  This is useful for texturing the specular reflectivity in a more physically correct way than via the **`specular_weight`** (since low **`specular_weight`** suppresses the entire specular lobe at all viewing angles, while low **`specular_ior_level`** still retains the Fresnel highlights at grazing angles).
 
@@ -524,15 +524,15 @@ This Fresnel factor is then modulated by multiplying by twice $\xi_s = \mathtt{s
 \end{equation}
 Note there is a constraint $\xi_s < 1/(2 F_s)$ since the scaled reflection coefficient cannot exceed $1$. So the range of $\xi_s$ needs to be clamped: $\xi_s \in [0, \mathrm{min}(1, 1/(2 F_s)]$. Applying this modulated IOR ratio $\eta^\prime_s$ in the dielectric Fresnel factor then produces the desired reflectivity modulation at any incident angle (according to the standard formula for the dielectric Fresnel factor, assuming unpolarized light).
 
-Specular params           | Label      | Type      | Range           | Norm       | Default       | Description
---------------------------|------------|-----------|:---------------:|:----------:|:-------------:|----------------------------------------------
-**`specular_weight`**     | Weight     | `float`   | $ [0, 1]      $ |            | $ 1         $ | Scalar multiplier to the dielectric Fresnel factor
-**`specular_color`**      | Color      | `color3`  | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
-**`specular_roughness`**  | Roughness  | `float`   | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_anisotropy`** | Anisotropy | `float`   | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_direction`**  | Direction  | `vector2` | Unit vector     |            | $ (1, 0)    $ | Direction of the specular highlight elongation
-**`specular_ior`**        | IOR        | `float`   | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
-**`specular_ior_level`**  | IOR level  | `float`   | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the dielectric reflectivity at normal incidence between zero and double the original
+Specular params                     | Label      | Type      | Range           | Norm       | Default       | Description
+------------------------------------|------------|-----------|:---------------:|:----------:|:-------------:|----------------------------------------------
+**`specular_weight`**               | Weight     | `float`   | $ [0, 1]      $ |            | $ 1         $ | Scalar multiplier to the dielectric Fresnel factor
+**`specular_color`**                | Color      | `color3`  | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
+**`specular_roughness`**            | Roughness  | `float`   | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_roughness_anisotropy`** | Anisotropy | `float`   | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_roughness_direction`**  | Direction  | `vector2` | Unit vector     |            | $ (1, 0)    $ | Direction of the specular highlight elongation
+**`specular_ior`**                  | IOR        | `float`   | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
+**`specular_ior_level`**            | IOR level  | `float`   | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the dielectric reflectivity at normal incidence between zero and double the original
 
 ![](images/spec_ior1.png width=95%) ![](images/spec_ior2.png width=95%) ![](images/spec_ior3.png width=95%)
 <div class="shifted-caption">
@@ -602,7 +602,7 @@ Superimposed on this is the reflection generated by scattering in the subsurface
 
    - **`subsurface_radius`** * **`subsurface_radius_scale`**: the desired size of the "blur" on the surface per RGB channel, i.e. roughly the average distance that light travels _along the surface_ per-channel, $\mathbf{r}$, also termed the _diffusion radius_. Being a length, **`subsurface_radius`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1]$, thus covering common cases.
    - **`subsurface_color`**: the observed RGB reflection albedo color taking into account all orders of multiple scattering, $\mathbf{A}$, also termed the _multi-scatter albedo_.
-   - **`subsurface_anisotropy`**: the medium's phase function (assumed to be the standard Henyey-Greenstein form), parametrized by the scalar anisotropy $g \in [-1, 1]$.
+   - **`subsurface_scatter_anisotropy`**: the medium's phase function (assumed to be the standard Henyey-Greenstein form), parametrized by the scalar anisotropy $g \in [-1, 1]$.
 
 To minimize the entanglement and side effects of these parameters, they should each affect only the corresponding aspect of the subsurface scattering, e.g. the color should not affect the size of the blur and the anisotropy should not affect the size of the blur or the color. We stipulate here a mapping which achieves these requirements and reproduces the specified RGB diffusion profile size (width on the surface) $\mathbf{r}$ and RGB multi-scatter albedo $\mathbf{A}$, by combining the empirically-derived mapping of [#Burley2018] with similarity theory. This defines in detail how the subsurface parameters collectively determine the underlying volumetric parameters (extinction $\boldsymbol{\mu}_t$, single-scattering albedo $\boldsymbol{\alpha}$, and phase function anisotropy $g$).
 
@@ -636,13 +636,13 @@ Note that the default value of **`subsurface_radius_scale`** is set at $(1, 0.5,
    Since the scattered ray may emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, but how to model subsurface scattering in the presence of varying subsurface properties is an open question.
 
 
-Subsurface params             | Label        | Type      | Range           | Norm       | Default              | Description
-------------------------------|--------------|-----------|:---------------:|:----------:|:--------------------:|----------------------------------------------
-**`subsurface_weight`**       | Weight       | `float`   | $ [0, 1]      $ |            | $ 0                $ | Mix weight between subsurface and diffuse slabs
-**`subsurface_color`**        | Color        | `color3`  | $ [0, 1]      $ |            | $ (0.8, 0.8, 0.8)  $ | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
-**`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty) $ | $ [0, 1] $ | $ 1                $ | Length scale of diffusion along the surface
-**`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3    $ |            | $ (1.0, 0.5, 0.25) $ | RGB multiplier to **`subsurface_radius`**, giving the per-channel diffusion length
-**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1, 1]     $ |            | $ 0                $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
+Subsurface params                     | Label        | Type      | Range           | Norm       | Default              | Description
+--------------------------------------|--------------|-----------|:---------------:|:----------:|:--------------------:|----------------------------------------------
+**`subsurface_weight`**               | Weight       | `float`   | $ [0, 1]      $ |            | $ 0                $ | Mix weight between subsurface and diffuse slabs
+**`subsurface_color`**                | Color        | `color3`  | $ [0, 1]      $ |            | $ (0.8, 0.8, 0.8)  $ | Subsurface color, i.e. the multi-scatter albedo of $V^\infty_\mathrm{subsurface}$
+**`subsurface_radius`**               | Radius       | `float`   | $ [0, \infty) $ | $ [0, 1] $ | $ 1                $ | Length scale of diffusion along the surface
+**`subsurface_radius_scale`**         | Radius scale | `vector3` | $ [0, 1]^3    $ |            | $ (1.0, 0.5, 0.25) $ | RGB multiplier to **`subsurface_radius`**, giving the per-channel diffusion length
+**`subsurface_scatter_anisotropy`**   | Anisotropy   | `float`   | $ [-1, 1]     $ |            | $ 0                $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
 
 ![](images/subsurface1.jpg width=99%) ![](images/subsurface2.jpg width=99%) ![](images/subsurface3.jpg width=99%)
 <div class="shifted-caption">
@@ -740,7 +740,7 @@ Metal
 -------------------------------------
 
 Metals are completely opaque and have a characteristic and familiar form of specularity due to the Fresnel factor for conductors differing from that for dielectrics.
-The metallic base is thus represented as a separate bulk slab which consists of an opaque GGX microfacet conductor BRDF $f_\mathrm{conductor}$, whose NDF is parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_direction`** (overloading the same parameters used for the dielectric BSDF $f_\mathrm{dielectric}$, as noted in the [Microfacet model](index.html#model/microfacetmodel) section):
+The metallic base is thus represented as a separate bulk slab which consists of an opaque GGX microfacet conductor BRDF $f_\mathrm{conductor}$, whose NDF is parametrized by **`specular_roughness`**, **`specular_roughness_anisotropy`**, and **`specular_roughness_direction`** (overloading the same parameters used for the dielectric BSDF $f_\mathrm{dielectric}$, as noted in the [Microfacet model](index.html#model/microfacetmodel) section):
 \begin{equation}
 S_\mathrm{metal} = \mathrm{Slab}(f_\mathrm{conductor}) \ .
 \end{equation}
@@ -772,15 +772,15 @@ This formulation has the useful property that it reduces to the regular Schlick 
    The metallic Fresnel should ideally take into account the effective coat IOR given by equation [effective_coat_ior], as the dielectric BSDF does. But the current models don't allow for a varying IOR of the surrounding medium unfortunately. It is also not clear if taking it into account would cause a significant visual difference.
 
 
-Metal params              | Label      | Type      | Range         | Default             | Description
---------------------------|------------|-----------|:-------------:|:-------------------:|----------------------------------------------
-**`base_weight`**         | Weight     | `float`   | $ [0, 1]    $ | $ 1               $ | Scalar multiplier to **`base_color`**
-**`base_color`**          | Color      | `color3`  | $ [0, 1]^3  $ | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
-**`specular_weight`**     | Weight     | `float`   | $ [0, 1]    $ | $ 1               $ | Scalar multiplier to **`specular_color`**
-**`specular_color`**      | Color      | `color3`  | $ [0, 1]^3  $ | $ (1, 1, 1)       $ | Tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
-**`specular_roughness`**  | Roughness  | `float`   | $ [0, 1]    $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
-**`specular_anisotropy`** | Anisotropy | `float`   | $ [0, 1]    $ | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
-**`specular_direction`**  | Direction  | `vector2` | Unit vector   | $ (1, 0)          $ | Direction of the specular highlight elongation
+Metal params                        | Label      | Type      | Range         | Default             | Description
+------------------------------------|------------|-----------|:-------------:|:-------------------:|----------------------------------------------
+**`base_weight`**                   | Weight     | `float`   | $ [0, 1]    $ | $ 1               $ | Scalar multiplier to **`base_color`**
+**`base_color`**                    | Color      | `color3`  | $ [0, 1]^3  $ | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
+**`specular_weight`**               | Weight     | `float`   | $ [0, 1]    $ | $ 1               $ | Scalar multiplier to **`specular_color`**
+**`specular_color`**                | Color      | `color3`  | $ [0, 1]^3  $ | $ (1, 1, 1)       $ | Tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_roughness`**            | Roughness  | `float`   | $ [0, 1]    $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_roughness_anisotropy`** | Anisotropy | `float`   | $ [0, 1]    $ | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_roughness_direction`**  | Direction  | `vector2` | Unit vector   | $ (1, 0)          $ | Direction of the specular highlight elongation
 
 
 ![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
@@ -796,7 +796,7 @@ The coat slab is a layer of dielectric that transmits light without scattering, 
 \begin{equation}
 S_\mathrm{coat} = \mathrm{Slab}(f_\mathrm{coat}, V_\mathrm{coat}) \ .
 \end{equation}
-The BSDF of the interface $f_\mathrm{coat}$ is that of a GGX microfacet dielectric parametrized by **`coat_roughness`**, **`coat_anisotropy`**, and **`coat_direction`** (see the [Microfacet model](index.html#model/microfacetmodel) section). The IOR **`coat_ior`** of this dielectric layer is distinct from that of the base dielectric, as described below (modulated by **`coat_ior_level`** in a similar fashion to **`specular_ior_level`** described in the Dielectric base section). There is also assumed to be an embedded *purely absorbing* medium $V_\mathrm{coat}$.
+The BSDF of the interface $f_\mathrm{coat}$ is that of a GGX microfacet dielectric parametrized by **`coat_roughness`**, **`coat_roughness_anisotropy`**, and **`coat_roughness_direction`** (see the [Microfacet model](index.html#model/microfacetmodel) section). The IOR **`coat_ior`** of this dielectric layer is distinct from that of the base dielectric, as described below (modulated by **`coat_ior_level`** in a similar fashion to **`specular_ior_level`** described in the Dielectric base section). There is also assumed to be an embedded *purely absorbing* medium $V_\mathrm{coat}$.
 
 The coat is applied on top of the base substrate, with a coverage weight $\mathtt{C}$ = **`coat_weight`** as follows:
 \begin{equation}
@@ -838,15 +838,15 @@ n_\mathrm{coat} = n_\mathrm{ambient} \; \mathrm{lerp}(1, \eta^\prime_c, \mathtt{
 The ratio between the specular IOR ($n_\mathrm{specular} = \mathtt{specular\_ior}$) and the coat IOR, $\eta_s = n_\mathrm{specular} / n_\mathrm{coat}$ then determines the specular Fresnel factor, as in equation [modulated_ior].
 
 
-Coat params           | Label      | Type      | Range           |  Norm      | Default       | Description
-----------------------|------------|-----------|:---------------:|:----------:|:-------------:|----------------------------------------------
-**`coat_weight`**     | Weight     | `float`   | $ [0, 1]      $ |            | $ 0         $ | Coverage weight of coat slab
-**`coat_color`**      | Color      | `color3`  | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Square of normal-incidence transmittance of $V_\mathrm{coat}$
-**`coat_roughness`**  | Roughness  | `float`   | $ [0, 1]      $ |            | $ 0         $ | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
-**`coat_anisotropy`** | Anisotropy | `float`   | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
-**`coat_direction`**  | Direction  | `vector2` | Unit vector     |            | $ (1, 0)    $ | Direction of the specular highlight elongation
-**`coat_ior`**        | IOR        | `float`   | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
-**`coat_ior_level`**  | IOR level  | `float`   | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the coat reflectivity at normal incidence between zero and double the original
+Coat params                     | Label      | Type      | Range           |  Norm      | Default       | Description
+--------------------------------|------------|-----------|:---------------:|:----------:|:-------------:|----------------------------------------------
+**`coat_weight`**               | Weight     | `float`   | $ [0, 1]      $ |            | $ 0         $ | Coverage weight of coat slab
+**`coat_color`**                | Color      | `color3`  | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Square of normal-incidence transmittance of $V_\mathrm{coat}$
+**`coat_roughness`**            | Roughness  | `float`   | $ [0, 1]      $ |            | $ 0         $ | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
+**`coat_roughness_anisotropy`** | Anisotropy | `float`   | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
+**`coat_roughness_direction`**  | Direction  | `vector2` | Unit vector     |            | $ (1, 0)    $ | Direction of the specular highlight elongation
+**`coat_ior`**                  | IOR        | `float`   | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
+**`coat_ior_level`**            | IOR level  | `float`   | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the coat reflectivity at normal incidence between zero and double the original
 
 <!-- Markdeep:
 **`coat_affect_color`**     | Affect Color     | `float`  | $ [0, 1]   $ | $ 1         $ | How much to prevent the coat from affecting the brightness and saturation of layers below
@@ -1052,7 +1052,7 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
 
    - The $\textrm{translucent-base}$ slab can be considered an infinitesimally thin sheet of dielectric (absorbing but non-scattering), with the BSDF $f_\mathrm{dielectric}$ on both sides. A ladder of inter-reflections occurs inside this slab producing a reflected lobe and un-deflected refracted lobe. The **`transmission_color`** can be assumed to give the transmittance through the thin sheet at normal incidence (due to absorption). In the smooth case the BRDF and BTDF of this sheet can be solved exactly by summing over a geometrical series of terms containing Fresnel and absorption factors, and this can be extended to a good approximation of the rough case by appropriately roughening the transmission lobe (as described in [#Kulla2017]). This model of thin-walled glass is a cheaper, much more convenient way to render windows than a finite thickness non-thin-walled mesh.
 
-   - The $\textrm{subsurface}$ slab is considered to degenerate into an infinitesimally thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$), which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_anisotropy} \in [-1, 1]$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
+   - The $\textrm{subsurface}$ slab is considered to degenerate into an infinitesimally thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$), which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_scatter_anisotropy} \in [-1, 1]$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
       \begin{eqnarray}
             f^R_\mathrm{diffuse} &=& \frac{1}{2} S (1 - g)\, f_+ \ , \nonumber \\
             f^T_\mathrm{diffuse} &=& \frac{1}{2} S (1 + g)\, f_- \ . \label{thin_wall_subsurface}
