@@ -392,7 +392,7 @@ where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, 
 \end{equation}
 where $r \in [0,1]$ is the user-facing _roughness_, as this produces a more perceptually linear resulting change in apparent roughness as $r$ is varied.
 
-In the general case the roughness is anisotropic, that is the NDF is not circularly symmetric but stretched along some direction in the surface plane, producing an elongation of the specular highlight perpendicular to that direction. This simulates coherent microscale groove geometry due to processes like scratches or brushing. It is assumed that a reference tangent vector field is defined (via **`geometry_tangent`**), and the surface tangent vector direction is then specified as a 2D vector field relative to it. The tangent direction corresponds to the direction in which the highlights are elongated (equivalently, the surface grooves lie along the orthogonal bitangent).
+In the general case the roughness is anisotropic, that is the NDF is not circularly symmetric but stretched along some direction in the surface plane, producing an elongation of the specular highlight perpendicular to that direction. This simulates coherent microscale groove geometry due to processes like scratches or brushing. It is assumed that a reference tangent vector field is defined (via **`geometry_tangent`**), and the surface tangent vector direction is then specified as a 2D vector field relative to it. The tangent direction corresponds to the direction in which the NDF is stretched, meaning the resulting highlights tend to be elongated along the orthogonal bitangent.
 
 The GGX distribution in the anisotropic case is then parametrized by two separate $\alpha$-roughnesses $\alpha_t$ and $\alpha_b$ along the tangent and bitangent vectors as follows, given the polar angle $\phi_m$ of the micronormal $m$ relative to the tangent (counterclockwise about the normal):
 \begin{equation}
@@ -421,9 +421,9 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 
 - **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$. These roughnesses are limited to the range $[0,1]$, since $r=1$ corresponds to a perceptually very rough surface.
 
-- **`specular_roughness_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the specular highlight is stretched in the direction **`specular_roughness_direction`** and respectively **`coat_roughness_direction`**). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula].
+- **`specular_roughness_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the NDF is stretched in the direction **`specular_roughness_direction`** and respectively **`coat_roughness_direction`**). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula].
 
-- **`specular_roughness_direction`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_direction`** for $f_\mathrm{coat}$, specify direction of the elongation of the specular highlight. The direction is specified as a normalized 2D vector, with $(1, 0)$ being the original tangent vector direction. Reconstruction filtering techniques such as texture filtering may cause the interpolated value to not be normalized, which can be corrected with a renormalization to reduce visible artifacts caused by this filtering. Note that the appearance of the specular highlight is identical for rotations between $[0°, 180°]$ and $[180°, 360°]$; this also allows the preservation of value when converting to/from other models that support directional anisotropy.
+- **`specular_roughness_direction`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_direction`** for $f_\mathrm{coat}$, specify the direction along which the NDF is stretched. The direction is specified as a normalized 2D vector, with $(1, 0)$ being the original tangent vector direction. Reconstruction filtering techniques such as texture filtering may cause the interpolated value to not be normalized, which can be corrected with a renormalization to reduce visible artifacts caused by this filtering. Note that the appearance of the specular highlight is identical for rotations between $[0°, 180°]$ and $[180°, 360°]$; this also allows the preservation of value when converting to/from other models that support directional anisotropy.
 
 The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016], where the multiple bounces are explicitly modeled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
 
@@ -530,7 +530,7 @@ Specular params                     | Label      | Type      | Range           |
 **`specular_color`**                | Color      | `color3`  | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
 **`specular_roughness`**            | Roughness  | `float`   | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_roughness_anisotropy`** | Anisotropy | `float`   | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_roughness_direction`**  | Direction  | `vector2` | Unit vector     |            | $ (1, 0)    $ | Direction of the specular highlight elongation
+**`specular_roughness_direction`**  | Direction  | `vector2` | Unit vector     |            | $ (1, 0)    $ | Direction along which the NDF of dielectric BSDF $f_\mathrm{dielectric}$ is stretched.
 **`specular_ior`**                  | IOR        | `float`   | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
 **`specular_ior_level`**            | IOR level  | `float`   | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the dielectric reflectivity at normal incidence between zero and double the original
 
@@ -780,7 +780,7 @@ Metal params                        | Label      | Type      | Range         | D
 **`specular_color`**                | Color      | `color3`  | $ [0, 1]^3  $ | $ (1, 1, 1)       $ | Tint color of Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
 **`specular_roughness`**            | Roughness  | `float`   | $ [0, 1]    $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
 **`specular_roughness_anisotropy`** | Anisotropy | `float`   | $ [0, 1]    $ | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
-**`specular_roughness_direction`**  | Direction  | `vector2` | Unit vector   | $ (1, 0)          $ | Direction of the specular highlight elongation
+**`specular_roughness_direction`**  | Direction  | `vector2` | Unit vector   | $ (1, 0)          $ | Direction along which the NDF of dielectric BSDF $f_\mathrm{conductor}$ is stretched.
 
 
 ![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
@@ -844,7 +844,7 @@ Coat params                     | Label      | Type      | Range           |  No
 **`coat_color`**                | Color      | `color3`  | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Square of normal-incidence transmittance of $V_\mathrm{coat}$
 **`coat_roughness`**            | Roughness  | `float`   | $ [0, 1]      $ |            | $ 0         $ | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
 **`coat_roughness_anisotropy`** | Anisotropy | `float`   | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
-**`coat_roughness_direction`**  | Direction  | `vector2` | Unit vector     |            | $ (1, 0)    $ | Direction of the specular highlight elongation
+**`coat_roughness_direction`**  | Direction  | `vector2` | Unit vector     |            | $ (1, 0)    $ | Direction along which the NDF of coat BSDF $f_\mathrm{coat}$ is stretched.
 **`coat_ior`**                  | IOR        | `float`   | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
 **`coat_ior_level`**            | IOR level  | `float`   | $ [0, 1]      $ |            | $ 0.5       $ | Modulates the coat reflectivity at normal incidence between zero and double the original
 
