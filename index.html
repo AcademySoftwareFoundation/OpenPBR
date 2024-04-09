@@ -507,7 +507,7 @@ Both the opaque and translucent dielectric-base share the same dielectric interf
 
 - The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`** (see the section on the [Microfacet model](index.html#model/microfacetmodel) NDF).
 
-- The **`specular_ior`** parameter controls the index of refraction (IOR) of the dielectric. The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the dielectric reflectivity at normal incidence via modulation of this reference IOR.
+- The **`specular_ior`** parameter controls the index of refraction (IOR) of the dielectric. The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the dielectric reflectivity at normal incidence via modulation of this reference IOR. When **`specular_weight`** is $0$, the specular reflection disappears entirely, as the IOR of the dielectric is then equal to that of the surrounding medium.
 
 - The **`specular_color`** parameter modulates the Fresnel factor of $f_\mathrm{dielectric}$, but only for the initial reflection of light incident from above, while the light transmitted from above or below (or reflected from below) is assumed to be unaffected [^specular_color]. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight without disturbing other aspects of the light transport (i.e. the reflection due to scattering from the internal medium, or the reflection from below, or the transmission from above or below).
 
