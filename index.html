@@ -599,7 +599,7 @@ As in the cases of the [glossy-diffuse](index.html#model/dielectricbase/glossy-d
    - **`subsurface_color`**: the observed RGB reflection albedo color taking into account all orders of multiple scattering, $\mathbf{C}$ (where the sense in which this parametrizes the observed color is discussed in detail below).
    - **`subsurface_anisotropy`**: the medium's phase function, parametrized by the scalar anisotropy $g \in [-1, 1]$.
 
-We now define in detail how these subsurface parameters collectively determine the underlying volumetric parameters (per-channel extinction $\boldsymbol{\mu}_t$ and _single-scattering albedo_ $\boldsymbol{\alpha}$, and scalar phase function anisotropy $g$).
+We now define in detail how these subsurface parameters collectively determine the underlying volumetric parameters (per-channel _extinction_ $\boldsymbol{\mu}_t$ and _single-scattering albedo_ $\boldsymbol{\alpha}$, and scalar phase function anisotropy $g$).
 
 The extinction coefficient is simply given by the reciprocal of the MFP per channel: $\boldsymbol{\mu}_t = 1/\mathbf{r}$. (Note, this may need to be regularized in the limit $\mathbf{r} \rightarrow 0$ to avoid numerical issues).
 
