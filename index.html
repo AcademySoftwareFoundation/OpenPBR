@@ -562,7 +562,7 @@ The opaque substrate slab has a diffuse BRDF lobe:
 \begin{eqnarray}
 S_\textrm{diffuse}    = \mathrm{Slab}(f_\mathrm{diffuse})
 \end{eqnarray}
-where $f_\mathrm{diffuse}$ is defined to be the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a microfacet model where the microfacets are individually Lambertian. The resulting BRDF of the glossy-diffuse slab is the combination of a "glossy" specular lobe provided by reflection from the dielectric interface, and a diffuse lobe provided by bounces off the substrate. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete.
+where $f_\mathrm{diffuse}$ is defined to be the BRDF of the classic Oren-Nayar microfacet model ([#Oren1994], [#Pharr2023]) in which the microfacets are individually Lambertian. The resulting BRDF of the glossy-diffuse slab is the combination of a "glossy" specular lobe provided by reflection from the dielectric interface, and a diffuse lobe provided by bounces off the substrate. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete.
 
 Physically there will be darkening and saturation of the observed color due to multiple inter-reflections (scattering) within the gloss layer, as described in the coat darkening section. However in this case, we wish to automatically compensate for this effect by adjusting the albedo of $f_\mathrm{diffuse}$ in order to make the observed color match the input color $\mathbf{C} =$ **`base_weight`** * **`base_color`** (in a similar spirit to the albedo remapping described in the Subsurface section).
 
@@ -581,13 +581,13 @@ Given the required diffuse albedo $\mathbf{E}_\textrm{diffuse}$ according to the
 \begin{equation}
 f_\textrm{glossy-diffuse}(\omega_i, \omega_o) \approx f_\mathrm{dielectric}(\omega_i, \omega_o)  +  \bigl(1 - E_\mathrm{dielectric}(\omega_o)\bigr) \,f_\mathrm{diffuse}(\omega_i, \omega_o) \ ,
 \end{equation}
-where the albedo of the Oren-Nayar lobe $f_\mathrm{diffuse}(\omega_i, \omega_o)$ must be taken to be **`base_weight`** * **`base_color`** in order to satisfy equation [glossy_diffuse_albedo_constraint].
+where the albedo of the Oren-Nayar lobe $f_\mathrm{diffuse}(\omega_i, \omega_o)$ must be taken to be $\mathbf{C} =$ **`base_weight`** * **`base_color`** in order to satisfy equation [glossy_diffuse_albedo_constraint].
 
-A more accurate approximation is a reciprocal formulation of the form
+If a reciprocal formulation is desired, the classic Ashikhmin-Shirley or Kelemen model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]) form is
 \begin{equation}
 f_\textrm{glossy-diffuse}(\omega_i, \omega_o) \approx f_\mathrm{dielectric}(\omega_i, \omega_o)  + \mathcal{N} \bigl(1 - E_\mathrm{dielectric}(\omega_i)\bigr) \bigl(1 - E_\mathrm{dielectric}(\omega_o)\bigr) \,f_\mathrm{diffuse}(\omega_i, \omega_o) \ ,
 \end{equation}
-where $\mathcal{N}$ is a normalization factor such that equation [glossy_diffuse_albedo_constraint] is satisfied. In the case of a zero-roughness (i.e. Lambertian) Oren-Nayar base this reduces to the classic Ashikhmin-Shirley or Kelemen model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]).
+where $\mathcal{N}$ is a normalization factor such that equation [glossy_diffuse_albedo_constraint] is satisfied. In the case of a zero roughness (i.e. Lambertian) Oren-Nayar base $\mathcal{N}$ can be tabulated in terms of the dielectric IOR and roughness ([#Kutz2021]), and the required albedo of the Lambertian base is equal to $\mathbf{C}$ as in the non-reciprocal albedo-scaling approximation. Extending this to the more general case of a non-Lambertian rough Oren-Nayar base would require adding the roughness dimension to the tabulation, and the required Oren-Nayar albedo will not simply equal $\mathbf{C}$. We leave the specific choice of model and these details to the implementation.
 
 
 Glossy-diffuse params | Label     | Type     | Range            | Default             | Description
