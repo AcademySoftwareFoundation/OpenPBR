@@ -587,7 +587,7 @@ Glossy-diffuse params | Label     | Type     | Range            | Default       
 
 ### Subsurface
 
-The subsurface slab represents a dielectric embedding a dense scattering volumetric medium, which generates significant light bleeding effects due to light propagation and diffusion under the surface, where in general the exiting ray leaves at a different surface location than the incident ray. Physically, as for the slabs defined in the Glossy-diffuse section and Translucent base section, this is a dielectric substrate with surface BSDF $f_\mathrm{dielectric}$ and homogeneous interior medium $V^\infty_\mathrm{subsurface}$:
+The subsurface slab represents a dielectric embedding a dense scattering volumetric medium, which generates significant light bleeding effects due to light propagation and diffusion under the surface, where the exiting ray leaves at a different surface location than the incident ray. Physically, as for the slabs defined in the Glossy-diffuse section and Translucent base section, this is a dielectric substrate with surface BSDF $f_\mathrm{dielectric}$ and homogeneous interior medium $V^\infty_\mathrm{subsurface}$:
 
 \begin{equation}
 S_\mathrm{subsurface} = \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{subsurface}) \ .
