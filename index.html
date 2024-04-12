@@ -398,10 +398,7 @@ In the general case the roughness is anisotropic, that is the NDF is not circula
 D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \left(\frac{\cos^2\phi_m}{\alpha_t^2} + \frac{\sin^2\phi_m}{\alpha_b^2}\right) \right)^{-2}
 \end{equation}
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
-Efficient techniques for sampling BSDFs employing the anisotropic GGX microfacet model are presented in [#Heitz2014a].
-
-!!! Note: Future work
-   The GGX NDF is based on the Trowbridge-Reitz NDF. [#Burley2012] proposed the Generalized-Trowbridge-Reitz (GTR) NDF which has an exponent $\gamma$ giving more control over the tail of the NDF, and where GGX is the special case $\gamma=2$. More recently, other generalized NDFs based on the Student's $t$-distribution have been proposed [#d'Eon2023]. It is an open question whether a more general NDF such as this would be a valuable addition to the model.
+Efficient techniques for sampling BSDFs employing the anisotropic GGX microfacet model are presented in [#Heitz2018], [#Dupuy2023].
 
 The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$:
 \begin{equation}  \label{openpbr-anisotropy-formula}
@@ -1283,11 +1280,11 @@ References
 
 [#d'Eon2023]: Eugene d’Eon. *Student-T and Beyond: Practical Tools for Multiple-Scattering BSDFs with General NDFs*, ACM SIGGRAPH Talks (2023).
 
+[#Dupuy2023]: Jonathan Dupuy, Anis Benyoub. *Sampling Visible GGX Normals with Spherical Caps*, High-Performance Graphics (2023).
+
 [#Georgiev2019]: Iliyan Georgiev, Jamie Portsmouth, Zap Andersson, Adrien Herubel, Alan King, Shinji Ogaki, and Frederic Servant. *Autodesk Standard Surface*, Autodesk white paper (2019).
 
 [#Gritz2010]: Larry Gritz, Clifford Stein, Chris Kulla, and Alejandro Conty. *Open Shading Language*, ACM SIGGRAPH Talks (2010).
-
-[#Heitz2014a]: Eric Heitz, Eugene d’Eon. *Importance Sampling Microfacet-Based BSDFs using the Distribution of Visible Normals*, Computer Graphics Forum (2014).
 
 [#Heitz2014b]: Eric Heitz. *Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs*, Journal of Computer Graphics Techniques (2014).
 
@@ -1296,6 +1293,8 @@ References
 [#Heitz2016a]: Eric Heitz, Johannes Hanika, Eugene d’Eon and Carsten Dachsbacher. *Multiple-Scattering Microfacet BSDFs with the Smith Model*, ACM Transactions on Graphics (2016).
 
 [#Heitz2016b]: Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. *Real-Time Polygonal-Light Shading with Linearly Transformed Cosines*, ACM SIGGRAPH (2016).
+
+[#Heitz2018]: Eric Heitz. *Sampling the GGX Distribution of Visible Normals*, Journal of Computer Graphics Techniques (2018).
 
 [#Hery2017]: Christophe Hery, Ryusuke Villemin, Junyi Ling. *Pixar's Foundation for Materials*, Pixar technical report (2017).
 
