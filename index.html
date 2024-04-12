@@ -873,7 +873,7 @@ B(\delta) = \mathrm{lerp}(B_0, 1, \delta) \ .
 While this defines the behavior at a physical level, in practice implementations will need to develop some specific approximation for the coat darkening effect.
 While this can be implementation dependent, we suggest here a reasonably simple, efficient scheme which captures the essential behavior.
 
-It can be shown that in the case of a Lambertian base with (constant) albedo $E_b$ and a perfectly smooth dielectric clear-coat -- the so-called _interfaced Lambertian_ model ([#Elias2001], [#d'Eon2021], [#Portsmouth2024]) -- that the exact directional albedo of the coated base has the albedo-scaling-like form (where $\eta_c$ is the ratio of the coat IOR to the ambient IOR, and $F$ is the corresponding coat Fresnel factor):
+It can be shown that in the case of a Lambertian base with (constant) albedo $E_b$ and a perfectly smooth dielectric clear-coat -- the so-called _interfaced Lambertian_ model ([#Elias2001], [#d'Eon2021]) -- that the exact directional albedo of the coated base has the albedo-scaling-like form (where $\eta_c$ is the ratio of the coat IOR to the ambient IOR, and $F$ is the corresponding coat Fresnel factor):
 \begin{equation} \label{interfaced_lambertian_albedo}
 E_c(\omega_o) = F(\omega_o, \eta_c) + E_b \Bigl(1 - F(\omega_o, \eta_c)\Bigr) \Delta(E_b, \eta_c)
 \end{equation}
@@ -1411,8 +1411,6 @@ References
 [#Pharr2023]: Matt Pharr, Wenzel Jakob and Greg Humphreys. *Physically Based Rendering (4th edition)* (2023).
 
 [#Polyanskiy2023]: Mikhail N. Polyanskiy. [*Refractive Index Database*](https://refractiveindex.info/) (2023).
-
-[#Portsmouth2024]: Jamie Portsmouth. *Reflection from a coated diffuse surface*, Technical Report (2024).
 
 [#Schott2023]: SCHOTT. [*Interactive Abbe Diagram*](https://www.schott.com/en-gb/interactive-abbe-diagram) (2023).
 
