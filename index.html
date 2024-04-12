@@ -1101,6 +1101,8 @@ In various practical models such as Disney's Principled Shader [#Burley2012], Au
 
 As an example, we give here a brief derivation of a mixture model representation analogous to Autodesk Standard Surface, from the stated material structure of OpenPBR. Following Autodesk Standard Surface, we assume here that layering is implemented via the non-reciprocal albedo-scaling of equation [non-reciprocal-albedo-scaling]. This derivation also informs how we implement our MaterialX [reference implementation](reference/open_pbr_surface.mtlx).
 
+### Non-thin-walled case
+
 Consider first the non-thin-walled case (i.e. **`geometry_thin_walled`** is false).
 For brevity, in the following we suppress all the direction arguments, and use the notation of the tree diagram in the Model section for the weight factors i.e.:
 \begin{eqnarray}
@@ -1206,6 +1208,8 @@ Where the component lobes are listed below.
    | Diffuse reflection     | $\color{darkblue}{f_\mathrm{diffuse}}$      | diffuse BRDF               | as in the Glossy-diffuse section           |
 
 
+### Thin-walled case
+
 In the thin walled case (i.e. when **`geometry_thin_walled`** is true), we will assume the approximation described in the Thin-walled case section where the coat and fuzz are ignored on the underside, and the surface always flipped to so that incident rays enter top-down. Then the derivation is the same as above except the translucent-base and subsurface slabs behave differently:
 
    - The translucent-base reduces to a thin sheet of dielectric. This can just be considered the thin-wall limit of the BTDF $\color{darkblue}{f^T_\textrm{specular}}$. Note that in this limit, the reflection lobe from the dielectric $\color{darkblue}{f^R_\textrm{specular}}$ will also technically be modified due to the internal bounces in the sheet.
@@ -1213,6 +1217,22 @@ In the thin walled case (i.e. when **`geometry_thin_walled`** is true), we will 
    - The subsurface lobe $\color{darkblue}{f_\textrm{SSS}}$ degenerates into diffuse reflection and transmission lobes ${f^R_\textrm{diffuse}}$, ${f^T_\textrm{diffuse}}$ as given in equation [thin_wall_subsurface].
 
 The full representation in code of this linear combination of BRDF/BTDF/BSSRDF lobes will depend on renderer-specific details.
+
+### Entering versus exiting
+
+An aspect that has been ignored in this approximation (in the non-thin-walled case) is the different light transport for rays incident from the top or the bottom side. In reality the physical effect of the layers differs in these cases. For entering rays:
+
+   - The fuzz reflection is not tinted by the coat absorption.
+   - The coat reflection is dimmed and roughened by the fuzz.
+   - The dielectric reflection and transmission are both dimmed and roughened by both the coat and the fuzz.
+
+   While for rays which are exiting:
+
+   - The fuzz reflection (viewed from inside) now will be tinted by the coat absorption.
+   - The reflection from the coat "top" interface (with the fuzz) is not dimmed or roughened by the fuzz. This reflection is also an internal one, so has different Fresnel factor.
+   - Only dielectric transmission is dimmed/roughened by coat and fuzz, while the reflection is unaffected (except for being an internal reflection as well).
+
+A more accurate implementation should in principle account for these effects.
 
 
 MaterialX reference implementation
