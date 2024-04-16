@@ -70,7 +70,7 @@ We work in the local space of a 2d surface, so horizontal refers to directions i
 
 We do not dictate how the surfaces of the slab are described physically at the microscopic level, but at the level of the mesoscopic slab description they are flat interfaces with a known BSDF. We will be as specific as possible about the chosen functional form of the BSDFs, though in most cases we refer to the literature for the full details of the implementation. The BSDFs are mostly [microfacet models](index.html#model/microfacetmodel) (apart from the [fuzz](index.html#model/fuzz) BSDF which derives from microflake theory).
 
-Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ where, following the usual convention, these both point away from the surface vertex with $\omega_o$ in the direction of the outgoing light and $\omega_i$ opposite to the direction of the incident light. Physically the BSDF should be energy conserving and reciprocal. Energy conservation of a BRDF [^brdf] $f(\omega_i, \omega_o)$ amounts to the requirement that the _directional reflectance_ (or _albedo_) $E(\omega_o) \le 1$ for all output ray directions, where $E(\omega_o)$ is defined as the integral of the BRDF over directions in the same hemisphere $\mathcal{H}_+$ as $\omega_o$ with projected solid angle measure:
+Each BSDF is a function of input and output directions $f(\omega_i, \omega_o)$ where, following the usual convention, these both point away from the surface vertex with $\omega_o$ in the direction of the outgoing light and $\omega_i$ opposite to the direction of the incident light. Physically the BSDF should be energy conserving and reciprocal. Energy conservation of a BRDF [^brdf] $f(\omega_i, \omega_o)$ amounts to the requirement that the _directional reflectance_ (or _ directional albedo_) $E(\omega_o) \le 1$ for all output ray directions, where $E(\omega_o)$ is defined as the integral of the BRDF over directions in the same hemisphere $\mathcal{H}_+$ as $\omega_o$ with projected solid angle measure:
 \begin{equation} \label{energy-conservation}
 E(\omega_o) \equiv \int_{\mathcal{H}_+} f(\omega_i, \omega_o) \,\mathrm{d}\omega^\perp_i \ .
 \end{equation}
@@ -562,7 +562,27 @@ The opaque substrate slab has a diffuse BRDF lobe:
 \begin{eqnarray}
 S_\textrm{diffuse}    = \mathrm{Slab}(f_\mathrm{diffuse})
 \end{eqnarray}
-where $f_\mathrm{diffuse}$ is defined to be the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a microfacet model where the microfacets are individually Lambertian, with albedo specified by **`base_weight`** multiplied by **`base_color`**, and a microfacet roughness parameter in $[0,1]$ given by **`base_roughness`**.
+where $f_\mathrm{diffuse}$ is based on the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a V-cavity based microfacet model where the microfacets are individually Lambertian, parametrized by albedo $\rho$ and roughness $\sigma$. Unfortunately the original Oren-Nayar model suffers from artifacts and also does not conserve energy (is too dark). We thus opt to define the diffuse BRDF to be a popular improved version of Oren-Nayar introduced by [#Fujii2012], augmented with a simple energy compensation term.
+\begin{eqnarray}
+f_\mathrm{diffuse}(\omega_i, \omega_o) = f_\mathrm{ON}(\omega_i, \omega_o) + f^\prime_\mathrm{ON}(\omega_i, \omega_o)
+\end{eqnarray}
+where the Oren-Nayar term $f_\mathrm{ON}$ is given by the [#Fujii2012] form [^Oren_Nayar_formula]
+\begin{eqnarray}
+f_\mathrm{ON}(\omega_i, \omega_o) = \frac{\rho}{\pi} \Bigl( A(\sigma) + B(\sigma) \frac{s}{t} \Bigr) \ .
+\end{eqnarray}
+The roughness parameter $\sigma \in [0,1]$ is given by **`base_roughness`**, and the RGB albedo $\rho$ by **`base_color`**. The directional albedo $E_\mathrm{ON}(\omega) = \rho\,\hat{E}_\mathrm{ON}(\omega)$ (and corresponding _average albedo_ $\langle\hat{E}_\mathrm{ON}\rangle$) of the Oren-Nayar term can be determined analytically [^Oren_Nayar_albedo]. Then the energy compensation term $f^{\prime}_\mathrm{ON}$ is given in terms of this albedo by
+\begin{equation}
+f^\prime_\mathrm{ON}(\omega_i, \omega_o) = \frac{\rho_\mathrm{ms}}{\pi}
+\bigl(1 - \hat{E}_\mathrm{ON}(\omega_i)\bigr)
+\bigl(1 - \hat{E}_\mathrm{ON}(\omega_o)\bigr) \ .
+\end{equation}
+The term $\rho_\mathrm{ms}$ accounts approximately for multiple scattering on the microfacet surface:
+\begin{equation}
+\rho_\mathrm{ms} = \frac{\rho^2}{\pi}
+\frac{\langle\hat{E}_\mathrm{ON}\rangle / (1 - \langle \hat{E}_\mathrm{ON}\rangle)}{1 - \rho \bigl(1 - \langle \hat{E}_\mathrm{ON}\rangle\bigr)} \ .
+\end{equation}
+One can verify that as $\rho \rightarrow 1$, the directional albedo $E_\mathrm{diffuse}(\omega) \rightarrow 1$, thus ensuring a white furnace test passes.
+The parameter $\rho$ of $f_\mathrm{diffuse}$ is equal to the albedo in the zero roughness ($\sigma \rightarrow 0$) limit. As roughness increases, the albedo becomes slightly more dark and saturated due to the multiple scattering, which is physically realistic.
 
 The resulting BRDF of the glossy-diffuse slab is the combination of a "glossy" specular lobe provided by reflection from the dielectric interface, and a diffuse lobe provided by bounces off the substrate. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete. This form of BRDF model is classic in computer graphics and typically termed the Ashikhmin-Shirley or Kelemen model ([#Ashikhmin2000], [#Kelemen2001], [#Kulla2017], [#Kutz2021]).
 
@@ -1302,6 +1322,8 @@ References
 
 [#d'Eon2023]: Eugene d’Eon. *Student-T and Beyond: Practical Tools for Multiple-Scattering BSDFs with General NDFs*, ACM SIGGRAPH Talks (2023).
 
+[#Fujii2012]: Yasuhiro Fujii. [*A tiny improvement of Oren-Nayar reflectance model*](https://mimosa-pudica.net/improved-oren-nayar.html) (2018).
+
 [#Georgiev2019]: Iliyan Georgiev, Jamie Portsmouth, Zap Andersson, Adrien Herubel, Alan King, Shinji Ogaki, and Frederic Servant. *Autodesk Standard Surface*, Autodesk white paper (2019).
 
 [#Gritz2010]: Larry Gritz, Clifford Stein, Chris Kulla, and Alejandro Conty. *Open Shading Language*, ACM SIGGRAPH Talks (2010).
@@ -1380,6 +1402,38 @@ References
 [^Jacobian]:  Omitting Jacobian factors.
 
 [^normalization]:  Omitting normalization factors.
+
+[^Oren_Nayar_formula]: The $s$ term is given by (with normal $\mathbf{n}$):
+\begin{eqnarray*}
+  s = \omega_i \cdot \omega_o - (\mathbf{n} \cdot \omega_i) (\mathbf{n} \cdot \omega_o) \nonumber = \cos(\phi_i-\phi_o) \,\sin\theta_i \,\sin\theta_o
+\end{eqnarray*}
+and
+\begin{equation}
+  \frac{1}{t} =
+    \begin{cases}
+      1                                                       & \text{if $s \le 0$}\\
+      1 / \max\left(\mathbf{n} \cdot \omega_i, N \cdot \omega_o\right) & \text{if $s > 0$ .}
+    \end{cases}
+\end{equation}
+The $A, B$ coefficients are
+\begin{eqnarray}
+  A &=& \frac{1}{1 + \left(\frac{1}{2} - \frac{2}{3\pi}\right)\sigma}\ , \nonumber \\
+  B &=& \sigma A \ .
+\end{eqnarray}
+
+[^Oren_Nayar_albedo]: The albedo of the [#Fujii2012] form of the Oren-Nayar BRDF is given by $E_\mathrm{ON}(\omega) = \rho\,\hat{E}_\mathrm{ON}(\omega)$, where
+For unit $\rho$,
+\begin{eqnarray}
+\hat{E}_\mathrm{ON}(\omega) = A + \frac{B}{\pi} G(\omega) \ ,
+\end{eqnarray}
+where (in spherical polars)
+\begin{equation}
+G(\theta) = \sin\theta \Bigl( \theta - \sin\theta \cos\theta \Bigr) + \frac{2}{3}\tan\theta \Bigl(1 - \sin^3\theta - \cos\theta\Bigr) \ .
+\end{equation}
+The corresponding albedo averaged over the hemisphere is given by
+\begin{equation}
+\langle\hat{E}_\mathrm{ON}\rangle = A + \left(\frac{2}{3} - \frac{28}{15\pi}\right) B \ .
+\end{equation}
 
 [^BSDF_BSSRDF_sum]: This sum of BSDF and BSSRDF can be justified mathematically by interpreting a BSDF as the special case of a BSSRDF restricted to equal exit and entry points.
 
