@@ -1024,7 +1024,7 @@ There are assumed to be separate normal inputs **`geometry_normal`**, **`geometr
 
 The **`geometry_tangent`** and **`geometry_coat_tangent`** may also be specified, to define the direction of the microfacet anisotropy on the base layer and coat layer, for effects such as brushed metal. Similar to normal mapping, the tangent may be transformed with a 2D vector map to alter the direction of the anisotropy.
 
-The perturbed normals and tangent will of course be specified by input textures (or possibly procedurally). As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal or tangent in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
+The perturbed normals and tangents will of course be specified by input textures (or possibly procedurally). As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal or tangent in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
 
 The normal and tangent are assumed to be unit vectors. Reconstruction filtering techniques such as texture filtering may cause the interpolated value to not be normalized, which can be corrected with a renormalization to reduce visible artifacts caused by this filtering.
 
