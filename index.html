@@ -627,7 +627,7 @@ Inversion of this gives the per-channel single-scatter albedo $\boldsymbol{\alph
 This gives one approximate $\boldsymbol{\alpha}(\mathbf{C})$ mapping, but as noted it ignores the presence of the dielectric boundary. Other approximate forms which take into account the dielectric interface are presented in various sources (e.g. [#d'Eon2021], [#Burley2018]).
 We also note that the relevant approximation may depend on the specific assumptions made about the subsurface interface, for example in some cases renderers may approximate the boundary BSDF via a diffuse lobe, for efficiency and improved convergence. In that case, it would be more appropriate to use an $\boldsymbol{\alpha}(\mathbf{C})$ designed for this specific interface BSDF, in order to satisfy equation [subsurface_albedo_constraint].
 
-The phase function anisotropy $g$ of the medium is taken to be given directly by the **`subsurface_anisotropy`** parameter [^anisotropy_g]. It is assumed that the phase function has the standard Henyey-Greenstein form.
+The phase function anisotropy $g$ of the medium is taken to be given directly by the **`subsurface_anisotropy`** parameter [^anisotropy_g]. It is assumed that the phase function has the standard Henyey--Greenstein form.
 
 Once the underlying volumetric medium properties $\boldsymbol{\mu}_t$, $\boldsymbol{\alpha}$ and $g$ are determined, implementations may choose to compute light transport in the subsurface medium either via a fast, approximate bidirectional scattering surface reflectance distribution (BSSRDF) model using e.g. the dipole approximation [#Jensen2001], or more accurately via volumetric path tracing ([#Novak2018], [#Pharr2023]).
 
@@ -643,7 +643,7 @@ Subsurface params             | Label        | Type      | Range           | Nor
 **`subsurface_color`**        | Color        | `color3`  | $ [0, 1]      $ |            | $ (0.8, 0.8, 0.8)  $ | Subsurface color, controls the observed reflection color of $V^\infty_\mathrm{subsurface}$
 **`subsurface_radius`**       | Radius       | `float`   | $ [0, \infty) $ | $ [0, 1] $ | $ 1                $ | Length scale of MFP
 **`subsurface_radius_scale`** | Radius scale | `vector3` | $ [0, 1]^3    $ |            | $ (1.0, 0.5, 0.25) $ | RGB multiplier to **`subsurface_radius`**, giving the per-channel MFPs
-**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1, 1]     $ |            | $ 0                $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
+**`subsurface_anisotropy`**   | Anisotropy   | `float`   | $ [-1, 1]     $ |            | $ 0                $ | Anisotropy of the Henyey--Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
 
 ![](images/subsurface1.jpg width=99%) ![](images/subsurface2.jpg width=99%) ![](images/subsurface3.jpg width=99%)
 <div class="shifted-caption">
@@ -685,7 +685,7 @@ If any component of $\boldsymbol{\mu}_a$ is negative, then $\boldsymbol{\mu}_a$ 
 && \quad\quad \boldsymbol{\mu}_a \leftarrow \boldsymbol{\mu}_a - \mathrm{min}(\boldsymbol{\mu}_a) \ .
 \end{eqnarray}
 After this shifting, the final extinction coefficient is given by the new $\boldsymbol{\mu}_a + \boldsymbol{\mu}_s$.
-This formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light. Finally the medium phase function anisotropy $g \in [-1, 1]$ is given by **`transmission_scatter_anisotropy`** (the standard Henyey-Greenstein phase function is assumed [^anisotropy_g]).
+This formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light. Finally the medium phase function anisotropy $g \in [-1, 1]$ is given by **`transmission_scatter_anisotropy`** (the standard Henyey--Greenstein phase function is assumed [^anisotropy_g]).
 
 ![](images/transmission1.jpg width=99%) ![](images/transmission2.jpg width=99%) ![](images/transmission3.jpg width=99%)
 <div class="shifted-caption">
@@ -728,7 +728,7 @@ Translucent base params                   | Label            | Type     | Range 
 **`transmission_color`**                  | Color            | `color3` | $ [0, 1]^3    $ |             | $ (1, 1, 1) $ | Transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
 **`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty) $ | $ [0, 1]  $ | $ 0         $ | Controls the depth into the volume at which the **`transmission_color`** is realized; if zero, acts as a constant (on-surface) transmission tint
 **`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3    $ |             | $ (0, 0, 0) $ | Scattering coefficient of the interior medium
-**`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]    $ |             | $ 0         $ | Anisotropy of the Henyey-Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
+**`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]    $ |             | $ 0         $ | Anisotropy of the Henyey--Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
 **`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]     $ |             | $ 0         $ | Linearly scales the amount of dispersion
 **`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [0, \infty) $ | $ [9, 91] $ | $ 20        $ | Physical Abbe number of the base dielectric medium
 
@@ -1378,7 +1378,7 @@ References
 
 [^normalization]:  Omitting normalization factors.
 
-[^anisotropy_g]: Technically, $g$ is the _mean-cosine of deflection_ of the phase-function, which is not specific to the Henyey-Greenstein phase function model [#d'Eon2021].
+[^anisotropy_g]: Technically, $g$ is the _mean-cosine of deflection_ of the phase-function, which is not specific to the Henyey--Greenstein phase function model [#d'Eon2021].
 
 [^BSDF_BSSRDF_sum]: This sum of BSDF and BSSRDF can be justified mathematically by interpreting a BSDF as the special case of a BSSRDF restricted to equal exit and entry points.
 
