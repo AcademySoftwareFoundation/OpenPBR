@@ -608,8 +608,7 @@ This can be broken into two components:
 \begin{equation}
 \mathbf{E}_\mathrm{subsurface} = \mathbf{E}_\mathrm{spec} + \mathbf{E}_\mathrm{multi-scatter} \ .
 \end{equation}
-Here $\mathbf{E}_\mathrm{spec}$ is the normal-direction reflectance of all energy reflected from the dielectric interface _without_ transmission. While $\mathbf{E}_\mathrm{multi-scatter}$ (the _multiple-scattering albedo_) is the normal-direction reflectance of all remaining reflected energy due to transmission through the interface, multiple scattering in the subsurface medium, and transmission back out.
-We then _define_ the **`subsurface_color`** $\mathbf{C}$ to parametrize the fraction of the energy transmitted through the interface that is transmitted back out and observed, i.e.:
+Here $\mathbf{E}_\mathrm{spec}$ is the normal-direction reflectance of all energy reflected from the dielectric interface _without_ macroscopic transmission. While $\mathbf{E}_\mathrm{multi-scatter}$ (the _multiple-scattering albedo_) is the normal-direction reflectance of all remaining reflected energy due to (macroscopic) transmission through the interface, multiple scattering in the subsurface medium, and transmission back out. We then _define_ the **`subsurface_color`** $\mathbf{C}$ to parametrize the fraction of the energy transmitted through the interface that is transmitted back out and observed, i.e.:
 \begin{equation} \label{subsurface_albedo_constraint}
 \mathbf{E}_\mathrm{multi-scatter} = \left( 1 - \mathbf{E}_\mathrm{spec} \right) \mathbf{C} \ .
 \end{equation}
