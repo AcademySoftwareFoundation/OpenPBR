@@ -571,7 +571,7 @@ To define the meaning of the specified color in terms of the underlying base alb
 \mathbf{E}_\textrm{glossy-diffuse} = \mathbf{E}_\textrm{spec} + \mathbf{E}_\textrm{diffuse}
 \end{eqnarray}
 where $\mathbf{E}_\mathrm{spec}$ is the normal-direction reflectance of all energy reflected from the dielectric interface without transmission, and $\mathbf{E}_\mathrm{diffuse}$ is the normal-direction reflectance of all energy transmitted through the interface, scattered off the diffuse medium, and transmitted back out.
-We then _define_ $\mathbf{C} =$ **`base_weight`** * **`base_color`** to be such that the reflectance of the remaining energy transmitted into the slab, $\mathbf{E}_\textrm{diffuse}$ in the *zero* **`base_roughness`** case (i.e. a Lambertian base), is given by
+We then _define_ $\mathbf{C} =$ **`base_weight`** * **`base_color`** to be such that the reflectance of the remaining energy transmitted into the slab, $\mathbf{E}_\textrm{diffuse}$ in the *zero* **`base_diffuse_roughness`** case (i.e. a Lambertian base), is given by
 \begin{eqnarray} \label{glossy_diffuse_albedo_constraint}
 \mathbf{E}_\textrm{diffuse} = \bigl( 1 - \mathbf{E}_\textrm{spec} \bigr) \mathbf{C} \ .
 \end{eqnarray}
@@ -590,11 +590,11 @@ f_\textrm{glossy-diffuse}(\omega_i, \omega_o) \approx f_\mathrm{dielectric}(\ome
 where $\mathcal{N}$ is a normalization factor such that equation [glossy_diffuse_albedo_constraint] is satisfied. In the case of a zero roughness (i.e. Lambertian) Oren-Nayar base $\mathcal{N}$ can be tabulated in terms of the dielectric IOR and roughness ([#Kutz2021]), and the required albedo of the Lambertian base is equal to $\mathbf{C}$ as in the non-reciprocal albedo-scaling approximation. Extending this to the more general case of a non-Lambertian rough Oren-Nayar base would require adding the roughness dimension to the tabulation, and the required Oren-Nayar albedo will not simply equal $\mathbf{C}$. We leave the specific choice of model and these details to the implementation.
 
 
-Glossy-diffuse params | Label     | Type     | Range            | Default             | Description
-----------------------|-----------|----------|:----------------:|:-------------------:|----------------------------------------------
-**`base_weight`**     | Weight    | `float`  | $ [0, 1]       $ | $ 1               $ | Scalar multiplier to **`base_color`**
-**`base_color`**      | Color     | `color3` | $ [0, 1]^3     $ | $ (0.8, 0.8, 0.8) $ | Base reflection albedo color according to equation [glossy_diffuse_albedo_constraint].
-**`base_roughness`**  | Roughness | `float`  | $ [0, 1]       $ | $ 0               $ | Roughness of the diffuse lobe $f_\mathrm{diffuse}$
+Glossy-diffuse params        | Label             | Type     | Range            | Default             | Description
+-----------------------------|-------------------|----------|:----------------:|:-------------------:|----------------------------------------------
+**`base_weight`**            | Weight            | `float`  | $ [0, 1]       $ | $ 1               $ | Scalar multiplier to **`base_color`**
+**`base_color`**             | Color             | `color3` | $ [0, 1]^3     $ | $ (0.8, 0.8, 0.8) $ | Base reflection albedo color according to equation [glossy_diffuse_albedo_constraint].
+**`base_diffuse_roughness`** | Diffuse Roughness | `float`  | $ [0, 1]       $ | $ 0               $ | Roughness of the diffuse lobe $f_\mathrm{diffuse}$
 
 
 ![](images/glossy_diffuse_diffuseonly.png width=99%) ![](images/glossy_diffuse_speconly.png width=99%) ![](images/glossy_diffuse_sum.png width=99%)
