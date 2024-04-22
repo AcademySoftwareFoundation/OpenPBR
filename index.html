@@ -1077,7 +1077,7 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
          E_R[f^R_\mathrm{diffuse}] + E_T[f^T_\mathrm{diffuse}] = S \le 1 \ .
       \end{equation}
       At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission.
-      The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this). This model is useful for rendering cases such as light scattering through a thin sheet of paper (Figure [thinwalled]).
+      The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_diffuse_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this). This model is useful for rendering cases such as light scattering through a thin sheet of paper (Figure [thinwalled]).
 
 
 ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
