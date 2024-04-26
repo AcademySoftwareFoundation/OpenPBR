@@ -842,7 +842,7 @@ We leave it up to the implementation to decide what level of approximation to us
 
 The IOR $n_\mathrm{coat} = \mathtt{coat\_ior}$ of the coat medium $V_\mathrm{coat}$ will alter the Fresnel factor of both the coat top interface and the underlying metal or dielectric. If there is a fractional $\mathtt{coat\_weight}$ $\mathtt{C}$, then the surrounding IOR of the base dielectric or metal varies statistically across the surface depending on whether the coat is locally present (and the fuzz layer can be assumed to have the ambient IOR $n_\mathrm{ambient}$). The ratio between the specular IOR $n_\mathrm{specular} = \mathtt{specular\_ior}$ and the surrounding medium can thus reasonably be approximated as
 \begin{equation} \label{specular_ior_ratio}
-\eta_s = \mathrm{lerp}(n_\mathrm{specular}/n_\mathrm{ambient},  n_\mathrm{specular}/n_\mathrm{coat}, \mathtt{C})
+\eta_s = \mathrm{lerp}(n_\mathrm{specular}/n_\mathrm{ambient},  n_\mathrm{specular}/n_\mathrm{coat}, \mathtt{C}) \ .
 \end{equation}
 This ratio then determines the specular Fresnel factor, as in equation [modulated_ior].
 
