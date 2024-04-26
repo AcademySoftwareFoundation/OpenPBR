@@ -529,7 +529,7 @@ For convenience, we also allow $\xi_s = \mathtt{specular\_weight}$ to exceed 1 s
 
 Specular params           | Label      | Type     | Range           | Norm       | Default       | Description
 --------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
-**`specular_weight`**     | Weight     | `float`  | $ [0, 1] $      |            | $ 1         $ | Modulates the dielectric reflectivity at normal incidence
+**`specular_weight`**     | Weight     | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 1         $ | Modulates the dielectric reflectivity at normal incidence
 **`specular_color`**      | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
 **`specular_roughness`**  | Roughness  | `float`  | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
