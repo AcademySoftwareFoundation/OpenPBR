@@ -509,7 +509,7 @@ Both the opaque and translucent dielectric-base share the same dielectric interf
 
 - The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`** (see the section on the [Microfacet model](index.html#model/microfacetmodel) NDF).
 
-- The **`specular_ior`** parameter controls the index of refraction (IOR) of the dielectric. The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the dielectric reflectivity at normal incidence via modulation of this reference IOR. When **`specular_weight`** is $0$, the specular reflection disappears entirely, as the IOR of the dielectric is then equal to that of the surrounding medium.
+- The **`specular_ior`** parameter controls the index of refraction (IOR) of the dielectric. The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the dielectric reflectivity at normal incidence via reduction of the IOR below the reference value. When **`specular_weight`** is $0$, the specular reflection disappears entirely, as the IOR of the dielectric is then equal to that of the surrounding medium. As a convenience, we also allow the **`specular_weight`** to exceed $1$, thus increasing the reflectivity via increase of the IOR above the reference value. Equation [modulated_ior] below gives the formula for the applied IOR modulation.
 
 - The **`specular_color`** parameter modulates the Fresnel factor of $f_\mathrm{dielectric}$, but only for the initial reflection of light incident from above, while the light transmitted from above or below (or reflected from below) is assumed to be unaffected [^specular_color]. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight without disturbing other aspects of the light transport (i.e. the reflection due to scattering from the internal medium, or the reflection from below, or the transmission from above or below).
 
@@ -523,6 +523,9 @@ This Fresnel factor (of the initial reflection from above) is then modulated by 
 \eta^\prime_s = \frac{1 + \epsilon} {1 - \epsilon} \quad \mathrm{with} \quad \epsilon = \mathrm{sgn}(\eta_s-1)\sqrt{\xi_s F_s}  \ .
 \end{equation}
 Applying this modulated IOR ratio $\eta^\prime_s$ in the angle-dependent dielectric Fresnel formula $F(\mu, \eta^\prime_s)$ then produces the desired reflectivity modulation at any incident angle cosine $\mu$. The Fresnel transmission factor and refraction into and out of the base dielectric should also be consistent with the IOR ratio $\eta^\prime_s$.
+
+For convenience, we also allow $\xi_s = \mathtt{specular\_weight}$ to exceed 1 so that the reflectivity is increased above the level set by **`specular_ior`**. Note though there is a constraint $\xi_s \le 1/F_s$ since the scaled reflection coefficient cannot exceed $1$. So there needs to be an internal clamp to ensure $\xi_s \in [0, 1/F_s]$.
+
 
 Specular params           | Label      | Type     | Range           | Norm       | Default       | Description
 --------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
