@@ -9,7 +9,7 @@
            doc="Multiplier on the intensity of the reflection from the diffuse and metallic base." />
     <input name="base_color" type="color3" value="0.8, 0.8, 0.8" uimin="0,0,0" uimax="1,1,1" uiname="Base Color" uifolder="Base"
            doc="Color of the reflection from the diffuse and metallic base." />
-    <input name="base_roughness" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Base Roughness" uifolder="Base" uiadvanced="true"
+    <input name="base_diffuse_roughness" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Base Diffuse Roughness" uifolder="Base" uiadvanced="true"
            doc="Roughness of the diffuse reflection. Higher values cause the surface to appear flatter." />
     <input name="base_metalness" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Base Metalness" uifolder="Base"
            doc="Specifies how metallic the base material appears (dials the base from pure dielectric to pure metal)." />
@@ -180,7 +180,7 @@
     <oren_nayar_diffuse_bsdf name="subsurface_thin_walled_reflection_bsdf" type="BSDF">
       <input name="weight" type="float" value="1.0" />
       <input name="color" type="color3" nodename="subsurface_color_nonnegative" />
-      <input name="roughness" type="float" interfacename="base_roughness" />
+      <input name="roughness" type="float" interfacename="base_diffuse_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
     </oren_nayar_diffuse_bsdf>
     <subtract name="one_minus_subsurface_anisotropy" type="float">
@@ -242,7 +242,7 @@
     <oren_nayar_diffuse_bsdf name="diffuse_bsdf" type="BSDF">
       <input name="weight" type="float" interfacename="base_weight" />
       <input name="color" type="color3" nodename="base_color_nonnegative" />
-      <input name="roughness" type="float" interfacename="base_roughness" />
+      <input name="roughness" type="float" interfacename="base_diffuse_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
     </oren_nayar_diffuse_bsdf>
     <convert name="subsurface_selector" type="float">
