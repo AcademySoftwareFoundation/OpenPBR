@@ -42,13 +42,13 @@
     <input name="subsurface_weight" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Subsurface" uifolder="Subsurface Weight" uiadvanced="true"
            doc="Mixture weight which dials the opaque dielectric base between diffuse reflection and subsurface scattering. A value of 1.0 indicates full subsurface scattering and a value 0 for diffuse reflection only." />
     <input name="subsurface_color" type="color3" value="0.8, 0.8, 0.8" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Color" uifolder="Subsurface" uiadvanced="true"
-           doc="The overall reflected color of the subsurface scattering effect." />
+           doc="The observed reflection color of the subsurface scattering medium." />
     <input name="subsurface_radius" type="float" value="1.0" uimin="0.0" uisoftmax="1.0" uiname="Subsurface Radius" uifolder="Subsurface" uiadvanced="true"
-           doc="Length scale of the subsurface diffusion blur profile on the surface." />
+           doc="Length scale of the subsurface scattering mean free path." />
     <input name="subsurface_radius_scale" type="color3" value="1.0, 0.5, 0.25" uimin="0,0,0" uimax="1,1,1" uiname="Subsurface Radius Scale" uifolder="Subsurface" uiadvanced="true"
-           doc="RGB multiplier to subsurface_radius, giving the per-channel diffusion blur profile size." />
+           doc="RGB multiplier to subsurface_radius, giving the per-channel scattering mean-free-paths." />
     <input name="subsurface_anisotropy" type="float" value="0.0" uimin="-1.0" uimax="1.0" uiname="Subsurface Anisotropy" uifolder="Subsurface" uiadvanced="true"
-           doc="Controls the phase-function of subsurface scattering, where zero scatters light evenly, positive values scatter forward, and negative values scatter backward." />
+           doc="Controls the phase-function of subsurface scattering, where zero scatters light evenly, positive values scatter forwards, and negative values scatter backwards." />
     <input name="fuzz_weight" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Fuzz Weight" uifolder="Fuzz" uiadvanced="true"
            doc="The presence weight of a fuzz layer that can be used to approximate microfibers, for fabrics such as velvet and satin as well as dust grains." />
     <input name="fuzz_color" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Fuzz Color" uifolder="Fuzz" uiadvanced="true"
