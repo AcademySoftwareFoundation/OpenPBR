@@ -622,7 +622,7 @@ As in the cases of the [glossy-diffuse](index.html#model/dielectricbase/glossy-d
 
 We now define in detail how these subsurface parameters collectively determine the underlying volumetric parameters (per-channel _extinction_ $\boldsymbol{\mu}_t$ and _single-scattering albedo_ $\boldsymbol{\alpha}$, and scalar phase function anisotropy $g$).
 
-The extinction coefficient is simply given by the reciprocal of the MFP per channel: $\boldsymbol{\mu}_t = 1/\mathbf{r}$. (Note, this may need to be regularized in the limit $\mathbf{r} \rightarrow 0$ to avoid numerical issues).
+The extinction coefficient is simply given by the reciprocal of the MFP per channel: $\boldsymbol{\mu}_t = 1/\mathbf{r}$ (this may need to be regularized in the limit $\mathbf{r} \rightarrow 0$ to avoid numerical issues). Note that since the extinction $\boldsymbol{\mu}_t$ is independent of the anisotropy $g$, the anisotropy has the familiar physical effect of allowing light to transmit more deeply into the medium when positive than when negative.
 
 To define the meaning of the observed **`subsurface_color`** $\mathbf{C}$ in terms of the underlying medium, the reflection from the medium needs to be separated from the Fresnel reflection at the dielectric interface. To make this precise, we denote by $\mathbf{E}_\mathrm{subsurface}$ the directional reflectance along the the normal direction (according to the definition of equation [directional-reflectance-definition]).
 This can be broken into two components:
