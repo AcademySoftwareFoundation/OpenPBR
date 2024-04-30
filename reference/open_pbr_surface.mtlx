@@ -387,7 +387,7 @@
       <input name="weight" type="float" value="1.0" />
       <input name="tint" type="color3" nodename="if_transmission_tint" />
       <input name="ior" type="float" nodename="modulated_eta_s" />
-      <input name="roughness" type="vector2" nodename="transmission_roughness" />
+      <input name="roughness" type="vector2" nodename="main_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" nodename="main_tangent" />
       <input name="distribution" type="string" value="ggx" />
