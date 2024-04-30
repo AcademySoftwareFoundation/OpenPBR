@@ -648,7 +648,7 @@ Inversion of this gives the per-channel single-scatter albedo $\boldsymbol{\alph
 This gives one approximate $\boldsymbol{\alpha}(\mathbf{C})$ mapping, but as noted it ignores the presence of the dielectric boundary. Other approximate forms which take into account the dielectric interface are presented in various sources (e.g. [#d'Eon2021], [#Burley2018]).
 We also note that the relevant approximation may depend on the specific assumptions made about the subsurface interface, for example in some cases renderers may approximate the boundary BSDF via a diffuse lobe, for efficiency and improved convergence. In that case, it would be more appropriate to use an $\boldsymbol{\alpha}(\mathbf{C})$ designed for this specific interface BSDF, in order to satisfy equation [subsurface_albedo_constraint].
 
-The phase function anisotropy $g$ of the medium is taken to be given directly by the **`subsurface_anisotropy`** parameter [^anisotropy_g]. It is assumed that the phase function has the standard Henyey--Greenstein form.
+The phase function anisotropy $g$ of the medium is taken to be given directly by the **`subsurface_scatter_anisotropy`** parameter [^anisotropy_g]. It is assumed that the phase function has the standard Henyey--Greenstein form.
 
 Once the underlying volumetric medium properties $\boldsymbol{\mu}_t$, $\boldsymbol{\alpha}$ and $g$ are determined, implementations are free to choose how to compute the light transport in the subsurface medium according to their use case, for example accurately via volumetric path tracing ([#Novak2018], [#Pharr2023]), or approximately via a  bidirectional scattering surface reflectance distribution (BSSRDF) model using e.g. the dipole approximation [#Jensen2001].```
 
