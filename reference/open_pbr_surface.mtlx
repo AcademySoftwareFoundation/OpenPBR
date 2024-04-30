@@ -112,19 +112,6 @@
       <input name="roughness" type="float" nodename="coat_affected_roughness" />
       <input name="anisotropy" type="float" interfacename="specular_anisotropy" />
     </open_pbr_anisotropy>
-    <!-- Calculate transmission roughness -->
-    <clamp name="transmission_roughness_clamped" type="float">
-      <input name="in" type="float" interfacename="specular_roughness" />
-    </clamp>
-    <mix name="coat_affected_transmission_roughness" type="float">
-      <input name="fg" type="float" value="1.0" />
-      <input name="bg" type="float" nodename="transmission_roughness_clamped" />
-      <input name="mix" type="float" nodename="coat_affect_roughness_multiply2" />
-    </mix>
-    <open_pbr_anisotropy name="transmission_roughness" type="vector2">
-      <input name="roughness" type="float" nodename="coat_affected_transmission_roughness" />
-      <input name="anisotropy" type="float" interfacename="specular_anisotropy" />
-    </open_pbr_anisotropy>
 
     <!-- Tangent rotation -->
     <multiply name="tangent_rotate_degree" type="float">
@@ -400,7 +387,7 @@
       <input name="weight" type="float" value="1.0" />
       <input name="tint" type="color3" nodename="if_transmission_tint" />
       <input name="ior" type="float" nodename="modulated_eta_s" />
-      <input name="roughness" type="vector2" nodename="transmission_roughness" />
+      <input name="roughness" type="vector2" nodename="main_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" nodename="main_tangent" />
       <input name="distribution" type="string" value="ggx" />
