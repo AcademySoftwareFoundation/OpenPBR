@@ -801,7 +801,7 @@ _Iridescence_ is the occurrence of rainbow-like color fringes in the reflection 
 
 ![Figure [ior_configs]: Schematic of all 8 possible IOR configurations, including those involving the thin-film.](images/ior_configs.svg width="95%" align="center")
 
-In principle the implementation should model all these configurations correctly, though modeling of the precise effect is implementation-dependent. In practice, this wave-optics effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers. (For this reason, this effect is not represented by incorporating an explicit thin-film Slab into the model).
+In principle the implementation should deal with all these physical configurations correctly, though modeling of the precise effect is implementation-dependent. In practice, this wave-optics effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers. (For this reason, this effect is not represented by incorporating an explicit thin-film Slab into the model).
 
 Note that in the case of the dielectric base, the thin-film should also generate color fringes in the transmission lobe. This is important for example when rendering soap bubbles (see [#Belcour2017]).
 
