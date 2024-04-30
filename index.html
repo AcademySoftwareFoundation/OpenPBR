@@ -545,7 +545,7 @@ To better approximate the actual Fresnel curve of metals, in the F82-tint model 
 \begin{equation}
 \mathbf{F}_{82}(\mu) = \mathbf{F}_{\mathrm{Schlick}}(\mu) - \frac{\mu (1 - \mu)^6}{\bar{\mu}(1 - \bar{\mu})^6} \Bigl(\mathbf{F}_{\mathrm{Schlick}}(\bar{\mu}) - \mathbf{F}(\bar{\mu})\Bigr)
 \end{equation}
-where $\bar{\mu} = 1/7$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at that "grazing edge" angle cosine corresponding roughly to $82^\circ$ (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve control via **`specular_color`**, i.e.
+where $\bar{\mu} = 1/7$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at that "grazing edge" angle cosine corresponding roughly to $82^\circ$ (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, controlled via **`specular_color`**, i.e.
 \begin{equation}
 \mathbf{F}(\bar{\mu}) = \mathtt{specular\_color} * \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
 \end{equation}
