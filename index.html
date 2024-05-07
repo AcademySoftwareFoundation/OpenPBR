@@ -566,15 +566,15 @@ The opaque substrate slab has a diffuse BRDF lobe:
 \begin{eqnarray}
 S_\textrm{diffuse}    = \mathrm{Slab}(f_\mathrm{diffuse})
 \end{eqnarray}
-where $f_\mathrm{diffuse}$ is based on the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a V-cavity based microfacet model in which the microfacets are assumed to be individually Lambertian. The roughness of the diffuse surface models the physically realistic "flattening" effect observed in real rough materials (Figure [rough_diffuse]).
+where $f_\mathrm{diffuse}$ is based on the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a V-cavity based microfacet model in which the microfacets are assumed to be individually Lambertian. The Oren-Nayar model is parametrized by roughness $\sigma$ and an overall RGB scale factor $\boldsymbol{\rho}$. The roughness models the "flattening" effect (Figure [rough_diffuse]), which is observed in real rough diffuse materials [#Oren1994].
 
 ![](images/diffuse_smooth.png width=98% align=center) ![](images/diffuse_rough.png width=98% align=center)
 <div class="shifted-caption">
     ![Figure [rough_diffuse]: Zero roughness ($\sigma=0$, left) and maximum roughness ($\sigma=1$, right) diffuse materials with $\textbf{EON}$ BRDF.](dummy)
 </div>
 
-The Oren-Nayar model is parametrized by roughness $\sigma$ and an overall RGB scale factor $\boldsymbol{\rho}$. Unfortunately, the original model suffers from artifacts and also does not conserve energy (i.e. is too dark). We thus opt to define the diffuse BRDF to be a popular improved version of Oren-Nayar introduced by [#Fujii2012], augmented with a simple analytical energy compensation term:
-\begin{eqnarray}
+Unfortunately, the original model suffers from artifacts and also does not conserve energy (i.e. is too dark). We thus opt to define the diffuse BRDF to be a popular improved version of Oren-Nayar introduced by [#Fujii2012], augmented with a simple analytical, reciprocal energy compensation term:
+\begin{eqnarray} \label{EON_brdf}
 f_\mathrm{diffuse}(\omega_i, \omega_o) = f_\mathrm{ON}(\omega_i, \omega_o) + f^\mathrm{comp}_\mathrm{ON}(\omega_i, \omega_o)
 \end{eqnarray}
 This form of the Oren-Nayar model is termed "energy-preserving Oren-Nayar" or $\textbf{EON}$.
@@ -595,7 +595,7 @@ where the factor $\boldsymbol{\rho}_\mathrm{ms}$ accounts approximately for mult
 \boldsymbol{\rho}_\mathrm{ms} = \frac{\boldsymbol{\rho}^2}{\pi}
 \frac{\langle\hat{E}_\mathrm{ON}\rangle / (1 - \langle \hat{E}_\mathrm{ON}\rangle)}{1 - \boldsymbol{\rho} \bigl(1 - \langle \hat{E}_\mathrm{ON}\rangle\bigr)} \ .
 \end{equation}
-One can verify that as $\boldsymbol{\rho} \rightarrow 1$, the directional albedo $E_\mathrm{diffuse}(\omega) \rightarrow 1$, thus the compensation term ensures that the white furnace test passes. Note that in the the zero roughness ($\sigma \rightarrow 0$) limit, the energy compensation term vanishes, and the parameter $\boldsymbol{\rho}$ is equal to the albedo of $f_\mathrm{diffuse}$. As roughness increases, the albedo of $f_\mathrm{diffuse}$ becomes slightly more dark and saturated than $\boldsymbol{\rho}$ due to the multiple scattering, which is physically realistic.
+One can verify that as $\boldsymbol{\rho} \rightarrow 1$, the total directional albedo of the BRDF of Equation [EON_brdf], $E_\mathrm{diffuse}(\omega) \rightarrow 1$, thus the compensation term ensures that the white furnace test passes. Note that in the the zero roughness ($\sigma \rightarrow 0$) limit, the energy compensation term vanishes, and the parameter $\boldsymbol{\rho}$ is equal to the albedo of $f_\mathrm{diffuse}$. As roughness increases, the albedo of $f_\mathrm{diffuse}$ becomes slightly more dark and saturated than $\boldsymbol{\rho}$ due to the multiple scattering, which is physically realistic.
 
 Physically there will be additional darkening and saturation of the observed color due to multiple inter-reflections (scattering) within the gloss layer, as described in the coat darkening section. However in this case, we wish to automatically compensate for this effect by adjusting the $\boldsymbol{\rho}$ parameter of $f_\mathrm{diffuse}$ in order to make the observed color match the input color $\mathbf{C} =$ **`base_weight`** * **`base_color`** (in a similar spirit to the albedo remapping described in the Subsurface section).
 To define the meaning of the specified color in terms of the underlying base albedo, we write the normal-direction reflectance of the glossy-diffuse slab, $\mathbf{E}_\textrm{glossy-diffuse}$ in the general form
