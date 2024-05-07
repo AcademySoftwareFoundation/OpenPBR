@@ -575,7 +575,7 @@ where $f_\mathrm{diffuse}$ is based on the classic Oren-Nayar model ([#Oren1994]
 
 Unfortunately, the original model suffers from artifacts and also does not conserve energy (i.e. is too dark). We thus opt to define the diffuse BRDF to be a popular improved version of Oren-Nayar introduced by [#Fujii2012], augmented with a simple analytical, reciprocal energy compensation term:
 \begin{eqnarray} \label{EON_brdf}
-f_\mathrm{diffuse}(\omega_i, \omega_o) = f_\mathrm{ON}(\omega_i, \omega_o) + f^\mathrm{comp}_\mathrm{ON}(\omega_i, \omega_o)
+f_\mathrm{diffuse}(\omega_i, \omega_o) = f_\mathrm{ON}(\omega_i, \omega_o) + f^\mathrm{comp}_\mathrm{ON}(\omega_i, \omega_o) \ .
 \end{eqnarray}
 This form of the Oren-Nayar model is termed "energy-preserving Oren-Nayar" or $\textbf{EON}$.
 The Oren-Nayar term $f_\mathrm{ON}$ is given by the [#Fujii2012] form [^Oren_Nayar_formula]
