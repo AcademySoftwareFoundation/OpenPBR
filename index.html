@@ -566,7 +566,14 @@ The opaque substrate slab has a diffuse BRDF lobe:
 \begin{eqnarray}
 S_\textrm{diffuse}    = \mathrm{Slab}(f_\mathrm{diffuse})
 \end{eqnarray}
-where $f_\mathrm{diffuse}$ is based on the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a V-cavity based microfacet model in which the microfacets are assumed to be individually Lambertian. The Oren-Nayar model is parametrized by roughness $\sigma$ and an overall RGB scale factor $\boldsymbol{\rho}$. Unfortunately, the original model suffers from artifacts and also does not conserve energy (i.e. is too dark). We thus opt to define the diffuse BRDF to be a popular improved version of Oren-Nayar introduced by [#Fujii2012], augmented with a simple analytical energy compensation term:
+where $f_\mathrm{diffuse}$ is based on the classic Oren-Nayar model ([#Oren1994], [#Pharr2023]), which is a V-cavity based microfacet model in which the microfacets are assumed to be individually Lambertian. The roughness of the diffuse surface models the physically realistic "flattening" effect observed in real rough materials (Figure [rough_diffuse]).
+
+![](images/diffuse_smooth.png width=98% align=center) ![](images/diffuse_rough.png width=98% align=center)
+<div class="shifted-caption">
+    ![Figure [rough_diffuse]: Zero roughness ($\sigma=0$, left) and maximum roughness ($\sigma=1$, right) diffuse materials with $\textbf{EON}$ BRDF.](dummy)
+</div>
+
+The Oren-Nayar model is parametrized by roughness $\sigma$ and an overall RGB scale factor $\boldsymbol{\rho}$. Unfortunately, the original model suffers from artifacts and also does not conserve energy (i.e. is too dark). We thus opt to define the diffuse BRDF to be a popular improved version of Oren-Nayar introduced by [#Fujii2012], augmented with a simple analytical energy compensation term:
 \begin{eqnarray}
 f_\mathrm{diffuse}(\omega_i, \omega_o) = f_\mathrm{ON}(\omega_i, \omega_o) + f^\mathrm{comp}_\mathrm{ON}(\omega_i, \omega_o)
 \end{eqnarray}
