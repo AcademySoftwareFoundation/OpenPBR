@@ -382,10 +382,10 @@ where $h = (\omega_i+\omega_o)/|\omega_i+\omega_o|$ is the half-vector, i.e. the
 
 The _Fresnel factor_ $F(\omega_i, h)$ is determined by the complex index of refraction (IOR) of the reflecting material of each microfacet (or more technically, the ratio of this to the exterior IOR), and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section.
 
-The _masking-shadowing function_ $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF equation [GGX] the masking-shadowing function then has a well-known form [#Heitz2014b].
+The _masking-shadowing function_ $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF equation [GGX] the masking-shadowing function then has a well-known form [#Heitz2014].
 
 The _Normal Distribution Function_ (NDF) $D(m)$ describes the relative probability of occurrence of micronormal $m$ on the surface, and thus the roughness characteristics.
-A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution (this name derives from "ground glass", but the formula was originally due to Trowbridge and Reitz [#Walter2007], [#Burley2012], [#Heitz2014b], [#Pharr2023]), which has the basic [^normalization] form:
+A popular form of NDF which well-approximates the roughness of real materials is the so-called GGX distribution (this name derives from "ground glass", but the formula was originally due to Trowbridge and Reitz [#Walter2007], [#Burley2012], [#Heitz2014], [#Pharr2023]), which has the basic [^normalization] form:
 \begin{equation} \label{GGX}
 D_\mathrm{GGX}(m) \propto \left( 1 + \frac{\tan^2\theta_m}{\alpha^2} \right)^{-2}
 \end{equation}
@@ -446,27 +446,6 @@ where $\mathtt{M} = \mathtt{base\_metalness}$, which controls the fraction of mi
 * +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+                 *
 ********************************************************************************************************************
 
-
-Rainbow-like iridescence effects occur due to interference when a thin refractive film with thickness on the order of the light wavelength is placed on top of a material. To model this, there is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by its thickness and the film IOR.
-In practice, these effects are most easily incorporated directly into the microfacet BSDFs of both the metal and dielectric-base layers. The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017].
-
-!!! Note: Future work
-   It is currently not physically clear enough how the IOR of the surrounding media affects the thin-film interference, and how the thin-film affects the Fresnel of the adjacent slabs. Moreover, the behavior of the current parametrization is arguably unintuitive, as the effect of the thickness is not obvious. It may be useful to have a more artist-friendly dial of the "iridescence".
-
-
-Thin-film params          | Label     | Type     | Range           | Norm          | Default | Description
---------------------------|-----------|----------|:---------------:|:-------------:|:-------:|----------------------------------------------
-**`thin_film_thickness`** | Thickness | `float`  | $ [0, \infty) $ | $ [0, 2000] $ | $ 0   $ | Thickness of the film in nanometers
-**`thin_film_ior`**       | IOR       | `float`  | $ (0, \infty) $ | $ [1, 3]    $ | $ 1.5 $ | Refractive index of the film
-
-![](images/thin_film_0nm.png width=99%) ![](images/thin_film_300nm.png width=99%) ![](images/thin_film_600nm.png width=99%)
-<div class="shifted-caption">
-   ![Figure [thinfilm]: **`thin_film_thickness`** varying over 0, 500, 1000 nanometers](dummy)
-</div>
-
-
-Dielectric base
--------------------------------------
 
 The dielectric base is assumed to have a surface BSDF described by a rough GGX dielectric [microfacet model](index.html#model/microfacetmodel) [#Walter2007], and a bulk volumetric medium supporting absorption and scattering (whether physically due to the inherent molecular properties of the dielectric as in water, or e.g. a dispersion of embedded particles or flakes as in paint).
 
@@ -538,6 +517,59 @@ Specular params           | Label      | Type     | Range           | Norm      
 ![](images/spec_ior1.png width=95%) ![](images/spec_ior2.png width=95%) ![](images/spec_ior3.png width=95%)
 <div class="shifted-caption">
    ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.3, 1.5 (default)](dummy)
+</div>
+
+
+###  Metal
+
+Metals are completely opaque and have a characteristic and familiar form of specularity due to the Fresnel factor for conductors differing from that for dielectrics.
+The metallic base is thus represented as a separate bulk slab which consists of an opaque GGX microfacet conductor BRDF $f_\mathrm{conductor}$, whose NDF is parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`** (overloading the same parameters used for the dielectric BSDF $f_\mathrm{dielectric}$, as noted in the [Microfacet model](index.html#model/microfacetmodel) section):
+\begin{equation}
+S_\mathrm{metal} = \mathrm{Slab}(f_\mathrm{conductor}) \ .
+\end{equation}
+
+The conductor Fresnel reflection curve is parametrized by the colors at normal and near-grazing incidence (**`base_color`** and **`specular_color`** respectively, scaled by the corresponding weights). This allows for art-directable variation in reflectivity toward the grazing edges by directly specifying the (texturable) colors at normal and grazing incidence to simulate the dip in reflectivity observed in real metals, or just for artistic effect [#Hoffman2019]. Note that these two color parameters are also used for the non-metallic (i.e. dielectric) specular and diffuse BRDFs, as discussed above.
+
+As noted previously, this non-transmissive metallic base is blended as a statistical mixture with the dielectric-base according to the **`base_metalness`** parameter:
+\begin{eqnarray}
+M_\textrm{base-substrate} &=& \mathrm{\mathbf{mix}}(M_\textrm{dielectric-base}, S_\mathrm{metal}, \mathtt{M})   \ .
+\end{eqnarray}
+where $\mathtt{M}$ = **`base_metalness`**.
+
+The specific model we stipulate for the metallic Fresnel factor $\mathbf{F}_{\mathrm{metal}}(\mu)$ is the "F82-tint" model of [#Kutz2021], which extends previous work by [#Hoffman2019].
+This is based on the standard Schlick approximation to the metallic Fresnel factor (where $\mathbf{F}_0$ is the RGB reflectivity at normal incidence i.e. **`base_weight`** * **`base_color`**, and $\mu$ is the cosine of the incident angle):
+\begin{equation}
+\mathbf{F}_{\mathrm{Schlick}}(\mu) = \mathbf{F}_0 + (1 - \mathbf{F}_0) (1 - \mu)^5 \ .
+\end{equation}
+To better approximate the actual Fresnel curve of metals, in the F82-tint model the Schlick approximation is augmented with a correction term:
+\begin{equation}
+\mathbf{F}_{82}(\mu) = \mathbf{F}_{\mathrm{Schlick}}(\mu) - \frac{\mu (1 - \mu)^6}{\bar{\mu}(1 - \bar{\mu})^6} \Bigl(\mathbf{F}_{\mathrm{Schlick}}(\bar{\mu}) - \mathbf{F}(\bar{\mu})\Bigr)
+\end{equation}
+where $\bar{\mu} = 1/7$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at that "grazing edge" angle cosine corresponding roughly to $82^\circ$ (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, controlled via **`specular_color`**, i.e.
+\begin{equation}
+\mathbf{F}(\bar{\mu}) = \mathtt{specular\_color} * \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
+\end{equation}
+The final metallic Fresnel term we employ is then given by an overall multiplication by **`specular_weight`**, ensuring that entire metallic lobe is suppressed as the weight goes to zero:
+\begin{equation}
+\mathbf{F}_{\mathrm{metal}}(\mu) = \mathtt{specular\_weight} * \mathbf{F}_{82}(\mu) \ .
+\end{equation}
+This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`specular_color`**.
+Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
+
+Metal params              | Label      | Type     | Range           | Default             | Description
+--------------------------|------------|----------|:---------------:|:-------------------:|----------------------------------------------
+**`base_weight`**         | Weight     | `float`  | $ [0, 1]      $ | $ 1               $ | Scalar multiplier to **`base_color`**
+**`base_color`**          | Color      | `color3` | $ [0, 1]^3    $ | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
+**`specular_weight`**     | Weight     | `float`  | $ [0, 1]      $ | $ 1               $ | Overall multiplier of the metallic Fresnel
+**`specular_color`**      | Color      | `color3` | $ [0, 1]^3    $ | $ (1, 1, 1)       $ | Tint color of metallic Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_roughness`**  | Roughness  | `float`  | $ [0, 1]      $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
+**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ | $ 0               $ | Orientation of roughness anisotropy
+
+
+![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
+<div class="shifted-caption">
+![Figure [metal]: Metals produced (in **`base_metalness`=1** mode) by setting only the **`base_color`** parameter (left) compared with metals produced by correctly setting both the **`base_color`** and **`specular_color`** parameters (right)](dummy)
 </div>
 
 
@@ -754,58 +786,38 @@ Translucent base params                   | Label            | Type     | Range 
 **`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [0, \infty) $ | $ [9, 91] $ | $ 20        $ | Physical Abbe number of the base dielectric medium
 
 
-Metal
+Thin-film iridescence
 -------------------------------------
 
-Metals are completely opaque and have a characteristic and familiar form of specularity due to the Fresnel factor for conductors differing from that for dielectrics.
-The metallic base is thus represented as a separate bulk slab which consists of an opaque GGX microfacet conductor BRDF $f_\mathrm{conductor}$, whose NDF is parametrized by **`specular_roughness`**, **`specular_anisotropy`**, and **`specular_rotation`** (overloading the same parameters used for the dielectric BSDF $f_\mathrm{dielectric}$, as noted in the [Microfacet model](index.html#model/microfacetmodel) section):
-\begin{equation}
-S_\mathrm{metal} = \mathrm{Slab}(f_\mathrm{conductor}) \ .
-\end{equation}
+_Iridescence_ is the occurrence of rainbow-like color fringes in the reflection when a thin dielectric film with thickness on the order of the wavelength of light is placed on top of a material, due to wave interference between the various electromagnetic reflection modes within the film. To model this, there is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by:
 
-The conductor Fresnel reflection curve is parametrized by the colors at normal and near-grazing incidence (**`base_color`** and **`specular_color`** respectively, scaled by the corresponding weights). This allows for art-directable variation in reflectivity toward the grazing edges by directly specifying the (texturable) colors at normal and grazing incidence to simulate the dip in reflectivity observed in real metals, or just for artistic effect [#Hoffman2019]. Note that these two color parameters are also used for the non-metallic (i.e. dielectric) specular and diffuse BRDFs, as discussed above.
+   - **`thin_film_weight`**: the coverage (presence) weight of the film,
+   - **`thin_film_thickness`**: the thickness of the film in micrometers ($\mathrm{\mu m}$), mostly affecting the spacing of the fringes,
+   - **`thin_film_ior`**: the index of refraction (IOR) of the film, mostly affecting the hue of the fringes
 
-As noted previously, this non-transmissive metallic base is blended as a statistical mixture with the dielectric-base according to the **`base_metalness`** parameter:
-\begin{eqnarray}
-M_\textrm{base-substrate} &=& \mathrm{\mathbf{mix}}(M_\textrm{dielectric-base}, S_\mathrm{metal}, \mathtt{M})   \ .
-\end{eqnarray}
-where $\mathtt{M}$ = **`base_metalness`**.
+ The coverage weight functions as a blend between the BSDF with and without the presence of the film, and thus allows one to dial the effect without altering the shape and saturation of the color fringes.
 
-The specific model we stipulate for the metallic Fresnel factor $\mathbf{F}_{\mathrm{metal}}(\mu)$ is the "F82-tint" model of [#Kutz2021], which extends previous work by [#Hoffman2019].
-This is based on the standard Schlick approximation to the metallic Fresnel factor (where $\mathbf{F}_0$ is the RGB reflectivity at normal incidence i.e. **`base_weight`** * **`base_color`**, and $\mu$ is the cosine of the incident angle):
-\begin{equation}
-\mathbf{F}_{\mathrm{Schlick}}(\mu) = \mathbf{F}_0 + (1 - \mathbf{F}_0) (1 - \mu)^5 \ .
-\end{equation}
-To better approximate the actual Fresnel curve of metals, in the F82-tint model the Schlick approximation is augmented with a correction term:
-\begin{equation}
-\mathbf{F}_{82}(\mu) = \mathbf{F}_{\mathrm{Schlick}}(\mu) - \frac{\mu (1 - \mu)^6}{\bar{\mu}(1 - \bar{\mu})^6} \Bigl(\mathbf{F}_{\mathrm{Schlick}}(\bar{\mu}) - \mathbf{F}(\bar{\mu})\Bigr)
-\end{equation}
-where $\bar{\mu} = 1/7$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at that "grazing edge" angle cosine corresponding roughly to $82^\circ$ (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve control via **`specular_color`**, i.e.
-\begin{equation}
-\mathbf{F}(\bar{\mu}) = \mathtt{specular\_color} * \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
-\end{equation}
-The final metallic Fresnel term we employ is then given by an overall multiplication by **`specular_weight`**, ensuring that entire metallic lobe is suppressed as the weight goes to zero:
-\begin{equation}
-\mathbf{F}_{\mathrm{metal}}(\mu) = \mathtt{specular\_weight} * \mathbf{F}_{82}(\mu) \ .
-\end{equation}
-This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`specular_color`**.
-Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
+ The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017]. The shape and color of the fringe patterns in the reflection from the film will be affected (as described by Belcour and Barla) by the complex IOR of the adjacent media above and below the film, which in general are a statistical mix of metal and dielectric below and coat and ambient medium above (which the fuzz is index-matched to). Figure [ior_configs] illustrates the eight possible different structures depending on the presence of both the film and coat, each of which leads to different Fresnel effects due to the differing IORs at the interfaces.
 
+![Figure [ior_configs]: Schematic of all 8 possible IOR configurations, including those involving the thin-film.](images/ior_configs.svg width="95%" align="center")
 
-Metal params              | Label      | Type     | Range           | Default             | Description
---------------------------|------------|----------|:---------------:|:-------------------:|----------------------------------------------
-**`base_weight`**         | Weight     | `float`  | $ [0, 1]      $ | $ 1               $ | Scalar multiplier to **`base_color`**
-**`base_color`**          | Color      | `color3` | $ [0, 1]^3    $ | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
-**`specular_weight`**     | Weight     | `float`  | $ [0, 1]      $ | $ 1               $ | Overall multiplier of the metallic Fresnel
-**`specular_color`**      | Color      | `color3` | $ [0, 1]^3    $ | $ (1, 1, 1)       $ | Tint color of metallic Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
-**`specular_roughness`**  | Roughness  | `float`  | $ [0, 1]      $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
-**`specular_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
-**`specular_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ | $ 0               $ | Orientation of roughness anisotropy
+In principle the implementation should deal with all these physical configurations correctly, though modeling of the precise effect is implementation-dependent. In practice, this wave-optics effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers. (For this reason, this effect is not represented by incorporating an explicit thin-film Slab into the model).
 
+Note that in the case of the dielectric base, the thin-film should also generate color fringes in the transmission lobe. This is important for example when rendering soap bubbles (see [#Belcour2017]).
 
-![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
+In the case of the metallic base the physics is somewhat ambiguous since, as described in the Metal section, the Fresnel factor for metal is defined according to the Schlick-based "F82-tint" parametrization which does not specify the underlying physical complex IOR. We suggest here that some reasonable approximation is employed to map the Fresnel factor to the best matching effective complex IOR, for example that described by [#Gulbrandsen2014].
+
+</br>
+
+Thin-film params          | Label     | Type     | Range           | Norm          | Default  | Description
+--------------------------|-----------|----------|:---------------:|:-------------:|:--------:|----------------------------------------------
+**`thin_film_weight`**    | Weight    | `float`  | $ [0, 1]      $ |               | $ 0    $ | Coverage weight of the thin film
+**`thin_film_thickness`** | Thickness | `float`  | $ [0, \infty) $ | $ [0, 1]    $ | $ 0.5  $ | Thickness of the film in micrometers ($\mathrm{\mu m}$)
+**`thin_film_ior`**       | IOR       | `float`  | $ (0, \infty) $ | $ [1, 3]    $ | $ 1.5  $ | Refractive index of the film
+
+![](images/thin_film_0nm.png width=99%) ![](images/thin_film_300nm.png width=99%) ![](images/thin_film_600nm.png width=99%)
 <div class="shifted-caption">
-![Figure [metal]: Metals produced (in **`base_metalness`=1** mode) by setting only the **`base_color`** parameter (left) compared with metals produced by correctly setting both the **`base_color`** and **`specular_color`** parameters (right)](dummy)
+   ![Figure [thinfilm]: **`thin_film_thickness`** varying over 0, 0.5, 1.0 micrometers](dummy)
 </div>
 
 
@@ -1315,7 +1327,7 @@ References
 
 [#Gritz2010]: Larry Gritz, Clifford Stein, Chris Kulla, and Alejandro Conty. *Open Shading Language*, ACM SIGGRAPH Talks (2010).
 
-[#Heitz2014b]: Eric Heitz. *Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs*, Journal of Computer Graphics Techniques (2014).
+[#Heitz2014]: Eric Heitz. *Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs*, Journal of Computer Graphics Techniques (2014).
 
 [#Heitz2015]: Eric Heitz, Jonathan Dupuy, Cyril Crassin, Carsten Dachsbacher. *The SGGX microflake distribution*, ACM Transactions on Graphics (2015).
 
