@@ -543,7 +543,7 @@ Specular params           | Label      | Type     | Range           | Norm      
 
 ### Glossy-diffuse
 
-The glossy-diffuse slab represents the base dielectric (parametrized as described in the Dielectric base section), embedding a semi-infinite bulk of extremely dense scattering material. The BRDF of the slab is the combination of a "glossy" specular lobe provided by immediate reflection from the dielectric interface, and a diffuse lobe provided by scattering off the embedded substrate. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete.
+The glossy-diffuse slab represents the base dielectric (parametrized as described in the Dielectric base section), embedding a semi-infinite bulk of extremely dense scattering material. The BRDF of the slab is the combination of a "glossy" specular lobe provided by immediate reflection from the dielectric interface, and a diffuse lobe provided by scattering off the embedded medium. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete.
 
 We choose to model this concretely as a layer of dielectric "gloss" on top of an opaque slab with a diffuse BRDF:
 \begin{eqnarray}
