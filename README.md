@@ -16,9 +16,6 @@ OpenPBR is an open standard hosted by the [Academy Software Foundation](https://
 * **[Specification](https://academysoftwarefoundation.github.io/OpenPBR/)**
 * **[Reference implementation](reference/open_pbr_surface.mtlx)** – written in [MaterialX](https://materialx.org/)
 
-### Discussion
-* **[GitHub issues](https://github.com/AcademySoftwareFoundation/OpenPBR/issues)**
-
 <br/>
 
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-Apache%202.0-informational.svg)](LICENSE)
