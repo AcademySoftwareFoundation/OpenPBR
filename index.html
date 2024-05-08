@@ -411,11 +411,6 @@ This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve th
 ![Figure [ndf_anisotropy]: NDF shapes as a function of roughness $r$ and anisotropy $a$.](images/anisotropy.png width=60%)
 
 
-!!! Note: Future work
-   The exact conversion from roughness $r$ and anisotropy $a$ parameters to NDF roughness parameters $\alpha_t$ and $\alpha_b$ is not settled yet, and the formulation described needs validation from artists.
-   Other possible parametrizations are worth considering, but our tests indicate that finding a parametrization that offers superior expressivity while remaining predictable requires more investigation.
-
-
 To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{dielectric}$ and metal-base BRDF $f_\mathrm{conductor}$ share the same parameters, while the coat BSDF $f_\mathrm{coat}$ uses an independent set:
 
 - **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$. These roughnesses are limited to the range $[0,1]$, since $r=1$ corresponds to a perceptually very rough surface.
@@ -716,9 +711,6 @@ Once the underlying volumetric medium properties $\boldsymbol{\mu}_t$, $\boldsym
 
 Note that the default value of **`subsurface_radius_scale`** is set at $(1, 0.5, 0.25)$ to approximate the effect of Rayleigh scattering. If we roughly approximate the wavelength corresponding to each of the RGB channels as $\lambda/\mathrm{nm} \approx 650, 550, 450$ and assume the radii scale like the reciprocal of the extinction, then since in Rayleigh scattering the extinction scales like $\lambda^{-4}$ for light of wavelength $\lambda$ the expected relative magnitudes of the radii are $(1,  (550/650)^4, (450/650)^4) \approx (1, 0.5, 0.25)$, hence the chosen default. This provides a slightly more realistic default look for the subsurface than resulting from gray radii.
 
-!!! Note: Future work
-   Since the scattered ray may emerge from a different point on the surface than the input point, the material will in general differ there. Thus on transmitting back out, it will encounter different layer properties. In principle this should be taken into account, but how to model subsurface scattering in the presence of varying subsurface properties is an open question.
-
 
 Subsurface params             | Label        | Type      | Range           | Norm       | Default              | Description
 ------------------------------|--------------|-----------|:---------------:|:----------:|:--------------------:|----------------------------------------------
@@ -897,11 +889,6 @@ Coat params           | Label      | Type     | Range           |  Norm      | D
 **`coat_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0         $ | Orientation of roughness anisotropy
 **`coat_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
 
-<!-- Markdeep:
-**`coat_affect_color`**     | Affect Color     | `float`  | $ [0, 1]   $ | $ 1         $ | How much to prevent the coat from affecting the brightness and saturation of layers below
-**`coat_affect_roughness`** | Affect Roughness | `float`  | $ [0, 1]   $ | $ 1         $ | How much to prevent the coat from affecting the roughness of layers below
-**`coat_affect_ior`**       | Affect IOR       | `float`  | $ [0, 1]   $ | $ 1         $ | How much to prevent the coat from affecting the relative IOR of layers below
- -->
 
 ![](images/coat_0.png width=90% align=right) ![](images/coat_1.png width=90% align=left)
 <div class="shifted-caption">
@@ -992,11 +979,6 @@ The intensity of the EDF is controlled by a luminance and a color multiplier. Th
 Moreover, the overall material luminance may be further reduced in the presence of coat or fuzz, as they can absorb light coming from the emissive layer before it exits the surface. The emission from the top surface should in principle gain a directional dependence due to the combined effects of absorption, total internal reflection (TIR) and multiple bounces in the coat layer, and absorption in the fuzz layer. The combined effect should result mostly in darkening and saturation at grazing angles.
 
 Being an intensity, **`emission_luminance`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1000]$, corresponding to the typical range of home appliances.
-
-!!! Note: Future work
-   There is an ongoing discussion in the [MaterialX](https://github.com/AcademySoftwareFoundation/MaterialX) and [USD](https://github.com/PixarAnimationStudios/OpenUSD) working groups regarding the description of lights and emissive objects. This part of the specification may be subject to change if it doesn't align with those standards. Moreover, a richer emission model such as the one described in the [MaterialX specification](https://materialx.org/Specification.html) could be considered in a future version of OpenPBR, but would require a more detailed description of the EDF.
-
-   In addition, the transmittance of the EDF through the coat and fuzz is currently underspecified.
 
 
 Emission params          | Label     | Type     | Range           | Norm          | Default       | Description
@@ -1118,14 +1100,6 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
 <div class="shifted-caption">
       ![Figure [thinwalled]: Opaque paper plane (left) vs diffuse transmission enabled via subsurface in thin-walled mode (right)](dummy)
 </div>
-
-
-!!! Note: Future work
-   It is an open question as to what the best default interpretation of the thin-walled structure is, and what other structures we might need to specify to cover the common use cases.
-
-!!! Note: Future work
-   The thin-walled limit of the subsurface slab has been introduced as a convenient, slightly more physically based model than the diffuse-transmission of the Autodesk Standard Surface. It does not really correspond to the thin-walled limit of a volumetric medium (bounded by dielectrics) though. The thin-walled limit of the translucent slab described above is closer to that, though it explicitly ignores scattering. It might be worth attempting to unify these two representations into a single thin-wall dielectric volume model.
-
 
 
 Reduction to a mixture of lobes
@@ -1273,20 +1247,6 @@ MaterialX reference implementation
 ----------------------------------
 
 We provide a [reference implementation](reference/open_pbr_surface.mtlx) in MaterialX, which is based on the derivation in the previous section and the implementation of Autodesk Standard Surface [#Georgiev2019].
-
-!!! Note: Future work
-         Our MaterialX implementation is as faithful to the OpenPBR specification as existing shading languages (e.g. OSL, MDL) support.
-         Thus it is still missing certain features, i.e.:
-            - the microfacet NDF anisotropy formula of the [Microfacet model](index.html#model/microfacetmodel) section
-            - the F82-tint conductor Fresnel model of the Metal section
-            - the remapping logic described in the Subsurface section
-            - the volumetric medium of the Translucent base section
-            - the dispersion scaling logic of the Translucent base section
-            - the thin-walled glass model of the Thin-walled case section
-            - the specific fuzz model (of [#Zeltner2022]) specified in the Fuzz section
-            - correct normal map blending for the Fuzz model
-         Additional improvements to achieve this functionality will require in some cases industry-wide adoption of these features, not merely new MaterialX features.
-
 
 
 <!--
