@@ -36,6 +36,7 @@
     <input name="coat_anisotropy" type="float" value="0.0" />
     <input name="coat_rotation" type="float" value="0.0" />
     <input name="coat_ior" type="float" value="1.6" />
+    <input name="thin_film_weight" type="float" value="0.0" />
     <input name="thin_film_thickness" type="float" value="0" />
     <input name="thin_film_ior" type="float" value="1.5" />
     <input name="emission_luminance" type="float" value="0.0" />
