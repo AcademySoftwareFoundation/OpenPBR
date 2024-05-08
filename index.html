@@ -853,7 +853,7 @@ Coat params           | Label      | Type     | Range           |  Norm      | D
 **`coat_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
 **`coat_rotation`**   | Rotation   | `float`  | $ [0, 1]      $ |            | $ 0         $ | Orientation of roughness anisotropy
 **`coat_ior`**        | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
-**`coat_darkening`**  | Darkening  | `float`  | $ [0, 1]      $ |            | $ 1.0       $ | Modulates the physical coat [darkening](index.html#model/coat/darkening) effect.
+**`coat_darkening`**  | Darkening  | `float`  | $ [0, 1]      $ |            | $ 0         $ | Modulates the physical coat [darkening](index.html#model/coat/darkening) effect.
 
 
 ![](images/coat_0.png width=90% align=right) ![](images/coat_1.png width=90% align=left)
@@ -869,13 +869,13 @@ Figure [coat_darkening_grid] shows the physically-correct change in appearance (
 
 ![Figure [coat_darkening_grid]: Diffuse base with a clear-coat, for coats of different coat IOR $\eta_c$](images/coat_darkening_grid.png width="60%")
 
-However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$, which defaults to 1, meaning the physically correct darkening effect due to internal reflections occurs as normal. In the case **`coat_darkening`** $\delta$ = $0$, the base albedo is instead _boosted_ (uniformly) by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
+However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$. In the case **`coat_darkening`** $\delta$ = $1$, the physically correct darkening effect due to internal reflections occurs as normal. In the case **`coat_darkening`** $\delta$ = $0$ (the default), the base albedo is instead _boosted_ uniformly by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
 
-What we mean by "counteract the darkening" is defined as the albedo of the coated base viewed at normal incidence, $E_c$, being equal to the "undarkened" albedo
+What we mean by "counteract the darkening" is defined as the albedo of the coated base viewed at normal incidence, $E_c$, being equal to the "un-darkened" albedo
 \begin{equation} \label{undarkened_coat_albedo}
 E_c = F_0 + E_b (1 - F_0) = \mathrm{lerp}(F_0, 1, E_b)
 \end{equation}
-where $E_b$ is the base albedo at normal incidence, which is a straightforward interpretation of the requirement for the observed color of the coated base to match the uncoated base, taking into account the presence of the Fresnel effect of the coat. Due to the physical effect of the darkening due to the internal reflections, the base BSDF would generally need to be boosted by some compensating uniform "boost" factor $B_0$ in order for the coated base to achieve this undarkened albedo. The effect of $\delta$ = **`coat_darkening`** is then defined to be the following modulation of the applied boost factor:
+where $E_b$ is the base albedo at normal incidence, which is a straightforward interpretation of the requirement for the observed color of the coated base to match the uncoated base, taking into account the presence of the Fresnel effect of the coat. Due to the physical effect of the darkening due to the internal reflections, the base BSDF would generally need to be boosted by some compensating uniform "boost" factor $B_0$ in order for the coated base to achieve this un-darkened albedo. The effect of $\delta$ = **`coat_darkening`** is then defined to be the following modulation of the applied boost factor:
 \begin{equation} \label{boost_factor}
 B(\delta) = \mathrm{lerp}(B_0, 1, \delta) \ .
 \end{equation}
@@ -926,7 +926,7 @@ with $\Delta$ evaluated via equation [general_darkening_formula] with internal d
 The base albedo $E_b$ which appears in equation [general_darkening_formula] represents the normal-incidence albedo of the entire base beneath the coat. This albedo can be approximated as the normal-incidence albedos of the individual slabs of the base, blended according to their mix weights.
 
 
-### View-dependent absorption color
+### View-dependent absorption
 
 In the case of an absorbing coat, there is also enhanced darkening and saturation at grazing angles due to increased path-length within the coat medium. The effect of this can be modeled via a factor in the coat BRDF of
 \begin{equation}
@@ -941,11 +941,6 @@ and similarly for $\mu^t_o$. Note that at normal incidence, this factor reduces 
 ![Figure [coat_view_dependent_absorption_color]: The color of an absorbing coat becomes darker and more saturated at grazing angles.](images/coat_view_dependent_absorption_color.png width="75%")
 
 
-
-### Roughening
-
-!!! Note: Effect of coat on roughness of base
-   There is an ongoing discussion about how to recommend this be implemented.
 
 Fuzz
 -------------------------------------
