@@ -836,10 +836,7 @@ The presence of a rough coat will increase the apparent roughness of the microfa
 \begin{equation}
 r'_\mathrm{B} = \mathrm{min} \bigl(1, r^4_\mathrm{B} + 2 r^4_\mathrm{C} \bigr)^\frac{1}{4}
 \end{equation}
-with $r_\mathrm{C}=$ **`coat_roughness`** and $r_\mathrm{B}=$ **`specular_roughness`**. A reasonable approximation to this which requires no clamp and thus avoids the slope discontinuity in the roughness is
-\begin{equation}
-r'_\mathrm{B} = \bigl( r^4_\mathrm{B} + r^4_\mathrm{C} - r^4_\mathrm{B} r^4_\mathrm{C} \bigr)^\frac{1}{4} \ .
-\end{equation}
+with $r_\mathrm{C}=$ **`coat_roughness`** and $r_\mathrm{B}=$ **`specular_roughness`**.
 
 The IOR of the coat medium $V_\mathrm{coat}$, controlled by the **`coat_ior`** parameter, will alter the Fresnel factor of both the coat top interface and the underlying metal or dielectric. The **`coat_ior_level`** parameter in $[0, 1]$ modulates the coat top interface Fresnel reflectivity (at normal incidence) to zero at the minimum and double the original reflectivity at the maximum. This works similarly to the formula for **`specular_ior_level`** in equation [modulated_ior]. In detail, the coat Fresnel reflection factor at normal incidence is given by
 \begin{equation}
