@@ -907,7 +907,7 @@ We thus recommend in the general case that the darkening factor of equation [gen
 \begin{equation} \label{internal_diffuse_reflection_coefficient_for_general_base}
 K = \mathrm{lerp}(K_s, K_r, r_b)
 \end{equation}
-where $r_b$ is an estimate of the base roughness, a blend between dielectric $r_d$ and metal $r_m$ roughness estimates according to the **`base_metalness`** $\mathtt{M}$:
+where $r_b$ is an estimate of the effective base roughness, a blend between dielectric $r_d$ and metal $r_m$ roughness estimates according to the **`base_metalness`** $\mathtt{M}$:
 \begin{equation} \label{base_roughness_estimate}
 r_b = \mathrm{lerp}(r_d, r_m, \mathtt{M}) \ .
 \end{equation}
