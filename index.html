@@ -862,11 +862,13 @@ In the full light transport, the observed color of the coated base is darkened a
 
 ### Roughening
 
-The presence of a rough coat will increase the apparent roughness of the microfacet BSDF lobe of the underlying base substrate (metal or dielectric), which should be accounted for. A formula we recommend for this is obtained by identifying the NDF of each microfacet lobe as corresponding approximately to a Gaussian in slope-space with variance given by $\alpha_t^2 + \alpha_b^2 = r^4$ (in the notation of the [Microfacet model](index.html#model/microfacetmodel) section). Modeling the effect of the roughening as the convolution of these Gaussian NDFs (and double counting the coat variance since the reflection passes through the coat boundary twice), the resulting modified roughness of the base, $r'_\mathrm{B}$, is given approximately by
+If the coat is rough, the microfacet BSDF lobes of the underlying base substrate (metal and dielectric) are also effectively roughened. If this is not otherwise accounted for by the light transport, it can instead be reasonably approximated by directly altering the NDF of the base BSDFs.
+
+A formula we recommend for this is obtained by identifying the NDF of each microfacet lobe as corresponding approximately to a Gaussian in slope-space with variance given by $\alpha_t^2 + \alpha_b^2 = r^4$ (in the notation of the [Microfacet model](index.html#model/microfacetmodel) section). Modeling the effect of the roughening as the convolution of these Gaussian NDFs (and double counting the coat variance since the reflection passes through the coat boundary twice), the resulting modified roughness of the base, $r'_\mathrm{B}$, (taking into account the presence weight of the coat, $\mathtt{C}=$ **`coat_weight`**) is given by
 \begin{equation}
 r'_\mathrm{B} = \mathrm{lerp}\Bigl( r_\mathrm{B}, \mathrm{min} \bigl(1, r^4_\mathrm{B} + 2 r^4_\mathrm{C} \bigr)^\frac{1}{4}, \mathtt{C} \Bigr)
 \end{equation}
-where $r_\mathrm{C}=$ **`coat_roughness`**, $r_\mathrm{B}=$ **`specular_roughness`** and $\mathtt{C}=$ **`coat_weight`**.
+where $r_\mathrm{B}=$ **`specular_roughness`** and $r_\mathrm{C}=$ **`coat_roughness`**.
 
 ### Darkening
 
