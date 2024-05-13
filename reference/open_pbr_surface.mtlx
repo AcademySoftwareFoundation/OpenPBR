@@ -121,7 +121,7 @@
       <input name="in2" type="float" value="0.25" />
     </power>
     <mix name="effective_specular_roughness" type="float">
-      <input name="fg" type="float" interfacename="coat_affected_specular_roughness" />
+      <input name="fg" type="float" nodename="coat_affected_specular_roughness" />
       <input name="bg" type="float" nodename="specular_roughness" />
       <input name="mix" type="float" interfacename="coat_weight" />
     </mix>
