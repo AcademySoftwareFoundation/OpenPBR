@@ -405,6 +405,7 @@
       <input name="in2" type="float" interfacename="specular_weight" />
     </multiply>
     <generalized_schlick_bsdf name="metal_bsdf" type="BSDF">
+      <input name="weight" type="float" interfacename="specular_weight" />
       <input name="color0" type="color3" nodename="metal_reflectivity" />
       <input name="color82" type="color3" nodename="metal_edgecolor" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
@@ -412,6 +413,7 @@
       <input name="tangent" type="vector3" interfacename="geometry_tangent" />
     </generalized_schlick_bsdf>
     <generalized_schlick_bsdf name="metal_bsdf_tf" type="BSDF">
+      <input name="weight" type="float" interfacename="specular_weight" />
       <input name="color0" type="color3" nodename="metal_reflectivity" />
       <input name="color82" type="color3" nodename="metal_edgecolor" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
