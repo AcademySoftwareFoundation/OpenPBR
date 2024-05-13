@@ -486,14 +486,14 @@
       <input name="in1" type="color3" nodename="one_minus_Kcoat_color" />
       <input name="in2" type="color3" nodename="one_minus_Ebase_Kcoat" />
     </divide>
-    <multiply name="coat_weight_time_coat_darkening" type="float">
+    <multiply name="coat_weight_times_coat_darkening" type="float">
       <input name="in1" type="float" interfacename="coat_weight" />
       <input name="in2" type="float" interfacename="coat_darkening" />
     </multiply>
     <mix name="modulated_base_darkening" type="color3">
       <input name="fg" type="color3" nodename="base_darkening" />
       <input name="bg" type="color3" value="1.0, 1.0, 1.0" />
-      <input name="mix" type="float" nodename="coat_weight_time_coat_darkening" />
+      <input name="mix" type="float" nodename="coat_weight_times_coat_darkening" />
     </mix>
     <multiply name="darkened_base_substrate" type="BSDF">
       <input name="in1" type="BSDF" nodename="base_substrate" />
