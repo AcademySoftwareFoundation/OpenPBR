@@ -20,7 +20,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 
 
 | Identifier                            | Label               | Type      | Range             | Norm          | Default              | Unit             |
-|---------------------------------------|---------------------|-----------|:-----------------:|:-------------:|:--------------------:|-----------------------|
+|---------------------------------------|---------------------|-----------|:-----------------:|:-------------:|:--------------------:|------------------|
 | **Base**                                                                                                                                              |
 | `base_weight`                         | Weight              | `float`   | $ [0, 1]        $ |               | $ 1                $ |                  |
 | `base_color`                          | Color               | `color3`  | $ [0, 1]^3      $ |               | $ (0.8, 0.8, 0.8)  $ |                  |
@@ -30,8 +30,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `specular_weight`                     | Weight              | `float`   | $ [0, \infty)   $ | $ [0, 1]    $ | $ 1                $ |                  |
 | `specular_color`                      | Color               | `color3`  | $ [0, 1]^3      $ |               | $ (1, 1, 1)        $ |                  |
 | `specular_roughness`                  | Roughness           | `float`   | $ [0, 1]        $ |               | $ 0.3              $ |                  |
-| `specular_anisotropy`                 | Anisotropy          | `float`   | $ [0, 1]        $ |               | $ 0                $ |                  |
-| `specular_rotation`                   | Rotation            | `float`   | $ [0, 1]        $ |               | $ 0                $ |                  |
+| `specular_roughness_anisotropy`       | Anisotropy          | `float`   | $ [0, 1]        $ |               | $ 0                $ |                  |
 | `specular_ior`                        | IOR                 | `float`   | $ (0, \infty)   $ | $ [1, 3]    $ | $ 1.5              $ |                  |
 | **Transmission**                                                                                                                                      |
 | `transmission_weight`                 | Weight              | `float`   | $ [0, 1]        $ |               | $ 0                $ |                  |
@@ -46,13 +45,12 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `subsurface_color`                    | Color               | `color3`  | $ [0, 1]        $ |               | $ (0.8, 0.8, 0.8)  $ |                  |
 | `subsurface_radius`                   | Radius              | `float`   | $ [0, \infty)   $ | $ [0, 1]    $ | $ 1                $ | length           |
 | `subsurface_radius_scale`             | Radius scale        | `vector3` | $ [0, 1]^3      $ |               | $ (1.0, 0.5, 0.25) $ |                  |
-| `subsurface_anisotropy`               | Anisotropy          | `float`   | $ [-1, 1]       $ |               | $ 0                $ |                  |
+| `subsurface_scatter_anisotropy`       | Anisotropy          | `float`   | $ [-1, 1]       $ |               | $ 0                $ |                  |
 | **Coat**                                                                                                                                              |
 | `coat_weight`                         | Weight              | `float`   | $ [0, 1]        $ |               | $ 0                $ |                  |
 | `coat_color`                          | Color               | `color3`  | $ [0, 1]^3      $ |               | $ (1, 1, 1)        $ |                  |
 | `coat_roughness`                      | Roughness           | `float`   | $ [0, 1]        $ |               | $ 0                $ |                  |
-| `coat_anisotropy`                     | Anisotropy          | `float`   | $ [0, 1]        $ |               | $ 0                $ |                  |
-| `coat_rotation`                       | Rotation            | `float`   | $ [0, 1]        $ |               | $ 0                $ |                  |
+| `coat_roughness_anisotropy`           | Anisotropy          | `float`   | $ [0, 1]        $ |               | $ 0                $ |                  |
 | `coat_ior`                            | IOR                 | `float`   | $ (0, \infty)   $ | $ [1, 3]    $ | $ 1.6              $ |                  |
 | `coat_darkening`                      | Darkening           | `float`   | $ [0, 1]        $ |               | $ 0.0              $ |                  |
 | **Fuzz**                                                                                                                                              |
@@ -72,6 +70,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `geometry_normal`                     | Normal              | `vector3` | N/A               |               | unperturbed normal   |                  |
 | `geometry_tangent`                    | Tangent             | `vector3` | N/A               |               | unperturbed tangent  |                  |
 | `geometry_coat_normal`                | Coat Normal         | `vector3` | N/A               |               | unperturbed normal   |                  |
+| `geometry_coat_tangent`               | Coat Tangent        | `vector3` | N/A               |               | unperturbed tangent  |                  |
 
 <!-- Markdeep: -->
 <style class="fallback">
