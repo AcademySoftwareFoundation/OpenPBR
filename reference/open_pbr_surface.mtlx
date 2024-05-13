@@ -366,7 +366,6 @@
       <input name="mix" type="float" interfacename="transmission_weight" />
     </mix>
     <dielectric_bsdf name="dielectric_reflection" type="BSDF">
-      <input name="weight" type="float" interfacename="specular_weight" />
       <input name="tint" type="color3" interfacename="specular_color" />
       <input name="ior" type="float" nodename="modulated_eta_s" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
@@ -375,7 +374,6 @@
       <input name="scatter_mode" type="string" value="R" />
     </dielectric_bsdf>
     <dielectric_bsdf name="dielectric_reflection_tf" type="BSDF">
-      <input name="weight" type="float" interfacename="specular_weight" />
       <input name="tint" type="color3" interfacename="specular_color" />
       <input name="ior" type="float" nodename="modulated_eta_s" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
