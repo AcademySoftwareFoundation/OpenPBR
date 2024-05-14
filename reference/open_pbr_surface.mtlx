@@ -95,23 +95,40 @@
   -->
   <nodegraph name="NG_open_pbr_surface_surfaceshader" nodedef="ND_open_pbr_surface_surfaceshader">
 
-    <!-- Roughness influence by coat-->
-    <!-- Calculate main specular roughness -->
-    <multiply name="coat_affect_roughness_multiply1" type="float">
+    <!-- Roughening due to coat-->
+    <power name="coat_roughness_to_power_4" type="float">
+      <input name="in1" type="float" interfacename="coat_roughness" />
+      <input name="in2" type="float" value="4.0" />
+    </power>
+    <multiply name="two_times_coat_roughness_to_power_4" type="float">
+      <input name="in1" type="float" nodename="coat_roughness_to_power_4" />
+      <input name="in2" type="float" value="2.0" />
+    </multiply>
+    <power name="specular_roughness_to_power_4" type="float">
+      <input name="in1" type="float" interfacename="specular_roughness" />
+      <input name="in2" type="float" value="4.0" />
+    </power>
+    <add name="add_coat_and_spec_roughnesses_to_power_4" type="float">
+      <input name="in1" type="float" nodename="two_times_coat_roughness_to_power_4" />
+      <input name="in2" type="float" nodename="specular_roughness_to_power_4" />
+    </add>
+    <min name="min_1_add_coat_and_spec_roughnesses_to_power_4" type="float">
       <input name="in1" type="float" value="1.0" />
-      <input name="in2" type="float" interfacename="coat_weight" />
-    </multiply>
-    <multiply name="coat_affect_roughness_multiply2" type="float">
-      <input name="in1" type="float" nodename="coat_affect_roughness_multiply1" />
-      <input name="in2" type="float" interfacename="coat_roughness" />
-    </multiply>
-    <mix name="coat_affected_roughness" type="float">
-      <input name="fg" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="add_coat_and_spec_roughnesses_to_power_4" />
+    </min>
+    <power name="coat_affected_specular_roughness" type="float">
+      <input name="in1" type="float" nodename="min_1_add_coat_and_spec_roughnesses_to_power_4" />
+      <input name="in2" type="float" value="0.25" />
+    </power>
+    <mix name="effective_specular_roughness" type="float">
+      <input name="fg" type="float" nodename="coat_affected_specular_roughness" />
       <input name="bg" type="float" interfacename="specular_roughness" />
-      <input name="mix" type="float" nodename="coat_affect_roughness_multiply2" />
+      <input name="mix" type="float" interfacename="coat_weight" />
     </mix>
+
+    <!-- Calculate main specular roughness -->
     <open_pbr_anisotropy name="main_roughness" type="vector2">
-      <input name="roughness" type="float" nodename="coat_affected_roughness" />
+      <input name="roughness" type="float" nodename="effective_specular_roughness" />
       <input name="anisotropy" type="float" interfacename="specular_roughness_anisotropy" />
     </open_pbr_anisotropy>
 
