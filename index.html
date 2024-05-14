@@ -1334,7 +1334,7 @@ A more accurate implementation should in principle account for these effects.
 White furnace testing
 -------------------------------------
 
-The ground truth appearance should perfectly preserve energy in various configurations, in which case the material will satisfy a "white furnace test", i.e.  the object should disappear when illuminated by uniform background light, and rendered in the limit of a large number of bounces. We list here for convenience the configurations in which such a white furnace should pass, all of which would be useful to check as part of a unit testing framework:
+The ground truth appearance should perfectly preserve energy in various configurations, in which case the material will satisfy a _white furnace test_ where the object should "disappear" (i.e. merge into the background) when illuminated by uniform background light, and rendered in the limit of a large number of bounces. We list here for convenience the configurations in which such a white furnace test should pass, all of which would be useful to check as part of a unit testing framework:
 
    - A fully metallic base (**`base_metalness`**=1) with white **`base_color`** and white **`specular_color`**.
    - A fully dielectric base (**`base_metalness`**=0), with white **`specular_color`**, including:
@@ -1346,11 +1346,14 @@ The ground truth appearance should perfectly preserve energy in various configur
    - Any mix of the above.
    - All of the above, with a coat (**`coat_weight`** > 0) and white **`coat_color`**.
    - All of the above, with fuzz (**`fuzz_weight`** > 0) and white **`fuzz_color`**.
-   - Regardless of the presence of thin-film (via **`thin_film_weight`**) as the film is non-absorptive.
-   - Regardless of NDF roughness or anisotropy (**`specular_roughness`**, **`specular_roughness_anisotropy`**, and **`coat_roughness`**, **`coat_roughness_anisotropy`**).
-   - Regardless of volume anisotropy (**`subsurface_scatter_anisotropy`**, **`transmission_scatter_anisotropy`**).
-   - Regardless of the presence of bump/normal mapped base or coat (**`geometry_normal`**, **`geometry_coat_normal`**)
-   - Regardless of opacity (**`geometry_opacity`**).
+
+In all of the above cases, the white furnace test should also continue to pass regardless of:
+
+   - the presence of thin-film (via **`thin_film_weight`**) as the film is non-absorptive.
+   - NDF roughness or anisotropy (**`specular_roughness`**, **`specular_roughness_anisotropy`**, and **`coat_roughness`**, **`coat_roughness_anisotropy`**).
+   - volume anisotropy (**`subsurface_scatter_anisotropy`**, **`transmission_scatter_anisotropy`**).
+   - the presence of bump/normal mapped base or coat (**`geometry_normal`**, **`geometry_coat_normal`**)
+   - opacity (**`geometry_opacity`**).
 
 
 MaterialX reference implementation
