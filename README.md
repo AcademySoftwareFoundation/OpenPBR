@@ -9,7 +9,7 @@
 
 OpenPBR Surface is a specification of a surface shading model intended as a standard for computer graphics. It aims to provide a material representation capable of accurately modeling the vast majority of CG materials used in practical visual effects and feature animation productions.
 
-It is an open standard hosted by the [Academy Software Foundation](https://www.aswf.io/) (ASWF), and is organized as a subproject of [MaterialX](https://materialx.org/).
+OpenPBR Surface is an open standard hosted by the [Academy Software Foundation](https://www.aswf.io/) (ASWF), and is organized as a subproject of [MaterialX](https://materialx.org/).
 
 ### Specification
 
