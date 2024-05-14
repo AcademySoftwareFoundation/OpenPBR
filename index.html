@@ -886,7 +886,21 @@ Coat params                     | Label      | Type     | Range           |  Nor
     ![Figure [coat]: Coat adds a secondary specular highlight and optional absorption tint](dummy)
 </div>
 
-In the full light transport, the observed color of the coated base is darkened and saturated due to multiple internal reflections from the inside of the coat, which causes light to strike the underlying material multiple times and undergo more absorption, and the observed **`coat_color`** tint also darkens as the incidence angle changes due to the change in path length in the medium. Also, the presence of a rough coat will increase the apparent roughness of the BSDF lobes of the underlying base. We assume that in the ground truth appearance, all these physical effects are accounted for. In the following sub-sections, we detail recommendations for implementation of them.
+In the full light transport, the observed color of the coated base is darkened and saturated due to multiple internal reflections from the inside of the coat, which causes light to strike the underlying material multiple times and undergo more absorption, and the observed **`coat_color`** tint also darkens as the incidence angle changes due to the change in path length in the medium. Also, the presence of a rough coat will increase the apparent roughness of the BSDF lobes of the underlying base.
+
+We assume that in the ground truth appearance, all these physical effects are accounted for [^porosity]. In the following sub-sections, we detail recommendations for implementation of them.
+
+
+### Roughening
+
+If the coat is rough, the microfacet BSDF lobes of the underlying base substrate (metal and dielectric) are also effectively roughened. If this is not otherwise accounted for by the light transport, it can instead be reasonably approximated by directly altering the NDF of the base BSDFs.
+
+A formula we recommend for this is obtained by identifying the NDF of each microfacet lobe as corresponding approximately to a Gaussian in slope-space with variance given by $\alpha_t^2 + \alpha_b^2 = r^4$ (in the notation of the [Microfacet model](index.html#model/microfacetmodel) section). Modeling the effect of the roughening as the convolution of these Gaussian NDFs (and double counting the coat variance since the reflection passes through the coat boundary twice), the resulting modified roughness of the base, $r'_\mathrm{B}$, (taking into account the presence weight of the coat, $\mathtt{C}=$ **`coat_weight`**) is given by
+\begin{equation}
+r'_\mathrm{B} = \mathrm{lerp}\Bigl( r_\mathrm{B}, \mathrm{min} \bigl(1, r^4_\mathrm{B} + 2 r^4_\mathrm{C} \bigr)^\frac{1}{4}, \mathtt{C} \Bigr)
+\end{equation}
+where $r_\mathrm{B}=$ **`specular_roughness`** and $r_\mathrm{C}=$ **`coat_roughness`**.
+
 
 ### Roughening
 
@@ -900,9 +914,9 @@ where $r_\mathrm{B}=$ **`specular_roughness`** and $r_\mathrm{C}=$ **`coat_rough
 
 ### Darkening
 
-Figure [coat_darkening_grid] shows the physically-correct change in appearance (at normal incidence) of a textured diffuse base with a wood texture and smooth clear-coat as the IOR of the clear-coat is varied, exhibiting darkening due to the internal reflections which increases as IOR increases. [^porosity]
+Figure [coat_darkening_grid] shows the physically-correct change in appearance (at normal incidence) of a textured diffuse base with a wood texture and smooth clear-coat as the IOR of the clear-coat is varied, exhibiting darkening of the base -- due to the internal reflections in the coat -- which increases as IOR increases.
 
-![Figure [coat_darkening_grid]: Diffuse base with a clear-coat, for coats of different coat IOR $\eta_c$](images/coat_darkening_grid.png width="60%")
+![Figure [coat_darkening_grid]: Diffuse base with a clear-coat, for coats of different relative IOR $\eta_c$](images/coat_darkening_grid.png width="60%")
 
 However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$. In the case **`coat_darkening`** $\delta$ = $1$, the physically correct darkening effect due to internal reflections occurs as normal. In the case **`coat_darkening`** $\delta$ = $0$ (the default), the base albedo is instead _boosted_ uniformly by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
 

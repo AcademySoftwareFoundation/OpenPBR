@@ -39,7 +39,7 @@
     <input name="thin_film_ior" type="float" value="1.5" />
     <input name="emission_luminance" type="float" value="0.0" />
     <input name="emission_color" type="color3" value="1, 1, 1" />
-    <input name="geometry_opacity" type="color3" value="1, 1, 1" />
+    <input name="geometry_opacity" type="float" value="1" />
     <input name="geometry_thin_walled" type="boolean" value="false" />
   </open_pbr_surface>
 </materialx>
