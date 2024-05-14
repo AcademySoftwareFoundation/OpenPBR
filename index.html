@@ -866,11 +866,13 @@ M_\textrm{coated-base} = \mathrm{\mathbf{layer}}(M_\textrm{base-substrate}, S_\t
 
 The absorption of the medium $V_\mathrm{coat}$ is parametrized by **`coat_color`**, which is assumed to specify the _square_ of the transmittance $T_\mathrm{coat}$ of the coat at normal incidence (i.e. $T^2_\mathrm{coat}$ = **`coat_color`**). Thus at normal incidence, the observed tint color of the underlying base due to absorption in the coat is approximately given by **`coat_color`** due to the absorption along the incident and outgoing rays (note that the specular reflection from the coat itself is _not_ tinted).
 
-The IOR $n_\mathrm{coat} = \mathtt{coat\_ior}$ of the coat medium $V_\mathrm{coat}$ will alter the Fresnel factor of both the coat top interface and the underlying metal or dielectric. If there is a fractional $\mathtt{coat\_weight}$ $\mathtt{C}$, then the surrounding IOR of the base dielectric or metal varies statistically across the surface depending on whether the coat is locally present (and the fuzz layer can be assumed to have the ambient IOR $n_\mathrm{ambient}$). The ratio between the specular IOR $n_\mathrm{specular} = \mathtt{specular\_ior}$ and the surrounding medium can thus reasonably be approximated as
+The IOR $n_c = \mathtt{coat\_ior}$ of the coat medium $V_\mathrm{coat}$ will alter the Fresnel factor of both the coat top interface and the underlying metal or dielectric. If there is a fractional $\mathtt{coat\_weight}$ $\mathtt{C}$, then the surrounding IOR of the base dielectric or metal varies statistically across the surface depending on whether the coat is locally present (and the fuzz layer can be assumed to have the ambient IOR $n_a$). The ratio between the specular IOR $n_b = \mathtt{specular\_ior}$ and the surrounding medium can thus reasonably be approximated as
 \begin{equation} \label{specular_ior_ratio}
-\eta_s = \mathrm{lerp}(n_\mathrm{specular}/n_\mathrm{ambient},  n_\mathrm{specular}/n_\mathrm{coat}, \mathtt{C}) \ .
+\eta_s = \mathrm{lerp}(n_b/n_a, n_b/n_c, \mathtt{C}) \ .
 \end{equation}
 This ratio then determines the specular Fresnel factor, as in equation [modulated_ior].
+(Note that as discussed in the coat [TIR](index.html#model/coat/totalinternalreflection) section, evaluation of the specular Fresnel factor may need to be further modified to model the refraction of the ray inside the coat).
+
 
 Coat params                     | Label      | Type     | Range           |  Norm      | Default       | Description
 --------------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
@@ -879,7 +881,7 @@ Coat params                     | Label      | Type     | Range           |  Nor
 **`coat_roughness`**            | Roughness  | `float`  | $ [0, 1]      $ |            | $ 0         $ | Roughness of NDF of coat BSDF $f_\mathrm{coat}$
 **`coat_roughness_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of coat BSDF $f_\mathrm{coat}$
 **`coat_ior`**                  | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.6       $ | Refractive index of $V_\mathrm{coat}$
-**`coat_darkening`**            | Darkening  | `float`  | $ [0, 1]      $ |            | $ 0         $ | Modulates the physical coat [darkening](index.html#model/coat/darkening) effect.
+**`coat_darkening`**            | Darkening  | `float`  | $ [0, 1]      $ |            | $ 1         $ | Modulates the physical coat [darkening](index.html#model/coat/darkening) effect.
 
 ![](images/coat_0.png width=90% align=right) ![](images/coat_1.png width=90% align=left)
 <div class="shifted-caption">
@@ -902,14 +904,13 @@ r'_\mathrm{B} = \mathrm{lerp}\Bigl( r_\mathrm{B}, \mathrm{min} \bigl(1, r^4_\mat
 where $r_\mathrm{B}=$ **`specular_roughness`** and $r_\mathrm{C}=$ **`coat_roughness`**.
 
 
-
 ### Darkening
 
 Figure [coat_darkening_grid] shows the physically-correct change in appearance (at normal incidence) of a textured diffuse base with a wood texture and smooth clear-coat as the IOR of the clear-coat is varied, exhibiting darkening of the base -- due to the internal reflections in the coat -- which increases as IOR increases.
 
 ![Figure [coat_darkening_grid]: Diffuse base with a clear-coat, for coats of different relative IOR $\eta_c$](images/coat_darkening_grid.png width="60%")
 
-However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$. In the case **`coat_darkening`** $\delta$ = $1$, the physically correct darkening effect due to internal reflections occurs as normal. In the case **`coat_darkening`** $\delta$ = $0$ (the default), the base albedo is instead _boosted_ uniformly by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
+However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$. By default $\delta$ = $1$, in which case the physically correct darkening effect due to internal reflections occurs as normal. In the case $\delta$ = $0$ however, the base albedo is instead _boosted_ uniformly by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
 
 What we mean by "counteract the darkening" is defined as the albedo of the coated base viewed at normal incidence, $E_c$, being equal to the "un-darkened" albedo
 \begin{equation} \label{undarkened_coat_albedo}
@@ -980,6 +981,39 @@ and similarly for $\mu^t_o$. Note that at normal incidence, this factor reduces 
 
 ![Figure [coat_view_dependent_absorption_color]: The color of an absorbing coat becomes darker and more saturated at grazing angles.](images/coat_view_dependent_absorption_color.png width="75%")
 
+
+### Total internal reflection
+
+A technical issue which can cause difficulties in the implementation of the BRDF of the coated dielectric base should also be mentioned.
+See Figure [coat_base_schematic] for a schematic of a ray refracting from the ambient exterior medium (with IOR $n_a$) into the coat (with IOR $n_c$), and then into the base dielectric (with IOR $n_b$):
+
+![Figure [coat_base_schematic]: Ray configuration at coat-base boundary.](images/dielectric_tir_issue.svg width="85%")
+
+If the coat IOR $n_c$ exceeds the IOR of the base dielectric $n_b$, then rays incident to the base can in general undergo total internal reflection (TIR) at the base-coat boundary surface $S_\mathrm{bc}$ (with IOR ratio $\eta_\mathrm{bc} = n_b/n_c$). In this case the reflection from the base (the dashed line) is enhanced since no refraction into the base along the $\mu_b$ direction occurs.
+
+However if the surfaces are smooth and parallel, it is easy to show that _no such TIR is possible_ for a ray incident from the exterior due to the refraction of the ray at the upper coat-ambient boundary $S_\mathrm{ca}$ (with IOR ratio $\eta_\mathrm{ca} = n_c/n_a$). In the general case of rough boundaries, TIR can occur though it will be increasingly suppressed as the roughness decreases. Thus if the implementation of the dielectric base BSDF does not account for the refraction of the incident ray in the coat, spurious TIR will be generated, which produces an obviously incorrect appearance manifesting as a bright "ring" near grazing angles. In an implementation which reduces the model to a [mixture of independent lobes](index.html#model/reductiontoamixtureoflobes) sampled as a function of incident direction, it is non-obvious how to account for this.
+
+We suggest as a reasonable practical approximation (following [#Kutz2021]) to simply invert the IOR ratio at the coat-base boundary, i.e. replace $\eta_\mathrm{bc}$ as follows:
+\begin{equation} \label{specular_ior_ratio_with_tir_fix}
+\eta_\mathrm{bc} \rightarrow
+\begin{cases}
+   \eta_\mathrm{cb} = n_c/n_b & \quad\mathrm{if} \;\; n_c >   n_b \\
+   \eta_\mathrm{bc}           & \quad\mathrm{if} \;\; n_c \le n_b \ .
+\end{cases}
+\end{equation}
+This eliminates the TIR, while plausibly maintaining the specular reflection. Then to account for partial coat coverage, this modified $\eta_\mathrm{bc}$ is used in place of the $n_b/n_c$ term in equation [specular_ior_ratio].
+
+An alternative approach is to explicitly modify the refraction angle cosine of the incident direction to the base. Assuming for simplicity that in the local space of the base microfacet the overlying coat microfacet has matching micronormal, the angle cosine $\mu_c$ to the base micronormal is given by refraction of the incident angle cosine $\mu_i$ as follows:
+\begin{equation} \label{refracted_coat_dir}
+\mu_c^2 = 1 - (1 - \mu_i^2) / \eta^2_\mathrm{ca} \ .
+\end{equation}
+The resultant Fresnel factor can then be approximated as a blend of the Fresnel factors evaluated at the original and refracted incident directions, according to the presence weight of the coat:
+\begin{equation}
+\mathrm{lerp}(F(\mu_i, \eta_\mathrm{ba}), F(\mu_c, \eta_\mathrm{bc}), \mathtt{C}) \ ,
+\end{equation}
+where $\eta_\mathrm{ba} = n_b/n_a$, and this blended Fresnel factor then substituted into the microfacet BRDF (this replaces the Fresnel calculation of equation [specular_ior_ratio] which ignores the coat refraction). If $\eta_\mathrm{ca} < 0$ then TIR at $S_\mathrm{ca}$ may occur (i.e. $\mu_c^2 \le 0$ in equation [refracted_coat_dir]), in which case the Fresnel factor $F(\mu_c, \eta_\mathrm{bc})$ can be assumed to be zero.
+
+Both these schemes produce a plausible appearance that eliminates the spurious TIR. A more physically-correct approach would require something similar to the Weidlich-Wilkie layering model [#Weidlich2007], or the layered material model described in *Physically Based Rendering* [#Pharr2023], where the scattering through the layers is explicitly modeled via Monte Carlo simulation.
 
 
 Fuzz
@@ -1473,6 +1507,8 @@ References
 [#Veach1997]: Eric Veach. *Robust Monte Carlo Methods for Light Transport Simulation*, Ph.D. dissertation, Stanford University (1997).
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
+
+[#Weidlich2007]: Andrea Weidlich and Alexander Wilkie. *Arbitrarily Layered Micro-Facet Surfaces*, GRAPHITE '07 (2007).
 
 [#Zeltner2018]: Tizian Zeltner and Wenzel Jakob. *The Layer Laboratory: A Calculus for Additive and Subtractive Composition of Anisotropic Surface Reflectance*, ACM Transactions on Graphics (2018).
 
