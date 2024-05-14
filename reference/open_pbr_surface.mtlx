@@ -63,7 +63,7 @@
            doc="The directional bias of the roughness of the clear-coat layer, resulting in increasingly stretched highlights along the coat tangent direction." />
     <input name="coat_ior" type="float" value="1.6" uimin="0.0" uisoftmin="1.0" uisoftmax="3.0" uiname="Coat Index of Refraction" uifolder="Coat"
            doc="The index of refraction of the clear-coat layer." />
-    <input name="coat_darkening" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Coat Darkening" uifolder="Coat"
+    <input name="coat_darkening" type="float" value="1.0" uimin="0.0" uimax="1.0" uiname="Coat Darkening" uifolder="Coat"
            doc="Modulates the physical coat darkening effect." />
     <input name="thin_film_weight" type="float" value="0" uimin="0.0" uimax="1.0" uiname="Thin Film Weight" uifolder="Thin Film" uiadvanced="true"
            doc="Coverage weight of the thin-film. Use for materials such as multi-tone car paint or soap bubbles." />
