@@ -988,7 +988,7 @@ and similarly for $\mu^t_o$. Note that at normal incidence, this factor reduces 
 A technical issue which can cause difficulties in the implementation of the BRDF of the coated dielectric base should also be mentioned.
 See Figure [coat_base_schematic] for a schematic of a ray refracting from the ambient exterior medium (IOR $n_a$) into the coat (IOR $n_c$), and then into the base dielectric (IOR $n_b$), assuming smooth surfaces:
 
-![Figure [coat_base_schematic]: Ray configuration at coat-base boundary.](images/dielectric_tir_issue.svg width="100%")
+![Figure [coat_base_schematic]: Ray configuration at coat-base boundary.](images/dielectric_tir_issue.svg width="90%")
 
 If the coat IOR $n_c$ exceeds the IOR of the base dielectric $n_b$, then rays incident to the base can in general undergo total internal reflection (TIR) at the base-coat boundary surface $S_\mathrm{bc}$ (with IOR ratio $\eta_\mathrm{bc} = n_b/n_c$). However if the surfaces are smooth and parallel, it is easy to show that no such TIR is possible for a ray incident from the exterior due to the refraction of the ray at the upper coat-ambient boundary $S_\mathrm{ca}$ (with IOR ratio $\eta_\mathrm{ca} = n_c/n_a$). In the general case of rough boundaries, TIR can occur though it will be increasingly suppressed as the roughness decreases.
 
