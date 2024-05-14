@@ -31,7 +31,7 @@ body
     .md .longTOC, .md .mediumTOC, .md .shortTOC
     {
         display: block;
-        margin: 20px 0 20px 30px;
+        margin: -30px 0 20px 30px;
         padding: 0;
         padding-top: 13px;
         float: initial;
