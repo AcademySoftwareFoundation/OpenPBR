@@ -2,14 +2,18 @@
 <link rel="stylesheet" href="style/style.css">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-**OpenPBR Surface specification**
+**OpenPBR Surface**
 
-<center>Zap Andersson, Paul Edmondson, Julien Guertault, Adrien Herubel, Alan King, </center>
-<center>Peter Kutz, Andréa Machizaud, Jamie Portsmouth, Frédéric Servant.</center>
+<center>*Specification v0.4, 2024-05-14. &nbsp; &nbsp; <a href="https://github.com/AcademySoftwareFoundation/OpenPBR" title="Redirect to GitHub page"><img src="images/aswf-logo-black.svg" alt="homepage" height="18" style="vertical-align: middle; position: relative; bottom: 3px"/></a> *</center>
 
-<center>*Version 0.4, 2024-04-30. A joint work of Adobe and Autodesk*</center>
+<br>
+This document is a specification of a surface shading model intended as a standard for computer graphics: the OpenPBR Surface model. Designed as an über-shader, it aims to be capable of accurately modeling the vast majority of CG materials used in practical visual effects and feature animation productions. The model has been developed as a synthesis of the Autodesk Standard Surface and the Adobe Standard Material models.
 
-This document is a specification of a surface shading model: the OpenPBR Surface model. Designed as an über-surface, it aims to be capable of accurately modeling the vast majority of CG materials used in practical visual effects and feature animation productions. The model has been developed as a synthesis of the Autodesk Standard Surface and the Adobe Standard Material models.
+![](images/OpenPBR_title.jpg align=center width="100%" attrib="Artwork by Nikie Monteleone") ![](images/ShaderPlayground_OpenPBR_meetMAT.jpg align=center width="100%" attrib="Artwork by Nikie Monteleone")
+![](images/ShaderPlayground_OpenPBR_topDown.jpg align=center width="100%" attrib="Artwork by Nikie Monteleone") ![](images/ShaderPlayground_OpenPBR_scissorsMug.jpg align=center width="100%" attrib="Artwork by Nikie Monteleone")
+<div class="close-shifted-caption">
+    ![<sub>Shader Playground, rendered in Arnold for Maya, using OpenPBR Surface.</sub>](dummy)
+</div>
 
 
 Historical background and objectives
@@ -17,7 +21,7 @@ Historical background and objectives
 
 Interchange of computer graphics scene assets remains a significant problem, especially with regard to surface appearance. Different renderers and 3D engines use different shading systems, shading languages, and fixed-function pipelines which are not easily interoperable. Furthermore, accurately modeling surface appearance remains a complex and pertinent problem and is a topic of active scientific research. Despite this, there is a strong need _today_ for industries engaged in physically based rendering (both offline and real-time) to find a standardized material model that covers the most common use cases in typical workflows.
 
-Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX [#Smythe2016], Open Shading Language (OSL) [#Gritz2010], and Material Definition Language (MDL) [#Kettner2015], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users, who should not be expected to build complex surface shaders from the ground up for routine tasks. Instead it is much more convenient in practice for them to work with a standard über-shader parametrization, i.e. a single monolithic material definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials.
+Over the years, certain de facto standard appearance definition frameworks have emerged as different vendors have come to the consensus of separating the definition of materials from the light transport simulation in the scene. Such general frameworks include MaterialX [#Smythe2016], Open Shading Language (OSL) [#Gritz2010], and Material Definition Language (MDL) [#Kettner2015], which allow specifying the material as a combination of primitive surface reflectance models. These frameworks alone however are not sufficient for look development by end users, who should not be expected to build complex surface shaders from the ground up for routine tasks. Instead it is much more convenient in practice for them to work with a standard "über-shader" parametrization, i.e. a single monolithic material definition covering a wide range of cases, with a well-defined set of parameters that can be tweaked to represent most real-world (as well as imaginary) materials.
 
 There have been various previous proposals for such an über-shader, such as Disney's Principled Shader [#Burley2012], Allegorithmic's PBR shading model [#McDermott2018], and most recently the Autodesk Standard Surface shader [#Georgiev2019] and the Adobe Standard Material [#Kutz2021]. Autodesk Standard Surface has strong spiritual predecessors in Anders Langlands' alSurface [#Langlands2014] and Autodesk 3ds Max's Physical Material [#Andersson2016]. 3ds Max's Physical Material in turn was strongly inspired by Allegorithmic's model, Disney's Principled Shader, and general industry trends in several real-time 3D engines.
 
@@ -1407,7 +1411,20 @@ Parameter reference
 Acknowledgements
 ================================================================================
 
-The authors would like to thank
+The core authors are
+Zap Andersson,
+Paul Edmondson,
+Julien Guertault,
+Adrien Herubel,
+Alan King,
+Peter Kutz,
+Andréa Machizaud,
+Jamie Portsmouth,
+Frédéric Servant
+and
+Jonathan Stone.
+
+The authors would also like to thank
 François Beaune,
 Henrik Edstrom,
 Iliyan Georgiev,
@@ -1420,11 +1437,10 @@ Michael Nickelsky,
 Guido Quaroni,
 Nathan Reed,
 Anthony Salvi,
-Lukas Stockner,
-Jonathan Stone
+Lukas Stockner
 and
 Brecht van Lommel
-for their contribution.
+for their useful contributions.
 
 
 References
@@ -1455,6 +1471,8 @@ References
 [#Georgiev2019]: Iliyan Georgiev, Jamie Portsmouth, Zap Andersson, Adrien Herubel, Alan King, Shinji Ogaki, and Frederic Servant. *Autodesk Standard Surface*, Autodesk white paper (2019).
 
 [#Gritz2010]: Larry Gritz, Clifford Stein, Chris Kulla, and Alejandro Conty. *Open Shading Language*, ACM SIGGRAPH Talks (2010).
+
+[#Gulbrandsen2014]: Ole Gulbrandsen. *Artist Friendly Metallic Fresnel*, Journal of Computer Graphics Techniques (2014).
 
 [#Heitz2014]: Eric Heitz. *Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs*, Journal of Computer Graphics Techniques (2014).
 
