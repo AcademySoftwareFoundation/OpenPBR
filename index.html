@@ -1331,6 +1331,26 @@ An aspect that has been ignored in this approximation (in the non-thin-walled ca
 A more accurate implementation should in principle account for these effects.
 
 
+White furnace testing
+-------------------------------------
+
+The ground truth appearance should perfectly preserve energy in various configurations, in which case the material will satisfy a "white furnace test", i.e.  the object should disappear when illuminated by uniform background light, and rendered in the limit of a large number of bounces. We list here for convenience the configurations in which such a white furnace should pass, all of which would be useful to check as part of a unit testing framework:
+
+   - A fully metallic base (**`base_metalness`**=1) with white **`base_color`** and white **`specular_color`**.
+   - A fully dielectric base (**`base_metalness`**=0), with white **`specular_color`**=0, including:
+       - diffuse base with white **`base_color`**
+       - subsurface (**`subsurface_weight`**=1) with white **`subsurface_color`**
+       - translucent base (**`transmission_weight`**=1) with either:
+            - white **`transmission_color`** if **`transmission_depth`**=0, or
+            - white **`transmission_scatter`** if **`transmission_depth`** > 0
+   - Any mix of the above.
+   - All of the above, with a coat (**`coat_weight`** > 0) and white **`coat_color`**.
+   - All of the above, with fuzz (**`fuzz_weight`** > 0) and white **`fuzz_color`**.
+   - Regardless of the presence of thin-film (via **`thin_film_weight`**) as the film is non-absorptive.
+   - Regardless of NDF anisotropy (**`specular_roughness_anisotropy`**, **`coat_roughness_anisotropy`**).
+   - Regardless of volume anisotropy (**`subsurface_scatter_anisotropy`**, **`transmission_scatter_anisotropy`**).
+
+
 MaterialX reference implementation
 ----------------------------------
 
