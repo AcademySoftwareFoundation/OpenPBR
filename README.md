@@ -16,6 +16,7 @@ It is an open standard hosted by the [Academy Software Foundation](https://www.a
 * **[White paper](https://academysoftwarefoundation.github.io/OpenPBR/)**
 * **[Parameter reference](https://academysoftwarefoundation.github.io/OpenPBR/#parameterreference)**
 * **[Reference implementation](reference/open_pbr_surface.mtlx)** – written in [MaterialX](https://materialx.org/)
+* **[BibTeX citation](citation.bib)**
 
 <br/>
 
