@@ -871,7 +871,7 @@ The IOR $n_c = \mathtt{coat\_ior}$ of the coat medium $V_\mathrm{coat}$ will alt
 \eta_s = \mathrm{lerp}(n_b/n_a, n_b/n_c, \mathtt{C}) \ .
 \end{equation}
 This ratio then determines the specular Fresnel factor, as in equation [modulated_ior].
-(Note that as discussed in the [TIR](index.html#model/coat/totalinternalreflection) section, evaluation of the specular Fresnel factor may need to be further modified to model the refraction of the ray inside the coat).
+(Note that as discussed in the coat [TIR](index.html#model/coat/totalinternalreflection) section, evaluation of the specular Fresnel factor may need to be further modified to model the refraction of the ray inside the coat).
 
 
 Coat params                     | Label      | Type     | Range           |  Norm      | Default       | Description
@@ -986,7 +986,6 @@ and similarly for $\mu^t_o$. Note that at normal incidence, this factor reduces 
 ### Total internal reflection
 
 A technical issue which can cause difficulties in the implementation of the BRDF of the coated dielectric base should also be mentioned.
-
 See Figure [coat_base_schematic] for a schematic of a ray refracting from the ambient exterior medium (IOR $n_a$) into the coat (IOR $n_c$), and then into the base dielectric (IOR $n_b$), assuming smooth surfaces:
 
 ![Figure [coat_base_schematic]: Ray configuration at coat-base boundary.](images/dielectric_tir_issue.svg width="100%")
