@@ -333,6 +333,21 @@ hr.pagebreak
     display: none;
 }
 
+.close-shifted-caption
+{
+    margin-top: -15px;
+    text-align: center;
+}
+.close-shifted-caption .image
+{
+    float: initial !important;
+    margin: 0 !important;
+}
+.close-shifted-caption img
+{
+    display: none;
+}
+
 .markdeepFooter
 {
     opacity: 0.4;

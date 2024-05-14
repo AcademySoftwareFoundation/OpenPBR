@@ -1,7 +1,7 @@
 # OpenPBR Surface
 
 <p align="center">
-<img src="images/OpenPBR title.jpg" title="OpenPBR demonstration scene" />
+<img src="images/OpenPBR_title.jpg" title="OpenPBR demonstration scene" />
 <sub><i>Shader Playground, rendered in Arnold for Maya, using OpenPBR Surface. Artwork by Nikie Monteleone.</i></sub>
 </p>
 <br>
