@@ -1302,7 +1302,8 @@ The "specular" BTDF/BSSRDF $\color{darkblue}{f^T_\textrm{specular}}$ corresponds
 
 Note that in this albedo-scaling approximation, the transmission Fresnel factor associated with $\color{darkblue}{f^T_\textrm{specular}}$ and $f_\textrm{SSS}$ can be *omitted* as the energy conservation of the dielectric BSDF as a whole is maintained automatically, even without explicit multiple scattering compensation or in the presence of modifications to the reflection Fresnel factor via **`specular_color`**.
 
-Since $\color{darkblue}{f^R_\textrm{specular}}$ appears in each of the three components slab of the dielectric base, it follows that on collecting terms, $f_\textrm{dielectric-base}$ reduces to:
+Since $\color{darkblue}{f^R_\textrm{specular}}$ appears in each of the three component slabs of the dielectric base, it
+follows that on collecting terms, $f_\textrm{dielectric-base}$ reduces to:
 \begin{equation}
 f_\textrm{dielectric-base} = \color{darkblue}{f^R_\textrm{specular}}  + (1 - E[\color{darkblue}{f^R_\textrm{specular}}]) \,f^T_\mathrm{dielectric-base} \ ,
 \end{equation}
