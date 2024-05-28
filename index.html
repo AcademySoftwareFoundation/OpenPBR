@@ -1098,7 +1098,7 @@ We put emission below the coating so that emitted light will be tinted due to th
 * +-------------------------------------------------+ *
 *******************************************************
 
-The intensity of the EDF is controlled by a luminance and a color multiplier. The **`emission_luminance`** parameter controls the luminance the emissive layer would have when **`emission_color`** is set to (1, 1, 1) and in the absence of coat and fuzz. The **`emission_color`** acts as a multiplier, thus the resulting luminance may be less than the input parameter, or even zero if the color multiplier is set to (0, 0, 0).
+The intensity of the EDF is controlled by a luminance and a color multiplier. The **`emission_luminance`** parameter controls the luminance the emissive layer would have when **`emission_color`** is set to (1, 1, 1) and in the absence of coat and fuzz. The **`emission_color`** acts as a multiplier, i.e. the HDR emission in the model color space is defined to have a color given by **`emission_color`** * **`emission_luminance`**, thus the resulting luminance may be less than the input parameter, or even zero if the **`emission_color`** is set to (0, 0, 0).
 
 Moreover, the overall material luminance may be further reduced in the presence of coat or fuzz, as they can absorb light coming from the emissive layer before it exits the surface. The emission from the top surface should in principle gain a directional dependence due to the combined effects of absorption, total internal reflection (TIR) and multiple bounces in the coat layer, and absorption in the fuzz layer. The combined effect should result mostly in darkening and saturation at grazing angles.
 
