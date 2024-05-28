@@ -9,7 +9,7 @@ Parameter reference
 To guarantee a non-ambiguous way to transport and present the model across different tools, for each parameter we specify in the following table:
 - **Identifier**: its unique identifier string (used in the formal description of the material, and in code).
 - **Label**: a suggested, non-unique UI name, where parameter grouping for UI purposes can be inferred based on the common identifier prefix.
-- **Type**: one of `float`, `boolean`, `color3`, `vector3`. A `color3` value is associated with a color space ([ACEScg](https://docs.acescentral.com/specifications/acescg/) by default), while a `vector3` value is a raw 3-component vector.
+- **Type**: one of `float`, `boolean`, `color3`, `vector3`. A `color3` value [^ingamut] is associated with a color space ([ACEScg](https://docs.acescentral.com/specifications/acescg/) by default), while a `vector3` value is a raw 3-component vector.
 - **Range**: the allowed value range for scalar parameters (per-channel for color and vector parameters).
   - Square brackets $[]$ indicate a range the value must be within.
       - Parenthesis $()$ indicate bounds are excluded from that range.
