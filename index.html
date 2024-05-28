@@ -574,7 +574,8 @@ Metal params                        | Label      | Type     | Range        | Def
 
 The glossy-diffuse slab represents the base dielectric (parametrized as described in the Dielectric base section), embedding a semi-infinite bulk of extremely dense scattering material. The BRDF of the slab is the combination of a "glossy" specular lobe provided by immediate reflection from the dielectric interface, and a diffuse lobe provided by scattering off the embedded substrate. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete.
 
-We choose to model this concretely as a layer of dielectric "gloss" on top of an opaque slab with a diffuse BRDF:
+We choose to model this concretely as a layer of dielectric "gloss" on top of an (index-matched) opaque slab with a
+diffuse BRDF:
 \begin{eqnarray}
 M_\textrm{glossy-diffuse} = \mathrm{\mathbf{layer}}(S_\mathrm{diffuse}, S_\textrm{gloss})
 \end{eqnarray}
@@ -591,7 +592,8 @@ where $S_\textrm{gloss}$ is a thin slab of dielectric with the rough dielectric 
 \begin{eqnarray}
 S_\textrm{gloss} = \mathrm{Slab}(f_\mathrm{dielectric}, V_\mathrm{dielectric})  \ .
 \end{eqnarray}
-The opaque substrate slab has a diffuse BRDF lobe:
+Since the diffuse base is index-matched with the gloss, Fresnel reflection is only generated from the top interface of
+the gloss. The opaque substrate slab has a diffuse BRDF lobe:
 \begin{eqnarray}
 S_\textrm{diffuse}    = \mathrm{Slab}(f_\mathrm{diffuse})
 \end{eqnarray}
