@@ -604,7 +604,9 @@ where $f_\mathrm{diffuse}$ is based on the classic Oren-Nayar model ([#Oren1994]
     ![Figure [rough_diffuse]: Zero roughness ($\sigma=0$, left) and maximum roughness ($\sigma=1$, right) diffuse materials with $\textbf{EON}$ BRDF.](dummy)
 </div>
 
-Unfortunately, the original model suffers from artifacts and also does not conserve energy (i.e. is too dark). We thus opt to define the diffuse BRDF to be a popular improved version of Oren-Nayar introduced by [#Fujii2012], augmented with a simple analytical, reciprocal energy compensation term:
+Unfortunately, the original model suffers from artifacts and also does not conserve energy (i.e. is too dark). We thus
+opt to define the diffuse BRDF to be a popular improved version of Oren-Nayar introduced by Fujii [#Fujii2012],
+augmented with a simple analytical, reciprocal energy compensation term:
 \begin{eqnarray} \label{EON_brdf}
 f_\mathrm{diffuse}(\omega_i, \omega_o) = f_\mathrm{ON}(\omega_i, \omega_o) + f^\mathrm{comp}_\mathrm{ON}(\omega_i, \omega_o) \ .
 \end{eqnarray}
