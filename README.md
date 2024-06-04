@@ -21,7 +21,7 @@ OpenPBR Surface is an open standard hosted by the [Academy Software Foundation](
 ### Resources
 
 * [MaterialX web-viewer](https://academysoftwarefoundation.github.io/MaterialX/?file=Materials/Examples/OpenPbr/open_pbr_default.mtlx) - uses MaterialX's GLSL implementation of OpenPBR
-* [OpenPBR-viewer](https://github.com/portsmouth/OpenPBR-viewer) - an self-contained example implementation in a WebGL pathtracer (run web app [here](https://portsmouth.github.io/OpenPBR-viewer))
+* [OpenPBR-viewer](https://github.com/portsmouth/OpenPBR-viewer) - a self-contained example implementation in a WebGL pathtracer (run web app [here](https://portsmouth.github.io/OpenPBR-viewer))
 
 <br/>
 
