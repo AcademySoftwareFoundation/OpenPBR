@@ -3,7 +3,7 @@
   <!--
     OpenPBR Surface node definition
   -->
-  <nodedef name="ND_open_pbr_surface_surfaceshader" node="open_pbr_surface" nodegroup="pbr" version="0.5" isdefaultversion="true"
+  <nodedef name="ND_open_pbr_surface_surfaceshader" node="open_pbr_surface" nodegroup="pbr" version="1.0" isdefaultversion="true"
            doc="OpenPBR Surface Shading Model" uiname="OpenPBR Surface">
     <input name="base_weight" type="float" value="1.0" uimin="0.0" uimax="1.0" uiname="Base Weight" uifolder="Base"
            doc="Multiplier on the intensity of the reflection from the diffuse and metallic base." />
@@ -304,12 +304,23 @@
     </multiply>
 
     <!-- Dielectric Base -->
-    <divide name="specular_to_coat_ior_ratio" type="float">
-      <input name="in1" type="float" interfacename="specular_ior" />
-      <input name="in2" type="float" interfacename="coat_ior" />
-    </divide>
+      <!-- apply IOR ratio inversion method to avoid TIR artifact (as in Coat TIR section of spec) -->
+      <divide name="specular_to_coat_ior_ratio" type="float">
+         <input name="in1" type="float" interfacename="specular_ior" />
+         <input name="in2" type="float" interfacename="coat_ior" />
+      </divide>
+      <divide name="coat_to_specular_ior_ratio" type="float">
+         <input name="in1" type="float" interfacename="coat_ior" />
+         <input name="in2" type="float" interfacename="specular_ior" />
+      </divide>
+      <ifgreater name="specular_to_coat_ior_ratio_tir_fix" type="float">
+         <input name="value1" type="float" nodename="specular_to_coat_ior_ratio" />
+         <input name="value2" type="float" value="1.0" />
+         <input name="in1" type="float" nodename="specular_to_coat_ior_ratio" />
+         <input name="in2" type="float" nodename="coat_to_specular_ior_ratio" />
+      </ifgreater>
     <mix name="eta_s" type="float">
-      <input name="fg" type="float" nodename="specular_to_coat_ior_ratio" />
+      <input name="fg" type="float" nodename="specular_to_coat_ior_ratio_tir_fix" />
       <input name="bg" type="float" interfacename="specular_ior" />
       <input name="mix" type="float" interfacename="coat_weight" />
     </mix>
