@@ -501,12 +501,9 @@ This Fresnel factor (of the initial reflection from above) is then modulated by 
 \end{equation}
 Applying this modulated IOR ratio $\eta^\prime_s$ in the angle-dependent dielectric Fresnel formula $F(\mu, \eta^\prime_s)$ then produces the desired reflectivity modulation at any incident angle cosine $\mu$. The Fresnel transmission factor and refraction into and out of the base dielectric should also be consistent with the IOR ratio $\eta^\prime_s$.
 
-For convenience, we also allow $\xi_s = \mathtt{specular\_weight}$ to exceed 1 so that the reflectivity is increased above the level set by **`specular_ior`**. Note though there is a constraint $\xi_s \le 1/F_s$ since the scaled reflection coefficient cannot exceed $1$. So there needs to be an internal clamp to ensure $\xi_s \in [0, 1/F_s]$.
-
-
 Specular params                     | Label      | Type     | Range           | Norm       | Default       | Description
 ------------------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
-**`specular_weight`**               | Weight     | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 1         $ | Modulates the dielectric reflectivity at normal incidence
+**`specular_weight`**               | Weight     | `float`  | $ [0, 1] $      |            | $ 1         $ | Modulates the dielectric reflectivity at normal incidence
 **`specular_color`**                | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
 **`specular_roughness`**            | Roughness  | `float`  | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_roughness_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
