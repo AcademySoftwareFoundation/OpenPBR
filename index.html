@@ -512,9 +512,9 @@ Specular params                     | Label      | Type     | Range           | 
 **`specular_roughness_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_ior`**                  | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
 
-![](images/spec_ior1.png width=95%) ![](images/spec_ior2.png width=95%) ![](images/spec_ior3.png width=95%)
+![](images/updated_figs/base-ior.png width=95%)
 <div class="shifted-caption">
-   ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.3, 1.5 (default)](dummy)
+   ![Figure [specular]: Varying the **`specular_weight`** from (left to right): 0.1, 0.5, 1.0 (default)](dummy)
 </div>
 
 
@@ -689,7 +689,7 @@ Glossy-diffuse params        | Label             | Type     | Range            |
 **`base_diffuse_roughness`** | Diffuse Roughness | `float`  | $ [0, 1]       $ | $ 0               $ | Roughness of the diffuse lobe $f_\mathrm{diffuse}$
 
 
-![](images/glossy_diffuse_diffuseonly.png width=99%) ![](images/glossy_diffuse_speconly.png width=99%) ![](images/glossy_diffuse_sum.png width=99%)
+![](images/updated_figs/glossy-diffuse.png width=99%)
 <div class="shifted-caption">
     ![Figure [fuzz]: Wood rendered as glossy-diffuse, composed of diffuse lobe (left), specular lobe (middle), and their normalized sum. Near the specular highlight the diffuse lobe is automatically reduced since energy is conserved.](dummy)
 </div>
