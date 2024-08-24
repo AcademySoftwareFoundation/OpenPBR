@@ -76,7 +76,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 ## UI disabling logic
 
 The structure of the OpenPBR tree of layer and mix operations implies that some parameters have no effect if other parameters take certain values.
-Thus it can be helpful in the UI design for the shader to reflect this by disabling (e.g. greying out) those controls which are irrelevant in the current context.
+It can be a helpful cue for artists if the UI design for the shader reflects this by disabling (e.g. greying out) those controls which are irrelevant in the current context.
 
 To facilitate this aspect of the UI design, we provide here in Python pseudocode form the recommended logic needed to determine which of the parameters can be disabled. This employs a function `disable(P, skip=[])` where the arguments `P` and the optional `skip` are a prefix string (or list of prefix strings). Then all parameters with names matching any of the prefixes in `P` should be disabled, except for those matching any in `skip`.
 
