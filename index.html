@@ -906,7 +906,7 @@ This ratio then determines the specular Fresnel factor, as in equation [modulate
 
 The absorption of the medium $V_\mathrm{coat}$ is parametrized by **`coat_color`**, which is assumed to specify the _square_ of the transmittance of the coat at normal incidence (i.e. $T_\mathrm{coat}$ = **`coat_color`** in the notation of equation [non-reciprocal-albedo-scaling-with-T]). Thus the observed tint color of the underlying base due to absorption in the coat is approximately given by **`coat_color`** due to the absorption along the incident and outgoing rays (note that the specular reflection from the coat itself is _not_ tinted).
 
-In the full light transport within the coat, various physical effects occur which we assume are accounted for in the ground truth appearance:
+In the full light transport within the coat, various physical effects [^porosity] occur which we assume are accounted for in the ground truth appearance.
 
    - The observed color of the coated base is darkened and saturated due to multiple internal reflections from the inside of the coat, which causes light to strike the underlying material multiple times and undergo more absorption. This effect is controlled via the **`coat_darkening`** parameter, as described in the coat Darkening section.
 
