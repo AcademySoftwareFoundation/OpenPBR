@@ -1,5 +1,6 @@
 
 
+<br>
 <p align="center">
 <img src="images/logo/openpbr-logo-glyph.svg" alt="homepage" height="80px" style="vertical-align: middle; position: relative; bottom: 3px"/>&nbsp;&nbsp;
 <img src="images/logo/openpbr-logo-text.svg"  alt="homepage" height="96px" style="vertical-align: middle; position: relative; bottom: 3px"/>
