@@ -851,11 +851,13 @@ _Iridescence_ is the occurrence of rainbow-like color fringes in the reflection 
 
  The coverage weight functions as a blend between the BSDF with and without the presence of the film, and thus allows one to dial the effect without altering the shape and saturation of the color fringes.
 
- The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017]. The shape and color of the fringe patterns in the reflection from the film will be affected (as described by Belcour and Barla) by the complex IOR of the adjacent media above and below the film, which in general are a statistical mix of metal and dielectric below and coat and ambient medium above (which the fuzz is index-matched to). Figure [ior_configs] illustrates the eight possible different structures depending on the presence of both the film and coat, each of which leads to different Fresnel effects due to the differing IORs at the interfaces.
+ The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017], in which the thin-film thickness is smaller than the scale of the microfacets and assumed to be smooth. With this assumption, in practice the effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers (thus it is *not* represented by incorporating an explicit thin-film Slab into the model).
+
+ The shape and color of the fringe patterns in the reflection from the film will be affected (as described by Belcour and Barla) by the complex IOR of the adjacent media above and below the film, which in general are a statistical mix of metal and dielectric below and coat and ambient medium above (which the fuzz is index-matched to). Figure [ior_configs] illustrates the eight possible different structures depending on the presence of both the film and coat, each of which leads to different Fresnel effects due to the differing IORs at the interfaces.
 
 ![Figure [ior_configs]: Schematic of all 8 possible IOR configurations, including those involving the thin-film.](images/IOR_configs.svg width="95%" align="center")
 
-In principle the implementation should deal with all these physical configurations correctly, though modeling of the precise effect is implementation-dependent. In practice, this wave-optics effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers. (For this reason, this effect is not represented by incorporating an explicit thin-film Slab into the model).
+In principle the implementation should deal with all these physical configurations correctly, though modeling of the precise effect is implementation-dependent.
 
 Note that in the case of the dielectric base, the thin-film should also generate color fringes in the transmission lobe. This is important for example when rendering soap bubbles (see [#Belcour2017]).
 
