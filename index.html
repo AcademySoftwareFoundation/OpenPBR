@@ -38,7 +38,7 @@ We thus adopt a specific form of material structure that has proved useful as a 
      The dielectric interface of this coat layer provides a secondary specular lobe.
    - [Fuzz](index.html#model/fuzz): An optional layer representing the reflection from micro-fibers (such as fine hair, peach fuzz, textile strands, and dust grains) on top of everything else.
 
-   ![Figure [diagram_model]: Schematic illustration of the idealized physical material that our shader models. Horizontal stacking of slabs represents statistical mixture and vertical stacking represents layering.](images/model_schematic.svg width="100%")
+   ![Figure [diagram_model]: Schematic illustration of the idealized physical material that our shader models. Horizontal stacking of slabs represents statistical mixture and vertical stacking represents layering.](images/model_schematic2.svg width="100%")
 
 We define this physical material structure in detail using a simple [formalism](index.html#formalism) involving slabs of material composed via layering and mixing operations. This formalism is general enough to describe arbitrarily complex materials, but we restrict its usage here to defining the particular material structure illustrated above.
 
@@ -408,14 +408,12 @@ D_\mathrm{GGX}(m) \propto \left( 1 + \tan^2\theta_m \Bigl(\frac{\cos^2\phi_m}{\a
 which reduces to the isotropic form when $\alpha_t = \alpha_b = \alpha$.
 Efficient techniques for sampling BSDFs employing the anisotropic GGX microfacet model are presented in [#Heitz2018], [#Dupuy2023].
 
-The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We suggest the following mapping from $r, a$ to $\alpha_t, \alpha_b$:
+The NDF terms $\alpha_t$ and $\alpha_b$ are more conveniently parametrized as the total roughness $r$ and an anisotropy $a \in [0, 1]$. We specify the following mapping from $r, a$ to $\alpha_t, \alpha_b$:
 \begin{equation}  \label{openpbr-anisotropy-formula}
 \alpha_t = r^2 \sqrt{\frac{2}{1 + (1 - a)^2}} \;\ , \quad \alpha_b = (1 - a) \, \alpha_t \ .
 \end{equation}
-This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve the average roughness regardless of the anisotropy. A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. Figure [ndf_anisotropy] shows the resulting shape of the highlight (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space).
-
-![Figure [ndf_anisotropy]: NDF shapes as a function of roughness $r$ and anisotropy $a$.](images/anisotropy.png width=60%)
-
+![Figure [ndf_anisotropy]: Highlight for varying roughness and anisotropy](images/anisotropy.png width="50%")
+This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve the average roughness regardless of the anisotropy. A rationale is that if a renderer doesn't support anisotropy (or if the feature is turned off for performance considerations, such as level of detail), using only the roughness parameter should result in an isotropic specular highlight perceptually close to the original anisotropic one. Figure [ndf_anisotropy] shows the resulting shape of the highlight as a function of roughness $r$ and anisotropy $a$ (technically, these are contour lines of the NDF $D_\mathrm{GGX}(m)$ in the 2D slope space).
 
 To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{dielectric}$ and metal-base BRDF $f_\mathrm{conductor}$ share the same parameters, while the coat BSDF $f_\mathrm{coat}$ uses an independent set:
 
@@ -424,6 +422,12 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 - **`specular_roughness_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the NDF is stretched in the direction of the local surface tangent). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula]. Note that the appearance of the specular highlight is identical for tangent vectors of opposite directions; this also allows the preservation of value when converting to or from other models that support directional anisotropy.
 
 The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016a], where the multiple bounces are explicitly modeled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
+
+
+![](images/carbon_fiber_a0.0.png width=99%) ![](images/carbon_fiber_a0.5.png width=99%) ![](images/carbon_fiber_a0.9.png width=99%)
+<div class="shifted-caption">
+    ![Figure [anisotropy]: Textured **`geometry_tangent`**, with **`specular_roughness_anisotropy`** varying over 0 (default), 0.5, 0.9.](dummy)
+</div>
 
 
 Base Substrate
@@ -514,7 +518,7 @@ Specular params                     | Label      | Type     | Range           | 
 
 ![](images/updated_figs/base-ior.png width=95%)
 <div class="shifted-caption">
-   ![Figure [specular]: Varying the **`specular_weight`** from (left to right): 0.1, 0.5, 1.0 (default)](dummy)
+   ![Figure [specular]: Varying the **`specular_weight`** over 0.1, 0.5, 1.0 (default)](dummy)
 </div>
 
 
@@ -689,9 +693,9 @@ Glossy-diffuse params        | Label             | Type     | Range            |
 **`base_diffuse_roughness`** | Diffuse Roughness | `float`  | $ [0, 1]       $ | $ 0               $ | Roughness of the diffuse lobe $f_\mathrm{diffuse}$
 
 
-![](images/updated_figs/glossy-diffuse.png width=99%)
+![](images/glossy-diffuse.png width=99%)
 <div class="shifted-caption">
-    ![Figure [fuzz]: Wood rendered as glossy-diffuse, composed of diffuse lobe (left), specular lobe (middle), and their normalized sum. Near the specular highlight the diffuse lobe is automatically reduced since energy is conserved.](dummy)
+    ![Figure [glossy-diffuse]: Wood rendered as glossy-diffuse, composed of diffuse lobe (left), specular lobe (middle), and their normalized sum. Near the specular highlight the diffuse lobe is automatically reduced since energy is conserved.](dummy)
 </div>
 
 
@@ -826,7 +830,7 @@ The default 20 was chosen since common real materials with the highest dispersio
 
 ![](images/dispersion_0percent.png width=99%) ![](images/dispersion_25percent.png width=99%) ![](images/dispersion_50percent.png width=99%) ![](images/dispersion_75percent.png width=99%) ![](images/dispersion_100percent.png width=99%)
 <div class="shifted-caption">
-      ![Figure [fuzz]: Increasing the **`transmission_dispersion_scale`** of glass from 0 to 1](dummy)
+      ![Figure [dispersion]: Increasing the **`transmission_dispersion_scale`** of glass from 0 to 1](dummy)
 </div>
 
 
@@ -1000,6 +1004,11 @@ with $\Delta$ evaluated via equation [general_darkening_formula] with internal d
 
 The base albedo $E_b$ which appears in equation [general_darkening_formula] represents the normal-incidence albedo of the entire base beneath the coat. This albedo can be approximated as the normal-incidence albedos of the individual slabs of the base, blended according to their mix weights.
 
+![](images/coat_darkening_0.0.png width=99%) ![](images/coat_darkening_0.5.png width=99%) ![](images/coat_darkening_1.png width=99%)
+<div class="shifted-caption">
+    ![Figure [fuzz]: A checkerboard **`coat_weight`**, varying the **`coat_darkening`** over 0, 0.5, 1 (default).](dummy)
+</div>
+
 
 ### View-dependent absorption
 
@@ -1103,9 +1112,9 @@ Fuzz params          | Label     | Type     | Range        | Default       | Des
 **`fuzz_color`**     | Color     | `color3` | $ [0, 1]^3 $ | $ (1, 1, 1) $ | Reflection albedo color of $f_\mathrm{fuzz}$
 **`fuzz_roughness`** | Roughness | `float`  | $ [0, 1]   $ | $ 0.5       $ | Reflection roughness of $f_\mathrm{fuzz}$
 
-![](images/fuzz1.jpg width=99%) ![](images/fuzz2.jpg width=99%) ![](images/fuzz3.jpg width=99%)
+![](images/fuzz_dust_r0.25.png width=99%) ![](images/fuzz_dust_r0.5.png width=99%) ![](images/fuzz_dust_r0.75.png width=99%)
 <div class="shifted-caption">
-    ![Figure [fuzz]: Various textiles rendered using fuzz.](dummy)
+    ![Figure [fuzz]: Varying the **`fuzz_roughness`** over 0.25, 0.5 (default), 0.75.](dummy)
 </div>
 
 
