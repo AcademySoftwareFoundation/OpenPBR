@@ -4,7 +4,7 @@
 
 **OpenPBR Surface**
 
-<center>*Specification v0.5, 2024-05-14. &nbsp; &nbsp; <a href="https://github.com/AcademySoftwareFoundation/OpenPBR" title="Redirect to GitHub page"><img src="images/aswf-logo-black.svg" alt="homepage" height="18" style="vertical-align: middle; position: relative; bottom: 3px"/></a> *</center>
+<center>*Specification v1.1, 2024-06-28. &nbsp; &nbsp; <a href="https://github.com/AcademySoftwareFoundation/OpenPBR" title="Redirect to GitHub page"><img src="images/aswf-logo-black.svg" alt="homepage" height="18" style="vertical-align: middle; position: relative; bottom: 3px"/></a> *</center>
 
 <br>
 This document is a specification of a surface shading model intended as a standard for computer graphics: the OpenPBR Surface model. Designed as an über-shader, it aims to be capable of accurately modeling the vast majority of CG materials used in practical visual effects and feature animation productions. The model has been developed as a synthesis of the Autodesk Standard Surface and the Adobe Standard Material models.
@@ -574,7 +574,8 @@ Metal params                        | Label      | Type     | Range        | Def
 
 The glossy-diffuse slab represents the base dielectric (parametrized as described in the Dielectric base section), embedding a semi-infinite bulk of extremely dense scattering material. The BRDF of the slab is the combination of a "glossy" specular lobe provided by immediate reflection from the dielectric interface, and a diffuse lobe provided by scattering off the embedded substrate. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete.
 
-We choose to model this concretely as a layer of dielectric "gloss" on top of an opaque slab with a diffuse BRDF:
+We choose to model this concretely as a layer of dielectric "gloss" on top of an (index-matched) opaque slab with a
+diffuse BRDF:
 \begin{eqnarray}
 M_\textrm{glossy-diffuse} = \mathrm{\mathbf{layer}}(S_\mathrm{diffuse}, S_\textrm{gloss})
 \end{eqnarray}
@@ -591,7 +592,8 @@ where $S_\textrm{gloss}$ is a thin slab of dielectric with the rough dielectric 
 \begin{eqnarray}
 S_\textrm{gloss} = \mathrm{Slab}(f_\mathrm{dielectric}, V_\mathrm{dielectric})  \ .
 \end{eqnarray}
-The opaque substrate slab has a diffuse BRDF lobe:
+Since the diffuse base is index-matched with the gloss, Fresnel reflection is only generated from the top interface of
+the gloss. The opaque substrate slab has a diffuse BRDF lobe:
 \begin{eqnarray}
 S_\textrm{diffuse}    = \mathrm{Slab}(f_\mathrm{diffuse})
 \end{eqnarray}
@@ -602,20 +604,28 @@ where $f_\mathrm{diffuse}$ is based on the classic Oren-Nayar model ([#Oren1994]
     ![Figure [rough_diffuse]: Zero roughness ($\sigma=0$, left) and maximum roughness ($\sigma=1$, right) diffuse materials with $\textbf{EON}$ BRDF.](dummy)
 </div>
 
-Unfortunately, the original model suffers from artifacts and also does not conserve energy (i.e. is too dark). We thus opt to define the diffuse BRDF to be a popular improved version of Oren-Nayar introduced by [#Fujii2012], augmented with a simple analytical, reciprocal energy compensation term:
+Unfortunately, the original model suffers from artifacts and also does not conserve energy (i.e. is too dark). We thus
+opt to define the diffuse BRDF to be a popular improved version of Oren-Nayar introduced by Fujii [#Fujii2012],
+augmented with a simple analytical, reciprocal energy compensation term:
 \begin{eqnarray} \label{EON_brdf}
 f_\mathrm{diffuse}(\omega_i, \omega_o) = f_\mathrm{ON}(\omega_i, \omega_o) + f^\mathrm{comp}_\mathrm{ON}(\omega_i, \omega_o) \ .
 \end{eqnarray}
 This form of the Oren-Nayar model is termed "energy-preserving Oren-Nayar" or $\textbf{EON}$.
 The Oren-Nayar term $f_\mathrm{ON}$ is given by the [#Fujii2012] form [^Oren_Nayar_formula]
 \begin{eqnarray} \label{FON_brdf}
-f_\mathrm{ON}(\omega_i, \omega_o) = \frac{\boldsymbol{\rho}}{\pi} \Bigl( A(\sigma) + B(\sigma) \frac{s}{t} \Bigr) \ .
+f_\mathrm{ON}(\omega_i, \omega_o) = \frac{w_\mathrm{d} \boldsymbol{\rho}}{\pi} \Bigl( A(\sigma) + B(\sigma) \frac{s}{t}
+\Bigr) \ .
 \end{eqnarray}
-The roughness parameter $\sigma \in [0,1]$ is given by **`base_diffuse_roughness`**. The RGB $\boldsymbol{\rho}$ parameter is determined by the specified **`base_color`**, as described below. The directional albedo $E_\mathrm{ON}(\omega) = \boldsymbol{\rho}\,\hat{E}_\mathrm{ON}(\omega)$ (and corresponding _average albedo_ $\langle\hat{E}_\mathrm{ON}\rangle$) of the Oren-Nayar term can be determined analytically [^Oren_Nayar_albedo].
+The roughness parameter $\sigma \in [0,1]$ is given by **`base_diffuse_roughness`**. The overall weight
+$w_\mathrm{d}$ = **`base_weight`**.
+The RGB $\boldsymbol{\rho}$ parameter is determined by the specified **`base_color`**, as described below.
 
-The energy compensation term $f^{\mathrm{comp}}_\mathrm{ON}$ is given in terms of the albedo $\langle\hat{E}_\mathrm{ON}\rangle$ by
+The directional albedo $E_\mathrm{ON}(\omega) = w_\mathrm{d} \boldsymbol{\rho}\,\hat{E}_\mathrm{ON}(\omega)$, and
+corresponding _average albedo_ $\langle\hat{E}_\mathrm{ON}\rangle$, of the Oren-Nayar term can be determined
+analytically [^Oren_Nayar_albedo]. The energy compensation term $f^{\mathrm{comp}}_\mathrm{ON}$ is given in terms of the
+albedo $\langle\hat{E}_\mathrm{ON}\rangle$ by
 \begin{equation} \label{EON_comp}
-f^\mathrm{comp}_\mathrm{ON}(\omega_i, \omega_o) = \frac{\boldsymbol{\rho}_\mathrm{ms}}{\pi}
+f^\mathrm{comp}_\mathrm{ON}(\omega_i, \omega_o) = \frac{w_\mathrm{d} \boldsymbol{\rho}_\mathrm{ms}}{\pi}
 \bigl(1 - \hat{E}_\mathrm{ON}(\omega_i)\bigr)
 \bigl(1 - \hat{E}_\mathrm{ON}(\omega_o)\bigr) \ ,
 \end{equation}
@@ -624,16 +634,29 @@ where the factor $\boldsymbol{\rho}_\mathrm{ms}$ accounts approximately for mult
 \boldsymbol{\rho}_\mathrm{ms} = \frac{\boldsymbol{\rho}^2}{\pi}
 \frac{\langle\hat{E}_\mathrm{ON}\rangle / (1 - \langle \hat{E}_\mathrm{ON}\rangle)}{1 - \boldsymbol{\rho} \bigl(1 - \langle \hat{E}_\mathrm{ON}\rangle\bigr)} \ .
 \end{equation}
-One can verify that as $\boldsymbol{\rho} \rightarrow 1$, the total directional albedo of the BRDF of Equation [EON_brdf], $E_\mathrm{diffuse}(\omega) \rightarrow 1$, thus the compensation term ensures that the white furnace test passes. Note that in the the zero roughness ($\sigma \rightarrow 0$) limit, the energy compensation term vanishes, and the parameter $\boldsymbol{\rho}$ is equal to the albedo of $f_\mathrm{diffuse}$. As roughness increases, the albedo of $f_\mathrm{diffuse}$ becomes slightly more dark and saturated than $\boldsymbol{\rho}$ due to the multiple scattering, which is physically realistic.
+One can verify that as $\boldsymbol{\rho} \rightarrow 1$, the total directional albedo of the BRDF of Equation
+[EON_brdf], $E_\mathrm{diffuse}(\omega) \rightarrow 1$ (in the $w_\mathrm{d}=1$ case), thus the compensation term
+ensures that the white furnace test passes. Note that in the the zero roughness ($\sigma \rightarrow 0$) limit, the
+energy compensation term vanishes, and the parameter $\boldsymbol{\rho}$ is equal to the albedo of $f_\mathrm{diffuse}$.
+As roughness increases, the albedo of $f_\mathrm{diffuse}$ becomes slightly more dark and saturated than
+$\boldsymbol{\rho}$ due to the multiple scattering, which is physically realistic.
 
-Physically there will be additional darkening and saturation of the observed color due to multiple inter-reflections (scattering) within the gloss layer, as described in the coat darkening section. However in this case, we wish to automatically compensate for this effect by adjusting the $\boldsymbol{\rho}$ parameter of $f_\mathrm{diffuse}$ in order to make the observed color match the input color $\mathbf{C} =$ **`base_weight`** * **`base_color`** (in a similar spirit to the albedo remapping described in the Subsurface section).
-To define the meaning of the specified color in terms of the underlying base albedo, we write the normal-direction reflectance of the glossy-diffuse slab, $\mathbf{E}_\textrm{glossy-diffuse}$ in the general form
+Physically there will be additional darkening and saturation of the observed color due to multiple inter-reflections
+(scattering) within the gloss layer, as described in the coat darkening section. However in this case, we wish to
+automatically compensate for this effect by adjusting the $\boldsymbol{\rho}$ parameter of $f_\mathrm{diffuse}$ in order
+to make the observed color match the input color $\mathbf{C} =$ **`base_color`** (in a similar spirit to the albedo
+remapping described in the Subsurface section).
+To define the meaning of the specified color in terms of the underlying base albedo, we write the normal-direction
+reflectance of the glossy-diffuse slab (in the $w_\mathrm{d}=1$ case), $\mathbf{E}_\textrm{glossy-diffuse}$ in the
+general form
 \begin{eqnarray}
 \mathbf{E}_\textrm{glossy-diffuse} = \mathbf{E}_\textrm{spec} + \mathbf{E}_\textrm{diffuse}
 \end{eqnarray}
 where $\mathbf{E}_\mathrm{spec}$ is the normal-direction reflectance of all energy reflected from the dielectric interface _without_ macroscopic transmission, while $\mathbf{E}_\mathrm{diffuse}$ is the normal-direction reflectance of all remaining energy due to (macroscopic) transmission through the interface, multiple scattering in the diffuse medium, and transmission back out.
 
-We then _define_ $\mathbf{C} =$ **`base_weight`** * **`base_color`** to be such that the reflectance of the remaining energy transmitted into the slab, $\mathbf{E}_\textrm{diffuse}$ in the Lambertian case of  *zero* **`base_diffuse_roughness`** (i.e. $\sigma = 0$), is given by
+We then _define_ $\mathbf{C} =$ **`base_color`** to be such that the reflectance of the remaining energy transmitted
+into the slab, $\mathbf{E}_\textrm{diffuse}$ in the Lambertian case of *zero* **`base_diffuse_roughness`** (i.e. $\sigma
+= 0$), is given by
 \begin{eqnarray} \label{glossy_diffuse_albedo_constraint}
 \mathbf{E}_\textrm{diffuse} = \bigl( 1 - \mathbf{E}_\textrm{spec} \bigr) \mathbf{C} \ .
 \end{eqnarray}
@@ -649,12 +672,19 @@ If a reciprocal formulation is desired, the classic Ashikhmin-Shirley or Kelemen
 \begin{equation}
 f_\textrm{glossy-diffuse}(\omega_i, \omega_o) \approx f_\mathrm{dielectric}(\omega_i, \omega_o)  + \mathcal{N} \bigl(1 - E_\mathrm{dielectric}(\omega_i)\bigr) \bigl(1 - E_\mathrm{dielectric}(\omega_o)\bigr) \,f_\mathrm{diffuse}(\omega_i, \omega_o) \ ,
 \end{equation}
-where $\mathcal{N}$ is a normalization factor such that equation [glossy_diffuse_albedo_constraint] is satisfied. In the case of a zero roughness (i.e. Lambertian) Oren-Nayar base $\mathcal{N}$ can be tabulated in terms of the dielectric IOR ([#Kutz2021]), and the required $\boldsymbol{\rho}$ of the Lambertian base is equal to $\mathbf{C}$ as in the non-reciprocal albedo-scaling approximation. Extending this to the more general case of a non-Lambertian rough Oren-Nayar base would require adding the roughness dimension to the tabulation, and the required Oren-Nayar $\boldsymbol{\rho}$ will not simply equal $\mathbf{C}$. We leave the specific choice of model and these details to the implementation.
+where $\mathcal{N}$ is a normalization factor such that equation [glossy_diffuse_albedo_constraint] is satisfied. In the
+case of a zero roughness (i.e. Lambertian) Oren-Nayar base $\mathcal{N}$ can be tabulated in terms of the dielectric IOR
+([#Kutz2021]), and the required $\boldsymbol{\rho}$ of the Lambertian base is equal to $\mathbf{C}$ as in the
+non-reciprocal albedo-scaling approximation. Extending this to the more general case of a non-Lambertian rough
+Oren-Nayar base would require adding the roughness dimension to the tabulation, and the required Oren-Nayar
+$\boldsymbol{\rho}$ will then _not_ simply equal $\mathbf{C}$. We leave the specific choice of model and these details
+to
+the implementation.
 
 
 Glossy-diffuse params        | Label             | Type     | Range            | Default             | Description
 -----------------------------|-------------------|----------|:----------------:|:-------------------:|----------------------------------------------
-**`base_weight`**            | Weight            | `float`  | $ [0, 1]       $ | $ 1               $ | Scalar multiplier to **`base_color`**
+**`base_weight`** | Weight | `float` | $ [0, 1] $ | $ 1 $ | Scalar multiplier of $f_\mathrm{diffuse}$
 **`base_color`**             | Color             | `color3` | $ [0, 1]^3     $ | $ (0.8, 0.8, 0.8) $ | Base reflection albedo color according to equation [glossy_diffuse_albedo_constraint].
 **`base_diffuse_roughness`** | Diffuse Roughness | `float`  | $ [0, 1]       $ | $ 0               $ | Roughness of the diffuse lobe $f_\mathrm{diffuse}$
 
@@ -720,7 +750,7 @@ Subsurface params                   | Label        | Type      | Range          
 **`subsurface_weight`**             | Weight       | `float`   | $ [0, 1]      $ |            | $ 0                $ | Mix weight between subsurface and diffuse slabs
 **`subsurface_color`**              | Color        | `color3`  | $ [0, 1]      $ |            | $ (0.8, 0.8, 0.8)  $ | The observed reflection color of $V^\infty_\mathrm{subsurface}$
 **`subsurface_radius`**             | Radius       | `float`   | $ [0, \infty) $ | $ [0, 1] $ | $ 1                $ | Length scale of MFP
-**`subsurface_radius_scale`**       | Radius scale | `vector3` | $ [0, 1]^3    $ |            | $ (1.0, 0.5, 0.25) $ | RGB multiplier to **`subsurface_radius`**, giving the per-channel MFPs
+**`subsurface_radius_scale`**       | Radius scale | `color3`  | $ [0, 1]^3    $ |            | $ (1.0, 0.5, 0.25) $ | RGB multiplier to **`subsurface_radius`**, giving the per-channel MFPs
 **`subsurface_scatter_anisotropy`** | Anisotropy   | `float`   | $ [-1, 1]     $ |            | $ 0                $ | Anisotropy of the Henyey--Greenstein phase function of the interior medium $V^\infty_\mathrm{subsurface}$
 
 ![](images/subsurface1.jpg width=99%) ![](images/subsurface2.jpg width=99%) ![](images/subsurface3.jpg width=99%)
@@ -838,7 +868,7 @@ Thin-film params          | Label     | Type     | Range           | Norm       
 --------------------------|-----------|----------|:---------------:|:-------------:|:--------:|----------------------------------------------
 **`thin_film_weight`**    | Weight    | `float`  | $ [0, 1]      $ |               | $ 0    $ | Coverage weight of the thin film
 **`thin_film_thickness`** | Thickness | `float`  | $ [0, \infty) $ | $ [0, 1]    $ | $ 0.5  $ | Thickness of the film in micrometers ($\mathrm{\mu m}$)
-**`thin_film_ior`**       | IOR       | `float`  | $ (0, \infty) $ | $ [1, 3]    $ | $ 1.5  $ | Refractive index of the film
+**`thin_film_ior`**       | IOR       | `float`  | $ (0, \infty) $ | $ [1, 3]    $ | $ 1.4  $ | Refractive index of the film
 
 ![](images/thin_film_0nm.png width=99%) ![](images/thin_film_300nm.png width=99%) ![](images/thin_film_600nm.png width=99%)
 <div class="shifted-caption">
@@ -1044,7 +1074,7 @@ M_\mathrm{surface} = \mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{f
 
 The fuzz BRDF $f_\mathrm{fuzz}$ and VDF $V_\mathrm{fuzz}$ are assumed to be derived from an anisotropic microflake volume model with a fiber-like distribution. We recommend the specific model of [#Zeltner2022] (based on the earlier work of [#Heitz2015]), which has the following characteristics:
 
-- The fuzz represents a homogeneous volumetric layer with a fiber-like SGGX microflake [#Heitz2015] phase function. This is approximated using a Linearly Transformed Cosines (LTC) model [#Heitz2016b] fitted to volumetric simulations. The microflake fibers are assumed to have a single-scattering albedo that effectively produces a reflection tinted with the **`fuzz_color`** after multiple scattering.
+- The fuzz represents a homogeneous volumetric layer with a fiber-like SGGX microflake [#Heitz2015] phase function. This is approximated using a Linearly Transformed Cosines (LTC) model [#Heitz2016b] fitted to volumetric simulations. The microflake fibers are assumed to have a single-scattering albedo that effectively produces a reflection tinted with the **`fuzz_color`** after multiple scattering, allowing the fuzz to darken as well as lighten.
 - The volumetric fuzz layer is assumed to have a fixed unit optical thickness in all channels, and is purely scattering so no energy is absorbed. Thus any light not reflected after multiple scattering is assumed to transmit to the lower layers, and the transmittance is gray so the base is not tinted by the fuzz. The amount of this fixed thickness fuzz is controlled via the layer coverage weight **`fuzz_weight`**. The fuzz layer is also assumed to be index-matched with the adjacent slab above it, i.e. the fibers are embedded in the surrounding dielectric medium, thus there is no Fresnel reflection from the slab.
 - The **`fuzz_roughness`** parameter controls how fibre-like the microflake distribution of the layer is. At low roughness the microflakes are highly fibre-like (i.e. thin fibres oriented along the normal) producing a high-sheen fabric appearance, while at high roughness the microflakes are spherical producing a dusty appearance.
 
@@ -1098,7 +1128,7 @@ We put emission below the coating so that emitted light will be tinted due to th
 * +-------------------------------------------------+ *
 *******************************************************
 
-The intensity of the EDF is controlled by a luminance and a color multiplier. The **`emission_luminance`** parameter controls the luminance the emissive layer would have when **`emission_color`** is set to (1, 1, 1) and in the absence of coat and fuzz. The **`emission_color`** acts as a multiplier, thus the resulting luminance may be less than the input parameter, or even zero if the color multiplier is set to (0, 0, 0).
+The intensity of the EDF is controlled by a luminance and a color multiplier. The **`emission_luminance`** parameter controls the luminance the emissive layer would have when **`emission_color`** is set to (1, 1, 1) and in the absence of coat and fuzz. The **`emission_color`** acts as a multiplier, i.e. the HDR emission in the model color space is defined to have a color given by **`emission_color`** * **`emission_luminance`**, thus the resulting luminance may be less than the input parameter, or even zero if the **`emission_color`** is set to (0, 0, 0).
 
 Moreover, the overall material luminance may be further reduced in the presence of coat or fuzz, as they can absorb light coming from the emissive layer before it exits the surface. The emission from the top surface should in principle gain a directional dependence due to the combined effects of absorption, total internal reflection (TIR) and multiple bounces in the coat layer, and absorption in the fuzz layer. The combined effect should result mostly in darkening and saturation at grazing angles.
 
@@ -1274,7 +1304,8 @@ The "specular" BTDF/BSSRDF $\color{darkblue}{f^T_\textrm{specular}}$ corresponds
 
 Note that in this albedo-scaling approximation, the transmission Fresnel factor associated with $\color{darkblue}{f^T_\textrm{specular}}$ and $f_\textrm{SSS}$ can be *omitted* as the energy conservation of the dielectric BSDF as a whole is maintained automatically, even without explicit multiple scattering compensation or in the presence of modifications to the reflection Fresnel factor via **`specular_color`**.
 
-Since $\color{darkblue}{f^R_\textrm{specular}}$ appears in each of the three components slab of the dielectric base, it follows that on collecting terms, $f_\textrm{dielectric-base}$ reduces to:
+Since $\color{darkblue}{f^R_\textrm{specular}}$ appears in each of the three component slabs of the dielectric base, it
+follows that on collecting terms, $f_\textrm{dielectric-base}$ reduces to:
 \begin{equation}
 f_\textrm{dielectric-base} = \color{darkblue}{f^R_\textrm{specular}}  + (1 - E[\color{darkblue}{f^R_\textrm{specular}}]) \,f^T_\mathrm{dielectric-base} \ ,
 \end{equation}
@@ -1428,6 +1459,7 @@ The authors would also like to thank
 François Beaune,
 Henrik Edstrom,
 Eugene d'Eon,
+Jerry Gamache,
 Iliyan Georgiev,
 Lee Griggs,
 Niklas Harrysson,
@@ -1436,6 +1468,7 @@ Stephen Hill,
 Chris Kulla,
 Anders Langlands,
 Frankie Liu,
+Thomas Makryniotis,
 André Mazzone,
 Nikie Monteleone,
 Michael Nickelsky,
