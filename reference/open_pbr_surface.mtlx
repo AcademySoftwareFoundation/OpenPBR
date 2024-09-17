@@ -341,13 +341,8 @@
       <input name="in1" type="float" interfacename="specular_weight" />
       <input name="in2" type="float" nodename="specular_F0" />
     </multiply>
-    <clamp name="scaled_specular_F0_clamped" type="float">
-      <input name="in" type="float" nodename="scaled_specular_F0" />
-      <input name="low" type="float" value="0.0" />
-      <input name="high" type="float" value="0.99999" />
-    </clamp>
     <sqrt name="sqrt_scaled_specular_F0" type="float">
-      <input name="in" type="float" nodename="scaled_specular_F0_clamped" />
+      <input name="in" type="float" nodename="scaled_specular_F0" />
     </sqrt>
     <sign name="sign_eta_s_minus_one" type="float">
       <input name="in" type="float" nodename="eta_s_minus_one" />
