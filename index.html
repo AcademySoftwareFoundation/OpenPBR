@@ -1099,7 +1099,7 @@ If using the albedo-scaling interpretation of layering, a reasonable approximati
 where the albedo-scaling is explicitly modified to not tint the base since the tint $\mathbf{F}$ appears only in the first term via $f_\mathrm{fuzz}$.
 Then accounting for the coverage weight of the fuzz layer, $\mathtt{F}$ = **`fuzz_weight`**, gives:
 \begin{eqnarray}
-\mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}, \mathtt{F})  &\rightarrow&  \mathtt{F} \,f_\mathrm{fuzz} +  \mathrm{lerp}\bigl(1, 1 - E_\mathrm{fuzz}, \mathtt{F}\bigr) \,f_\textrm{coated-base} \ . \label{fuzz-layering-approx}
+\mathrm{\mathbf{layer}}(M_\textrm{coated-base}, S_\mathrm{fuzz}, \mathtt{F})  &\rightarrow&  \mathtt{F} \,f_\mathrm{fuzz} +  \bigl(1 - \mathtt{F}\,E_\mathrm{fuzz}\bigr) \,f_\textrm{coated-base} \ . \label{fuzz-layering-approx}
 \end{eqnarray}
 
 The fuzz shading normal is assumed to inherit from that of the substrate layer, the physical picture being that the fuzz volume settles and conforms to the geometry of the substrate. The substrate is generally a mixture of coat and uncoated base. Thus physically the fuzz model should be evaluated with each of the **`geometry_coat_normal`** and **`geometry_normal`** separately (if they differ), and the final result blended according to the **`coat_weight`**. As a practical approximation, it may be more convenient and efficient to instead approximate the fuzz normal by interpolating the coat and base normal according to **`coat_weight`**.
