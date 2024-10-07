@@ -548,7 +548,7 @@ where $\bar{\mu} = 1/7$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic ref
 \mathbf{F}(\bar{\mu}) = \mathtt{specular\_color} * \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
 \end{equation}
 
-The final metallic Fresnel term we employ is then given by an overall multiplication by $\xi_s = \mathtt{specular\_weight}$, ensuring that the entire metallic lobe is suppressed as the weight goes to zero. Similarly to the dielectric, the weight may also exceed one in order to linearly boost the Fresnel, with a clamp put in place to ensure that it remains bounded in $[0,1]$ as $\xi_s \rightarrow \infty$:
+The final metallic Fresnel term we employ is then given by an overall multiplication by $\xi_s = \mathtt{specular\_weight}$, ensuring that the entire metallic lobe is suppressed as the weight goes to zero. Similarly to the dielectric, the weight may also exceed one in order to linearly boost the Fresnel, with a clamp put in place to ensure that it remains bounded in $[0,1]$ as $\xi_s \rightarrow \infty$: [^component_wise]
 \begin{equation}
 \mathbf{F}_{\mathrm{metal}}(\mu) = \mathrm{min}\bigl(1, \,\xi_s \mathbf{F}_{82}(\mu)\bigr) \ .
 \end{equation}
@@ -788,7 +788,7 @@ The **`transmission_scatter`** color thus controls the observed color of the sin
 \begin{equation}
 \boldsymbol{\mu}_a = \boldsymbol{\mu}_t - \boldsymbol{\mu}_s \ .
 \end{equation}
-If any component of $\boldsymbol{\mu}_a$ is negative, then $\boldsymbol{\mu}_a$ is shifted by enough gray to make all the components positive, i.e. (in an obvious notation):
+If any component of $\boldsymbol{\mu}_a$ is negative, then $\boldsymbol{\mu}_a$ is shifted by enough gray to make all the components positive, i.e.:  [^component_wise]
 \begin{eqnarray}
 && \mathrm{if \;\; min(\boldsymbol{\mu}_a)} < 0 \nonumber \\
 && \quad\quad \boldsymbol{\mu}_a \leftarrow \boldsymbol{\mu}_a - \mathrm{min}(\boldsymbol{\mu}_a) \ .
@@ -1593,6 +1593,8 @@ References
 [^normalization]:  Omitting normalization factors.
 
 [^anisotropy_g]: Technically, $g$ is the _mean cosine of deflection_ of the phase function, which is not specific to the Henyey--Greenstein phase function model [#d'Eon2021].
+
+[^component_wise]: Note that in this concise notation, the scalar denotes a constant vector.
 
 [^Oren_Nayar_formula]: The $s$ term is given by (with normal $\mathbf{n}$):
 \begin{eqnarray*}
