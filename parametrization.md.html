@@ -95,7 +95,7 @@ if not has_coat:
                                                 disable("geometry_coat_tangent")
 if not has_dielectric:                          disable("specular_ior")
 if not has_dielectric_transp:                   disable("transmission", skip="transmission_weight")
-if not has_dielectric_opaque and not has_metal: disable(["base_weight", "base_color"])
+if (not has_diffuse and not has_metal):         disable(["base_weight", "base_color"])
 if not has_subsurface:                          disable("subsurface", skip="subsurface_weight")
 if not has_diffuse:                             disable("base_diffuse_roughness")
 if (specular_weight == 0):                      disable("specular", skip="specular_weight")
