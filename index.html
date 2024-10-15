@@ -552,21 +552,22 @@ where $\bar{\mu} = 1/7$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic ref
 \begin{equation}
 \mathbf{F}(\bar{\mu}) = \mathtt{specular\_color} * \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
 \end{equation}
-The final metallic Fresnel term we employ is then given by an overall multiplication by **`specular_weight`**, ensuring that entire metallic lobe is suppressed as the weight goes to zero:
+
+The final metallic Fresnel term we employ is then given by an overall multiplication by $\xi_s = \mathtt{specular\_weight}$, ensuring that the entire metallic lobe is suppressed as the weight goes to zero. Similarly to the dielectric, the weight may also exceed one in order to linearly boost the Fresnel, with a clamp put in place to ensure that it remains bounded in $[0,1]$ as $\xi_s \rightarrow \infty$: [^component_wise]
 \begin{equation}
-\mathbf{F}_{\mathrm{metal}}(\mu) = \mathtt{specular\_weight} * \mathbf{F}_{82}(\mu) \ .
+\mathbf{F}_{\mathrm{metal}}(\mu) = \mathrm{min}\bigl(1, \,\xi_s \mathbf{F}_{82}(\mu)\bigr) \ .
 \end{equation}
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`specular_color`**.
 Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
-Metal params                        | Label      | Type     | Range        | Default             | Description
-------------------------------------|------------|----------|:------------:|:-------------------:|----------------------------------------------
-**`base_weight`**                   | Weight     | `float`  | $ [0, 1]   $ | $ 1               $ | Scalar multiplier to **`base_color`**
-**`base_color`**                    | Color      | `color3` | $ [0, 1]^3 $ | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
-**`specular_weight`**               | Weight     | `float`  | $ [0, 1]   $ | $ 1               $ | Overall multiplier of the metallic Fresnel
-**`specular_color`**                | Color      | `color3` | $ [0, 1]^3 $ | $ (1, 1, 1)       $ | Tint color of metallic Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
-**`specular_roughness`**            | Roughness  | `float`  | $ [0, 1]   $ | $ 0.3             $ | Roughness of NDF of conductor BRDF $f_\mathrm{conductor}$
-**`specular_roughness_anisotropy`** | Anisotropy | `float`  | $ [0, 1]   $ | $ 0               $ | Anisotropy of NDF of conductor BRDF $f_\mathrm{conductor}$
+Metal params                        | Label      | Type     | Range           | Norm          | Default             | Description
+------------------------------------|------------|----------|:---------------:|:-------------:|:-------------------:|----------------------------------------------
+**`base_weight`**                   | Weight     | `float`  | $ [0, 1]      $ |               | $ 1               $ | Scalar multiplier to **`base_color`**
+**`base_color`**                    | Color      | `color3` | $ [0, 1]^3    $ |               | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
+**`specular_weight`**               | Weight     | `float`  | $ [0, \infty) $ |  $ [0, 1] $   | $ 1               $ | Overall multiplier of the metal Fresnel
+**`specular_color`**                | Color      | `color3` | $ [0, 1]^3    $ |               | $ (1, 1, 1)       $ | Tint color of metallic Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_roughness`**            | Roughness  | `float`  | $ [0, 1]      $ |               | $ 0.3             $ | Roughness of NDF of BRDF $f_\mathrm{conductor}$
+**`specular_roughness_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |               | $ 0               $ | Anisotropy of NDF of BRDF $f_\mathrm{conductor}$
 
 
 ![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
@@ -792,7 +793,7 @@ The **`transmission_scatter`** color thus controls the observed color of the sin
 \begin{equation}
 \boldsymbol{\mu}_a = \boldsymbol{\mu}_t - \boldsymbol{\mu}_s \ .
 \end{equation}
-If any component of $\boldsymbol{\mu}_a$ is negative, then $\boldsymbol{\mu}_a$ is shifted by enough gray to make all the components positive, i.e. (in an obvious notation):
+If any component of $\boldsymbol{\mu}_a$ is negative, then $\boldsymbol{\mu}_a$ is shifted by enough gray to make all the components positive, i.e.:  [^component_wise]
 \begin{eqnarray}
 && \mathrm{if \;\; min(\boldsymbol{\mu}_a)} < 0 \nonumber \\
 && \quad\quad \boldsymbol{\mu}_a \leftarrow \boldsymbol{\mu}_a - \mathrm{min}(\boldsymbol{\mu}_a) \ .
@@ -1597,6 +1598,8 @@ References
 [^normalization]:  Omitting normalization factors.
 
 [^anisotropy_g]: Technically, $g$ is the _mean cosine of deflection_ of the phase function, which is not specific to the Henyey--Greenstein phase function model [#d'Eon2021].
+
+[^component_wise]: Note that in this concise notation, the scalar denotes a constant vector.
 
 [^Oren_Nayar_formula]: The $s$ term is given by (with normal $\mathbf{n}$):
 \begin{eqnarray*}
