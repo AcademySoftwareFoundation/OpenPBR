@@ -36,10 +36,10 @@ However each of these models originated from a single company and was designed p
 OpenPBR is intended to be a common interface between products, as well as something practical that works well and looks plausible for most day-to-day use cases. For the more specialized use cases it does not cover (for example very high-end skin, hair, cloth or volume shading), one may need to use a renderer-specific shader, or build a bespoke shading network. We aim for the overall behavior to be simple, logical, intuitive, and understandable, so that users can become comfortable and familiar with it, while also being grounded in physically-based rendering.
 
 We thus adopt a specific form of material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]). In outline the structure consists of:
-   - A [base substrate](index.html#model/basesubstrate) made of a mixture of [metal](index.html#model/metal) or [dielectric](index.html#model/dielectricbase). The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric base represents either of three components, that can be statistically mixed:
-        1. [Glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse): dielectric with opaque internal media, e.g. wood, granite, concrete, cardboard, and wall-paint.
-        2. [Subsurface](index.html#model/dielectricbase/subsurface): dielectric with dense highly scattering internal media, e.g. plastic, marble, skin, vegetation, and food.
-        3. [Translucent-base](index.html#model/dielectricbase/translucentbase): dielectric with translucent internal media, e.g. glass, crystals, and liquids.
+   - A [base substrate](index.html#model/basesubstrate) made of a mixture of [metal](index.html#model/basesubstrate/metal) or dielectric. The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric base represents either of three components, that can be statistically mixed:
+        1. [Glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse): dielectric with opaque internal media, e.g. wood, granite, concrete, cardboard, and wall-paint.
+        2. [Subsurface](index.html#model/basesubstrate/subsurface): dielectric with dense highly scattering internal media, e.g. plastic, marble, skin, vegetation, and food.
+        3. [Translucent-base](index.html#model/basesubstrate/translucentbase): dielectric with translucent internal media, e.g. glass, crystals, and liquids.
    - [Coat](index.html#model/coat): An optional layer of dielectric, which may have an absorbing medium, acting as a coating on top of the base substrate.
      The dielectric interface of this coat layer provides a secondary specular lobe.
    - [Fuzz](index.html#model/fuzz): An optional layer representing the reflection from micro-fibers (such as fine hair, peach fuzz, textile strands, and dust grains) on top of everything else.
@@ -381,7 +381,7 @@ Microfacet model
 
 We give here some general assumptions about the form and parametrization of the BSDFs which describe the interfaces in the model outlined in the previous section.
 
-The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$, $f_\mathrm{coat}$ and $f_\mathrm{diffuse}$ of the [metal](index.html#model/metal), [dielectric](index.html#model/dielectricbase), [coat](index.html#model/coat) and [glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse) slabs respectively, are each assumed to be described by a standard _microfacet model_. This is a widely used approximation ([#Pharr2023]) in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal, dielectric or Lambertian material, where the statistical distribution of the normal of these facets, termed the _micronormal_, determines the surface roughness characteristics at the macroscopic scale. (The [fuzz](index.html#model/fuzz) model is distinct and based on a volumetric "microflake" model [#Heitz2015]).
+The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$, $f_\mathrm{coat}$ and $f_\mathrm{diffuse}$ of the [metal](index.html#model/basesubstrate/metal), [dielectric](index.html#model/basesubstrate), [coat](index.html#model/coat) and [glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse) slabs respectively, are each assumed to be described by a standard _microfacet model_. This is a widely used approximation ([#Pharr2023]) in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal, dielectric or Lambertian material, where the statistical distribution of the normal of these facets, termed the _micronormal_, determines the surface roughness characteristics at the macroscopic scale. (The [fuzz](index.html#model/fuzz) model is distinct and based on a volumetric "microflake" model [#Heitz2015]).
 
 A microfacet BRDF has the standard form [^Jacobian] ([#Walter2007], [#Pharr2023]) in the single-scattering approximation:
 \begin{equation}
@@ -470,7 +470,7 @@ where $\mathtt{T} = \mathtt{transmission\_weight}$.
 
 This mirrors the usual workflow of artists where they are typically either modelling an opaque surface potentially with some specularity and dense subsurface scattering (such as rock, plastic, skin etc.), or a translucent material with some limited amount of volumetric absorption and scattering (such as glass, liquids, organic matter etc.). These use cases require different parametrizations to effectively control, so are convenient to split into separate slabs.
 
-The translucent-base is described in the Translucent base section, while the opaque-base is further broken down below (into [Glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse) and [Subsurface](index.html#model/dielectricbase/subsurface)). The **`transmission_weight`** parameter selects between these models. Note that technically a mix weight between 0 and 1 produces a physically ambiguous state (since there are then superimposed bulk media with different properties), so we expect that normally this weight acts as a Boolean selector.
+The translucent-base is described in the Translucent base section, while the opaque-base is further broken down below (into [Glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse) and [Subsurface](index.html#model/basesubstrate/subsurface)). The **`transmission_weight`** parameter selects between these models. Note that technically a mix weight between 0 and 1 produces a physically ambiguous state (since there are then superimposed bulk media with different properties), so we expect that normally this weight acts as a Boolean selector.
 
 The opaque-base substrate is assumed to be a dielectric with dense subsurface volumetric absorption and scattering, which tends to an idealized "glossy-diffuse" BSDF in the limit of infinite density medium. In some cases a blend of subsurface and completely opaque glossy-diffuse scattering is desired, for example in skin rendering where the diffuse component provides the surface details of the skin (freckles, blemishes, makeup, etc.) and the subsurface component provides the color detail of the underlying veins and tissue. To support this, we make the opaque-base substrate be a statistical mix of glossy-diffuse and subsurface models (described in the Glossy-diffuse section and the Subsurface section respectively):
 \begin{eqnarray}
@@ -521,7 +521,6 @@ Specular params                     | Label      | Type     | Range           | 
 <div class="shifted-caption">
    ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.3, 1.5 (default)](dummy)
 </div>
-
 
 ###  Metal
 
@@ -708,7 +707,7 @@ The subsurface slab represents a dielectric embedding a dense scattering volumet
 S_\mathrm{subsurface} = \mathrm{Slab}(f_\mathrm{dielectric}, V^\infty_\mathrm{subsurface}) \ .
 \end{equation}
 
-As in the cases of the [glossy-diffuse](index.html#model/dielectricbase/glossy-diffuse) slab and the [translucent-base](index.html#model/dielectricbase/translucentbase), the subsurface is bounded by a dielectric interface with BSDF $f_\mathrm{dielectric}$, which generates the primary specular reflection lobe parametrized via the "specular" parameters as described in the Dielectric base section. Combined with this is the reflection generated by light which is transmitted through the dielectric interface into the underlying embedded subsurface medium, where it scatters around and eventually transmits back out. In this case the subsurface medium $V^\infty_\mathrm{subsurface}$ is given a parametrization which is particularly convenient for controlling the volumetric effect of dense subsurface scattering:
+As in the cases of the [glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse) slab and the [translucent-base](index.html#model/basesubstrate/translucentbase), the subsurface is bounded by a dielectric interface with BSDF $f_\mathrm{dielectric}$, which generates the primary specular reflection lobe parametrized via the "specular" parameters as described in the Dielectric base section. Combined with this is the reflection generated by light which is transmitted through the dielectric interface into the underlying embedded subsurface medium, where it scatters around and eventually transmits back out. In this case the subsurface medium $V^\infty_\mathrm{subsurface}$ is given a parametrization which is particularly convenient for controlling the volumetric effect of dense subsurface scattering:
 
    - **`subsurface_radius`** * **`subsurface_radius_scale`**: the _mean free path_ (MFP) per RGB channel, $\mathbf{r}$, i.e. the average distance that a ray of light travels through the medium before being absorbed or scattered. This thus controls the apparent density of the medium. In the limit of zero MFP, the medium tends towards infinite density, and approaches the look of an opaque diffuse surface. Being a length, **`subsurface_radius`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1]$, thus covering common cases such as skin where the MFP is lower than the scene length units. The **`subsurface_radius_scale`** controls the color channel dependence of the MFP, and thus this color is visible in the light transmitted through thinner regions of the subsurface volume.
    - **`subsurface_color`**: the observed RGB reflection albedo color taking into account all orders of multiple scattering, $\mathbf{C}$ (where the sense in which this parametrizes the observed color is discussed in detail below).
@@ -1142,17 +1141,18 @@ We put emission below the coating so that emitted light will be tinted due to th
 * +-------------------------------------------------+ *
 *******************************************************
 
-The intensity of the EDF is controlled by a luminance and a color multiplier. The **`emission_luminance`** parameter controls the luminance the emissive layer would have when **`emission_color`** is set to (1, 1, 1) and in the absence of coat and fuzz. The **`emission_color`** acts as a multiplier, i.e. the HDR emission in the model color space is defined to have a color given by **`emission_color`** * **`emission_luminance`**, thus the resulting luminance may be less than the input parameter, or even zero if the **`emission_color`** is set to (0, 0, 0).
+The intensity of the EDF is controlled by a luminance value with color and weight multipliers.  The color and weight act as multipliers, i.e. the HDR emission in the model color space is defined to have a color given by **`emission_weight`** * **`emission_color`** * **`emission_luminance`**. The **`emission_luminance`** parameter thus refers to the luminance the emissive layer would have when the color is white and weight is 1, and in the absence of coat and fuzz. Thus the final resulting luminance may be less than the input parameter, or even zero if the color or weight are zeroed.
 
 Moreover, the overall material luminance may be further reduced in the presence of coat or fuzz, as they can absorb light coming from the emissive layer before it exits the surface. The emission from the top surface should in principle gain a directional dependence due to the combined effects of absorption, total internal reflection (TIR) and multiple bounces in the coat layer, and absorption in the fuzz layer. The combined effect should result mostly in darkening and saturation at grazing angles.
 
-Being an intensity, **`emission_luminance`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1000]$, corresponding to the typical range of home appliances.
+Being an intensity, **`emission_luminance`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1000]$, corresponding to the typical range of home appliances. (Note that if the renderer does not deal with photometric units internally, a scale factor may need to be applied to bring the emission into a sensible range).
 
 
 Emission params          | Label     | Type     | Range           | Norm          | Default       | Description
 -------------------------|-----------|----------|:---------------:|:-------------:|:-------------:|----------------------------------------------
-**`emission_luminance`** | Luminance | `float`  | $ [0, \infty) $ | $ [0, 1000] $ | $ 0         $ | Emission luminance, in cd/m^2 (aka. nits)
-**`emission_color`**     | Color     | `color3` | $ [0, 1]^3    $ |               | $ (1, 1, 1) $ | Emission color multiplier
+**`emission_weight`**    | Weight    | `float`  | $ [0, 1]      $ |               | $ 0         $ | Emission weight luminance multiplier
+**`emission_luminance`** | Luminance | `float`  | $ [0, \infty) $ | $ [0, 1000] $ | $ 1000      $ | Emission luminance, in cd/m^2 (aka. nits)
+**`emission_color`**     | Color     | `color3` | $ [0, 1]^3    $ |               | $ (1, 1, 1) $ | Emission color luminance multiplier
 
 ![](images/emitting_lava.png width=90% align=left) ![](images/emission_under_coat.png width=90% align=right)
 <div class="shifted-caption">
