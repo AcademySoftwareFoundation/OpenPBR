@@ -986,7 +986,7 @@ The base dielectric roughness $r_d$ can reasonably be estimated as a mix between
 \begin{equation} \label{dielectric_roughness_estimate}
 r_d = \mathrm{lerp}(1, r, \xi_s F_s)
 \end{equation}
-while the metallic roughness can be taken to be $r_m = r$.
+while the metallic roughness can be taken to be $r_m = r$. (Note that in this formula for $r_d$, a clamp must be applied to ensure that $\xi_s F_s \in [0, 1]$).
 
 Given the general formula equation [general_darkening_formula] for the darkening, a reasonable approximate scheme -- assuming no other compensation is made to approximate the effect -- is to multiply the base BSDF by the uniform _modulated darkening factor_ (taking into account the presence weight $\mathtt{C}$ = **`coat_weight`** and the darkening parameter $\delta$ = **`coat_darkening`**):
 \begin{equation} \label{modulated_darkening_factor}
