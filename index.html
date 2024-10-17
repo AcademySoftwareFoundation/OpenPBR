@@ -1133,17 +1133,18 @@ We put emission below the coating so that emitted light will be tinted due to th
 * +-------------------------------------------------+ *
 *******************************************************
 
-The intensity of the EDF is controlled by a luminance and a color multiplier. The **`emission_luminance`** parameter controls the luminance the emissive layer would have when **`emission_color`** is set to (1, 1, 1) and in the absence of coat and fuzz. The **`emission_color`** acts as a multiplier, i.e. the HDR emission in the model color space is defined to have a color given by **`emission_color`** * **`emission_luminance`**, thus the resulting luminance may be less than the input parameter, or even zero if the **`emission_color`** is set to (0, 0, 0).
+The intensity of the EDF is controlled by a luminance value with color and weight multipliers.  The color and weight act as multipliers, i.e. the HDR emission in the model color space is defined to have a color given by **`emission_weight`** * **`emission_color`** * **`emission_luminance`**. The **`emission_luminance`** parameter thus refers to the luminance the emissive layer would have when the color is white and weight is 1, and in the absence of coat and fuzz. Thus the final resulting luminance may be less than the input parameter, or even zero if the color or weight are zeroed.
 
 Moreover, the overall material luminance may be further reduced in the presence of coat or fuzz, as they can absorb light coming from the emissive layer before it exits the surface. The emission from the top surface should in principle gain a directional dependence due to the combined effects of absorption, total internal reflection (TIR) and multiple bounces in the coat layer, and absorption in the fuzz layer. The combined effect should result mostly in darkening and saturation at grazing angles.
 
-Being an intensity, **`emission_luminance`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1000]$, corresponding to the typical range of home appliances.
+Being an intensity, **`emission_luminance`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1000]$, corresponding to the typical range of home appliances. (Note that if the renderer does not deal with photometric units internally, a scale factor may need to be applied to bring the emission into a sensible range).
 
 
 Emission params          | Label     | Type     | Range           | Norm          | Default       | Description
 -------------------------|-----------|----------|:---------------:|:-------------:|:-------------:|----------------------------------------------
-**`emission_luminance`** | Luminance | `float`  | $ [0, \infty) $ | $ [0, 1000] $ | $ 0         $ | Emission luminance, in cd/m^2 (aka. nits)
-**`emission_color`**     | Color     | `color3` | $ [0, 1]^3    $ |               | $ (1, 1, 1) $ | Emission color multiplier
+**`emission_weight`**    | Weight    | `float`  | $ [0, 1]      $ |               | $ 0         $ | Emission weight luminance multiplier
+**`emission_luminance`** | Luminance | `float`  | $ [0, \infty) $ | $ [0, 1000] $ | $ 1000      $ | Emission luminance, in cd/m^2 (aka. nits)
+**`emission_color`**     | Color     | `color3` | $ [0, 1]^3    $ |               | $ (1, 1, 1) $ | Emission color luminance multiplier
 
 ![](images/emitting_lava.png width=90% align=left) ![](images/emission_under_coat.png width=90% align=right)
 <div class="shifted-caption">
