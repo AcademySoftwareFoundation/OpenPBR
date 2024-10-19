@@ -73,6 +73,43 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
 | `geometry_coat_normal`                | Coat Normal         | `vector3` | N/A               |               | unperturbed normal   |                  |
 | `geometry_coat_tangent`               | Coat Tangent        | `vector3` | N/A               |               | unperturbed tangent  |                  |
 
+
+## UI disabling logic
+
+The structure of the OpenPBR tree of layer and mix operations implies that some parameters have no effect if other parameters take certain values.
+It can be a helpful cue for artists if the UI design for the shader reflects this by disabling (e.g. greying out) those controls which are irrelevant in the current context.
+
+To facilitate this aspect of the UI design, we provide here in Python pseudocode form the recommended logic needed to determine which of the parameters can be disabled. This employs a function `disable(P, skip=[])` where the arguments `P` and the optional `skip` are a prefix string (or list of prefix strings). Then all parameters with names matching any of the prefixes in `P` should be disabled, except for those matching any in `skip`.
+
+```python
+has_fuzz              = (fuzz_weight > 0.0)
+has_coat              = (coat_weight > 0.0)
+has_metal             = (base_metalness > 0.0)
+has_dielectric        = (base_metalness < 1.0)
+has_dielectric_transp = has_dielectric and (transmission_weight > 0.0)
+has_dielectric_opaque = has_dielectric and (transmission_weight < 1.0)
+has_subsurface        = has_dielectric_opaque and (subsurface_weight > 0.0)
+has_diffuse           = has_dielectric_opaque and (subsurface_weight < 1.0)
+if not has_fuzz:                                disable("fuzz", skip="fuzz_weight")
+if not has_coat:
+                                                disable("coat", skip="coat_weight")
+                                                disable("geometry_coat_tangent")
+if not has_dielectric:                          disable("specular_ior")
+if not has_dielectric_transp:                   disable("transmission", skip="transmission_weight")
+if (not has_diffuse and not has_metal):         disable(["base_weight", "base_color"])
+if not has_subsurface:                          disable("subsurface", skip="subsurface_weight")
+if not has_diffuse:                             disable("base_diffuse_roughness")
+if (specular_weight == 0):                      disable("specular", skip="specular_weight")
+if (thin_film_weight == 0):                     disable("thin_film", skip="thin_film_weight")
+# In thin-walled mode, the volumetric medium is infinitesimally thin so the parameters controlling
+# the MFP of the medium are irrelevant
+if (geometry_thin_walled):
+   disable("transmission", skip=["transmission_weight", "transmission_color"])
+   disable("subsurface_radius") # (NB, also disables subsurface_radius_scale)
+```
+
+
+
 <!-- Markdeep: -->
 <style class="fallback">
    body { visibility:hidden }
@@ -85,3 +122,6 @@ window.markdeepOptions = {tocStyle: "long", smartQuotes=true}
 <script>
 window.alreadyProcessedMarkdeep || (document.body.style.visibility="visible")
 </script>
+
+
+
