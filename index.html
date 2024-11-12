@@ -615,7 +615,7 @@ augmented with a simple analytical, reciprocal energy compensation term:
 \begin{eqnarray} \label{EON_brdf}
 f_\mathrm{diffuse}(\omega_i, \omega_o) = f_\mathrm{ON}(\omega_i, \omega_o) + f^\mathrm{comp}_\mathrm{ON}(\omega_i, \omega_o) \ .
 \end{eqnarray}
-This form of the Oren-Nayar model is termed "energy-preserving Oren-Nayar" or $\textbf{EON}$.
+This form of the Oren-Nayar model is termed "energy-preserving Oren-Nayar" or $\textbf{EON}$ [#Portsmouth2024].
 The Oren-Nayar term $f_\mathrm{ON}$ is given by the [#Fujii2012] form [^Oren_Nayar_formula]
 \begin{eqnarray} \label{FON_brdf}
 f_\mathrm{ON}(\omega_i, \omega_o) = \frac{w_\mathrm{d} \boldsymbol{\rho}}{\pi} \Bigl( A(\sigma) + B(\sigma) \frac{s}{t}
@@ -627,7 +627,7 @@ The RGB $\boldsymbol{\rho}$ parameter is determined by the specified **`base_col
 
 The directional albedo $E_\mathrm{ON}(\omega) = w_\mathrm{d} \boldsymbol{\rho}\,\hat{E}_\mathrm{ON}(\omega)$, and
 corresponding _average albedo_ $\langle\hat{E}_\mathrm{ON}\rangle$, of the Oren-Nayar term can be determined
-analytically [^Oren_Nayar_albedo]. The energy compensation term $f^{\mathrm{comp}}_\mathrm{ON}$ is given in terms of the
+analytically [#Portsmouth2024]. The energy compensation term $f^{\mathrm{comp}}_\mathrm{ON}$ is given in terms of the
 albedo $\langle\hat{E}_\mathrm{ON}\rangle$ by
 \begin{equation} \label{EON_comp}
 f^\mathrm{comp}_\mathrm{ON}(\omega_i, \omega_o) = \frac{w_\mathrm{d} \boldsymbol{\rho}_\mathrm{ms}}{\pi}
@@ -1576,6 +1576,8 @@ References
 
 [#Polyanskiy2023]: Mikhail N. Polyanskiy. [*Refractive Index Database*](https://refractiveindex.info/) (2023).
 
+[#Portsmouth2024]: Jamie Portsmouth, Peter Kutz and Stephen Hill. [*EON: A practical energy-preserving rough diffuse BRDF*](https://arxiv.org/abs/2410.18026) (2024)
+
 [#Schott2023]: SCHOTT. [*Interactive Abbe Diagram*](https://www.schott.com/en-gb/interactive-abbe-diagram) (2023).
 
 [#Smythe2016]: Doug Smythe and Jonathan Stone. [*MaterialX: An Open Standard for Network-Based CG Object Looks*](https://materialx.org)
@@ -1628,20 +1630,6 @@ The $A, B$ coefficients are
   A &=& \frac{1}{1 + \left(\frac{1}{2} - \frac{2}{3\pi}\right)\sigma}\ , \nonumber \\
   B &=& \sigma A \ .
 \end{eqnarray}
-
-[^Oren_Nayar_albedo]: The albedo of the [#Fujii2012] form of the Oren-Nayar BRDF is given by $E_\mathrm{ON}(\omega) = \rho\,\hat{E}_\mathrm{ON}(\omega)$, where
-For unit $\rho$,
-\begin{eqnarray}
-\hat{E}_\mathrm{ON}(\omega) = A + \frac{B}{\pi} G(\omega) \ ,
-\end{eqnarray}
-where (in spherical polars)
-\begin{equation}
-G(\theta) = \sin\theta \Bigl( \theta - \sin\theta \cos\theta \Bigr) + \frac{2}{3}\tan\theta \Bigl(1 - \sin^3\theta - \cos\theta\Bigr) \ .
-\end{equation}
-The corresponding albedo averaged over the hemisphere is given by
-\begin{equation}
-\langle\hat{E}_\mathrm{ON}\rangle = A + \left(\frac{2}{3} - \frac{28}{15\pi}\right) B \ .
-\end{equation}
 
 [^porosity]: In reality, coats can also darken the underlying surface due to a different mechanism where the coat modifies the Fresnel factor of the base due to the coat material filling in air gaps between granules or threads of a porous base material, which reduces the relative IORs at the internal interfaces. This occurs e.g. on adding water to sand or fabric, or adding a penetrating wood finish. We assume here that this effect explicitly does _not_ occur, at present, since we do not have enough knowledge about the properties of the underlying substance to model it. We can only safely assume that the first mechanism of darkening, i.e. internal reflections, occurs.
 
