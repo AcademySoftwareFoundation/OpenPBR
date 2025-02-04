@@ -1,0 +1,32 @@
+<meta charset="utf-8" emacsmode="-*- markdown -*-">
+<link rel="stylesheet" href="style/style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+
+Approximations for constrained implementations
+==============================================
+
+This specification describes a model which includes a number of features that can be computationnally expensive and therefore impractical to support in certain contexts, like real-time applications or mobile devices.
+
+The Historical background and objectives section explains how the goal of this specification is to provide an ideal, reference appearance. The implementer is, however, free to make decisions and approximations to satisfy their practical constraints. We cannot dictate what those approximations should be, as this depends on the use case. We can, however, propose some possible approximations and offer guidelines to help the implementer make those decisions.
+
+As a general rule of thumb, we invite the implementer to think of those approximations in the same way one would think of different levels of detail (LOD) variants of an asset. Just like such an asset would become more coarse with distance while retaining as much detail as necessary to remain faithful to the original, an implementation of OpenPBR may decide to make simplifications, as long as the result remains reasonably faithful to the intent given the practical constraints. In the most extreme hypothetical case, the model might even get reduced to as little as a single Lambert BRDF.
+
+This means the implementer must carefully consider what to do with parameters they do not plan to fully support. A parameter that drastically modifies the appearance of a material should not be discarded just because the corresponding effect is not supported. As an example, in a renderer that doesn't have subsurface scattering, the subsurface color might be used as the albedo of a diffuse BRDF.
+
+In the following sections we propose possible approximations for the different components of the OpenPBR Surface material.
+
+
+<!-- Markdeep: -->
+<style class="fallback">
+    body { visibility:hidden }
+</style>
+
+<script src="style/markdeep-1.04.min.js" charset="utf-8">
+window.markdeepOptions = {tocStyle: "long", smartQuotes=true}
+</script>
+
+<script>
+window.alreadyProcessedMarkdeep || (document.body.style.visibility="visible")
+</script>
+ 
