@@ -23,6 +23,12 @@ Layering and mixing
 As mentioned in the Reduction to a mixture of lobes section, the mix and layer operations can approximated as a weighted sum of BSDF lobes.
 
 
+Specular lobes
+-------------------------------------
+
+The specular BRDF described in the specification is the classic GGX-Smith model, which has been common in both offline and real-time rendering for a decade. The so called "split-sum" approximation introduced by [#Karis2013] allows efficient rendering of the isotropic version of this BRDF with image-based lighting.
+
+
 <!-- Markdeep: -->
 <style class="fallback">
     body { visibility:hidden }
