@@ -29,6 +29,17 @@ Specular lobes
 The specular BRDF described in the specification is the classic GGX-Smith model, which has been common in both offline and real-time rendering for a decade. The so called "split-sum" approximation introduced by [#Karis2013] allows efficient rendering of the isotropic version of this BRDF with image-based lighting.
 
 
+### Anisotropic case
+
+Several solutions are possible for the anisotropic case:
+
+- [#Cocco2024] recently proposed an image-based lighting approximation of anisotropic specular reflection consisting in several samples along the main BRDF axis.
+
+- [#McAuley15] describes a simpler and cheaper method based on [#Revie2011], consisting in modifying normals and offering a very crude approximation of anisotropic reflection.
+
+- Finally, the crudest approximation would be to ignore entirely the `specular_roughness_anisotropy` for the base layer specular lobe (respectively `coat_roughness_anisotropy` for the coat specular lobe), as the anisotropy parametrization in designed to preserve the average roughness regardless of the anisotropy (see the Microfacet model section for details).
+
+
 <!-- Markdeep: -->
 <style class="fallback">
     body { visibility:hidden }
