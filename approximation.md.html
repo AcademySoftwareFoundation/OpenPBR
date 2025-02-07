@@ -8,7 +8,7 @@ Approximations for constrained implementations
 
 This specification describes a model which includes a number of features that can be computationally expensive and therefore impractical to support in certain contexts, like real-time applications or mobile devices.
 
-The Historical background and objectives section explains how the goal of this specification is to provide an ideal, reference appearance. The implementer is, however, free to make decisions and approximations to satisfy their practical constraints. We cannot dictate what those approximations should be, as this depends on the use case. We can, however, propose some possible ones and offer guidelines to help the implementer make those decisions.
+The Historical background and objectives section explains how the goal of this specification is to provide an ideal, reference appearance. The implementer is, however, free to make decisions and approximations to satisfy their practical constraints. We do not dictate what those approximations should be, as this depends on the use case. We can, however, propose some possible ones and offer guidelines to help the implementer make those decisions.
 
 As a general rule of thumb, we invite the implementer to think of those approximations in the same way one would think of different levels of detail (LOD) variants of an asset. Just like such an asset would become coarser with distance while retaining as much detail as necessary to remain faithful to the original, an implementation of OpenPBR may decide to make simplifications, as long as the result remains reasonably faithful to the intent given the practical constraints. In the most extreme hypothetical case, the model might even get reduced to as little as a single Lambert BRDF.
 
