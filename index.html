@@ -950,19 +950,18 @@ However this darkening may not always be desirable artistically, as in some appl
 \begin{equation} \label{general_coat_albedo}
 \mathbf{E}_c = F_0 + (1 - F_0) \mathbf{X} \ .
 \end{equation}
-where $F_0$ is the normal incidence Fresnel factor of the coat, $T_\mathrm{coat}$ is the coat absorption transmittance, and $E_b$ is the base albedo at normal incidence.
-
-We then require that the effect of $\delta$ = **`coat_darkening`** is to multiply $\mathbf{X} \rightarrow B(\delta) \mathbf{X}$ by the scalar boost factor
+where $F_0$ is the normal incidence Fresnel factor of the coat. We then require that the effect of $\delta$ = **`coat_darkening`** is to multiply $\mathbf{X} \rightarrow B(\delta) \mathbf{X}$ by the scalar boost factor
 \begin{equation} \label{undarkened_coat_albedo_scaling}
-B(\delta) = \mathrm{lerp}\biggl(\frac{\mathrm{lum}(\mathbf{T}_\mathrm{coat}^2 \mathbf{E}_b)}{\mathrm{lum}(\mathbf{X})}, 1, \delta \biggr) \ .
+B(\delta) = \mathrm{lerp}\biggl(\frac{\mathrm{lum}(\mathbf{T}_\mathrm{coat}^2 \mathbf{E}_b)}{\mathrm{lum}(\mathbf{X})}, 1, \delta \biggr)
 \end{equation}
-This is a straightforward interpretation of the requirement for the *luminance of the base* of the "un-darkened" coat to be equal to what it would be if the albedo was given by the usual un-darkened albedo scaling formula, while retaining the chromaticity of the physically darkened coat:
+where $\mathbf{T}_\mathrm{coat}$ is the coat absorption transmittance, and $E_b$ is the base albedo at normal incidence.
+
+This is a straightforward interpretation of the requirement for the *luminance of the base* of the "un-darkened" coat to be equal to what it would be if the albedo was given by the usual un-darkened albedo scaling formula (while retaining the chromaticity of the albedo of physically darkened coat):
 \begin{equation} \label{undarkened_coat_albedo}
-\mathbf{E}^U_c = F_0 + \mathbf{T}^2_\mathrm{coat} \, \mathbf{E}_b (1 - F_0)
+F_0 + \mathbf{T}^2_\mathrm{coat} \, \mathbf{E}_b (1 - F_0) \ .
 \end{equation}
 
-While this defines the behavior at the level of the required albedos, in practice implementations will need to develop some specific approximation for the coat darkening effect consistent with their physical approximations. Due to the physical effect of the darkening due to the internal reflections, the base BSDF would generally need to be boosted by some compensating uniform RGB "boost" factor $\mathbf{B}_0$ in order for the coated base to achieve this un-darkened luminance.
-While this can be implementation dependent, we suggest here a reasonably simple, efficient scheme which captures the essential behavior.
+While this defines the behavior at the level of the required albedos, in practice implementations will need to develop some specific approximation for the coat darkening effect consistent with their physical approximations. Due to the physical effect of the darkening due to the internal reflections, the base BSDF would generally need to be altered in order for the coated base to achieve the un-darkened albedo. While this can be implementation dependent, we suggest here a reasonably simple, efficient scheme which captures the essential behavior.
 
 Physically, it can be shown that in the case of a Lambertian base with (constant) albedo $E_b$ and a perfectly smooth dielectric clear-coat -- the so-called _interfaced Lambertian_ model ([#Elias2001], [#d'Eon2021]) -- that the exact directional albedo of the coated base has the albedo-scaling-like form (where $\eta_c$ is the ratio of the coat IOR to the ambient IOR, and $F$ is the corresponding coat Fresnel factor):
 \begin{equation} \label{interfaced_lambertian_albedo}
