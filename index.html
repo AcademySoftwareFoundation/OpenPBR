@@ -946,29 +946,32 @@ Figure [coat_darkening_grid] shows the physically-correct change in appearance (
 
 ![Figure [coat_darkening_grid]: Diffuse base with a clear-coat, for coats of different relative IOR $\eta_c$](images/coat_darkening_grid.png width="60%")
 
-However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$. By default $\delta$ = $1$, in which case the physically correct darkening effect due to internal reflections occurs as normal. In the case $\delta$ = $0$ however, the base albedo is instead _boosted_ uniformly by just enough to counteract the darkening effect. The boost factor is reduced to 1 linearly as $\delta \rightarrow 1$.
+However this darkening may not always be desirable artistically, as in some applications it is beneficial for the observed color of the coated color to "match" the input base color (in a sense defined more precisely below in equation [undarkened_coat_albedo]). We allow for this by introducing a **`coat_darkening`** parameter, $\delta$. By default $\delta$ = $1$, in which case the physically correct darkening effect due to internal reflections occurs as normal. In the case $\delta$ = $0$ however, the base albedo is modified to "counteract" the darkening effect. To describe what we mean by "counteract the darkening", we write the coat albedo in the general form
+\begin{equation} \label{general_coat_albedo}
+\mathbf{E}_c = F_0 + (1 - F_0) \mathbf{X} \ .
+\end{equation}
+where $F_0$ is the normal incidence Fresnel factor of the coat, $T_\mathrm{coat}$ is the coat absorption transmittance, and $E_b$ is the base albedo at normal incidence.
 
-What we mean by "counteract the darkening" is defined as the albedo of the coated base viewed at normal incidence, $E_c$, being equal to the "un-darkened" albedo
+We then require that the effect of $\delta$ = **`coat_darkening`** is to multiply $\mathbf{X} \rightarrow B(\delta) \mathbf{X}$ by the scalar boost factor
+\begin{equation} \label{undarkened_coat_albedo_scaling}
+B(\delta) = \mathrm{lerp}\biggl(\frac{\mathrm{lum}(\mathbf{T}_\mathrm{coat}^2 \mathbf{E}_b)}{\mathrm{lum}(\mathbf{X})}, 1, \delta \biggr) \ .
+\end{equation}
+This is a straightforward interpretation of the requirement for the *luminance of the base* of the "un-darkened" coat to be equal to what it would be if the albedo was given by the usual un-darkened albedo scaling formula, while retaining the chromaticity of the physically darkened coat:
 \begin{equation} \label{undarkened_coat_albedo}
-E_c = F_0 + E_b (1 - F_0) = \mathrm{lerp}(F_0, 1, E_b)
+\mathbf{E}^U_c = F_0 + \mathbf{T}^2_\mathrm{coat} \, \mathbf{E}_b (1 - F_0)
 \end{equation}
-where $E_b$ is the base albedo at normal incidence, which is a straightforward interpretation of the requirement for the observed color of the coated base to match the uncoated base, taking into account the presence of the Fresnel effect of the coat. Due to the physical effect of the darkening due to the internal reflections, the base BSDF would generally need to be boosted by some compensating uniform "boost" factor $B_0$ in order for the coated base to achieve this un-darkened albedo. The effect of $\delta$ = **`coat_darkening`** is then defined to be the following modulation of the applied boost factor:
-\begin{equation} \label{boost_factor}
-B(\delta) = \mathrm{lerp}(B_0, 1, \delta) \ .
-\end{equation}
-While this defines the behavior at a physical level, in practice implementations will need to develop some specific approximation for the coat darkening effect.
+
+While this defines the behavior at the level of the required albedos, in practice implementations will need to develop some specific approximation for the coat darkening effect consistent with their physical approximations. Due to the physical effect of the darkening due to the internal reflections, the base BSDF would generally need to be boosted by some compensating uniform RGB "boost" factor $\mathbf{B}_0$ in order for the coated base to achieve this un-darkened luminance.
 While this can be implementation dependent, we suggest here a reasonably simple, efficient scheme which captures the essential behavior.
 
-It can be shown that in the case of a Lambertian base with (constant) albedo $E_b$ and a perfectly smooth dielectric clear-coat -- the so-called _interfaced Lambertian_ model ([#Elias2001], [#d'Eon2021]) -- that the exact directional albedo of the coated base has the albedo-scaling-like form (where $\eta_c$ is the ratio of the coat IOR to the ambient IOR, and $F$ is the corresponding coat Fresnel factor):
+Physically, it can be shown that in the case of a Lambertian base with (constant) albedo $E_b$ and a perfectly smooth dielectric clear-coat -- the so-called _interfaced Lambertian_ model ([#Elias2001], [#d'Eon2021]) -- that the exact directional albedo of the coated base has the albedo-scaling-like form (where $\eta_c$ is the ratio of the coat IOR to the ambient IOR, and $F$ is the corresponding coat Fresnel factor):
 \begin{equation} \label{interfaced_lambertian_albedo}
-E_c(\omega_o) = F(\omega_o, \eta_c) + E_b \Bigl(1 - F(\omega_o, \eta_c)\Bigr) \Delta(E_b, \eta_c)
+\mathbf{E}_c(\omega_o) = F(\omega_o, \eta_c) + \mathbf{E}_b \Bigl(1 - F(\omega_o, \eta_c)\Bigr) \mathbf{\Delta}(\mathbf{E}_b, \eta_c)
 \end{equation}
-where $\Delta(E_b, \eta_c)$ is a darkening factor given by
+where $\mathbf{\Delta}(\mathbf{E}_b, \eta_c)$ is a darkening factor given by
 \begin{equation} \label{general_darkening_formula}
-\Delta(E_b, \eta_c) = \frac{1 - K}{1 - E_b K} \ .
+\mathbf{\Delta}(\mathbf{E}_b, \eta_c) = \frac{1 - K}{1 - \mathbf{E}_b K} \ .
 \end{equation}
-We can thus approximate the required boost factor as the reciprocal of this, i.e. $B_0 \approx \Delta^{-1}$. Note that as $E_b \rightarrow 1$, the darkening factor $\Delta \rightarrow 1$, as required since physically no energy is lost if the base reflects all incident energy (in the clear-coat case). If the base albedo $E_b$ is boosted by $B(\delta)$, then clearly at $\delta=0$ the darkening factor cancels and equation [undarkened_coat_albedo] is satisfied as required.
-
 Here $K \in [0,1]$ is the _internal diffuse reflection coefficient_, which corresponds to the fraction of the energy leaving the base which returns
 to the base due to internal reflection from the coat. Higher values of $K$ lead to more internal reflections, thus more darkening and saturation. In the case of a Lambertian base (which should be a reasonable approximation to the rough metal, dielectric, or diffuse cases), $K = K_r$ where, with relative coat IOR $\eta_c$:
 \begin{equation} \label{internal_diffuse_reflection_coefficient_for_rough_base}
@@ -979,7 +982,6 @@ The albedo $E_F(\eta_c)$ is the _hemispherical_ (or _average_) albedo of the coa
 K_s = F(\omega_o, \eta_c) \ ,
 \end{equation}
 which becomes exact in the limit of a perfectly smooth metallic or dielectric base. There is significantly less darkening in the case of a smooth base, as the specular reflection from the base is less likely to generate total internal reflection at the coat boundary.
-
 We thus recommend in the general case that the darkening factor of equation [general_darkening_formula] be applied, but taking
 \begin{equation} \label{internal_diffuse_reflection_coefficient_for_general_base}
 K = \mathrm{lerp}(K_s, K_r, r_b)
@@ -994,9 +996,20 @@ r_d = \mathrm{lerp}(1, r, \xi_s F_s)
 \end{equation}
 while the metallic roughness can be taken to be $r_m = r$. (Note that in this formula for $r_d$, a clamp must be applied to ensure that $\xi_s F_s \in [0, 1]$).
 
+Incorporating the absorption coefficient is more complicated, but a reasonable approximation at normal incidence is to replace
+\begin{equation} \label{general_darkening_formula_with_absorption}
+\mathbf{\Delta}(\mathbf{E}_b, \eta_c) = \frac{1 - K \mathbf{T}^2_\mathrm{coat}}{1 - \mathbf{E}_b K \mathbf{T}^2_\mathrm{coat}} \ .
+\end{equation}
+and equation [interfaced_lambertian_albedo] is modified with an additional $\mathbf{T}^2_\mathrm{coat}$ factor in the second term.
+
+We can thus approximate
+\begin{equation} \label{B_approx}
+B(\delta) = \mathrm{lerp}\biggl(\frac{\mathrm{lum}(\mathbf{T}_\mathrm{coat}^2 \mathbf{E}_b)}{\mathrm{lum}(\mathbf{T}_\mathrm{coat}^2 \mathbf{E}_b \mathbf{\Delta})}, 1, \delta \biggr) \approx \mathrm{lerp}\biggl(\frac{1}{\mathrm{lum}(\mathbf{\Delta})}, 1, \delta\biggr) \ .
+\end{equation}
+
 Given the general formula equation [general_darkening_formula] for the darkening, a reasonable approximate scheme -- assuming no other compensation is made to approximate the effect -- is to multiply the base BSDF by the uniform _modulated darkening factor_ (taking into account the presence weight $\mathtt{C}$ = **`coat_weight`** and the darkening parameter $\delta$ = **`coat_darkening`**):
 \begin{equation} \label{modulated_darkening_factor}
-(1-\mathtt{C}) + \mathtt{C} \, B(\delta) \,\Delta = \mathrm{lerp}(1, \Delta, \mathtt{C}\,\delta) \ ,
+(1-\mathtt{C}) + \mathtt{C} \, B(\delta) \,\mathbf{\Delta}
 \end{equation}
 with $\Delta$ evaluated via equation [general_darkening_formula] with internal diffuse reflection coefficient, accounting for base roughness, given by equation [internal_diffuse_reflection_coefficient_for_general_base].
 
