@@ -971,7 +971,7 @@ Physically, it can be shown that in the case of a Lambertian base with (constant
 \end{equation}
 where $\mathbf{\Delta}(\mathbf{E}_b, \eta_c)$ is a darkening factor given by
 \begin{equation} \label{general_darkening_formula}
-\mathbf{\Delta}(\mathbf{E}_b, \eta_c) = \frac{1 - K}{1 - \mathbf{E}_b K} \ .
+\mathbf{\Delta}(\mathbf{E}_b, \eta_c) = \frac{1 - K}{1 - K \mathbf{E}_b} \ .
 \end{equation}
 Here $K \in [0,1]$ is the _internal diffuse reflection coefficient_, which corresponds to the fraction of the energy leaving the base which returns
 to the base due to internal reflection from the coat. Higher values of $K$ lead to more internal reflections, thus more darkening and saturation. In the case of a Lambertian base (which should be a reasonable approximation to the rough metal, dielectric, or diffuse cases), $K = K_r$ where, with relative coat IOR $\eta_c$:
@@ -997,9 +997,9 @@ r_d = \mathrm{lerp}(1, r, \xi_s F_s)
 \end{equation}
 while the metallic roughness can be taken to be $r_m = r$. (Note that in this formula for $r_d$, a clamp must be applied to ensure that $\xi_s F_s \in [0, 1]$).
 
-Incorporating the absorption coefficient is more complicated, but a reasonable approximation at normal incidence is to replace
+Incorporating the absorption coefficient is more complicated, but a rough approximation at normal incidence is to replace
 \begin{equation} \label{general_darkening_formula_with_absorption}
-\mathbf{\Delta}(\mathbf{E}_b, \eta_c) \approx \frac{1 - K \mathbf{T}^2_\mathrm{coat}}{1 - \mathbf{E}_b K \mathbf{T}^2_\mathrm{coat}}
+\mathbf{\Delta}(\mathbf{E}_b, \eta_c) \approx \frac{1 - K}{1 - K \mathbf{E}_b \mathbf{T}^2_\mathrm{coat}}
 \end{equation}
 and equation [interfaced_lambertian_albedo] is modified with an additional $\mathbf{T}^2_\mathrm{coat}$ factor in the second term.
 We can thus approximate $\mathbf{E}^\prime_c \approx \mathbf{E}_b \mathbf{T}^2_\mathrm{coat} \mathbf{\Delta}$. The boost factor of equation [undarkened_coat_albedo_scaling] then reduces to:
