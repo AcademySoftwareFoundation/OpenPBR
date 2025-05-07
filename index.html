@@ -493,20 +493,48 @@ Both the opaque and translucent dielectric-base share the same dielectric interf
 
 - The **`specular_ior`** parameter controls the index of refraction (IOR) of the dielectric. The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the dielectric reflectivity at normal incidence via reduction of the IOR below the reference value. When **`specular_weight`** is $0$, the specular reflection disappears entirely, as the IOR of the dielectric is then equal to that of the surrounding medium. As a convenience, we also allow the **`specular_weight`** to exceed $1$, thus increasing the reflectivity via increase of the IOR above the reference value. Equation [modulated_ior] below gives the formula for the applied IOR modulation.
 
-- The **`specular_color`** parameter modulates the Fresnel factor of $f_\mathrm{dielectric}$, but only for the initial reflection of light incident from above, while the light transmitted from above or below (or reflected from below) is assumed to be unaffected. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight without disturbing other aspects of the light transport, i.e. the reflection due to scattering from the internal medium, or the reflection from below, or the transmission from above or below.
+- The **`specular_color`** parameter tints the Fresnel factor of $f_\mathrm{dielectric}$, but only the BRDF i.e. the light incident from the upper or lower hemisphere which is reflected back into the same hemisphere. The light transmitted from above or below is assumed to be unaffected. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight.
 
-The formula for the specular IOR modulation controlled via **`specular_weight`** is as follows. Given the existing **`specular_ior`**, the ratio $\eta_s$ of this to the IOR of the surrounding medium is computed (which should take into account the presence of the coat, according to equation [specular_ior_ratio] in the Coat section).
-Given this ratio, the dielectric Fresnel reflection factor of $f_\mathrm{dielectric}$ at normal incidence is given by
+The reflection Fresnel factor from the dielectric base is modified via **`specular_weight`**, by effectively changing the IOR ratio, as described below. However the refraction direction is *not* modified, as this control is designed to vary only the reflectivity without disturbing the refraction appearance. Thus the reflection highlight and the refraction direction are effectively *decoupled*, in an unphysical but artistically convenient way, which we now describe.
+
+The physical situation is that the interior of the dielectric has IOR $n_s$ = **`specular_ior`**, while the exterior has IOR $n_e$, which should take into account the presence of the coat, according to equation [specular_ior_ratio] in the Coat section. The interior to exterior IOR ratio is $\eta_s = n_s / n_e$. Incident rays are either entering the base dielectric from the exterior (or coat), or exiting the base dielectric from the interior. For incident rays the physical reflection Fresnel factors $R_+, R-$ (for entering and exiting incident rays respectively) are given by $F(\mu_i, \eta_\mathrm{ti})$ where $\eta_\mathrm{ti}$ is the IOR ratio between the transmitted and incident hemispheres (i.e. $\eta_\mathrm{ti} = \eta_s$ for rays incident from the exterior, and $\eta_\mathrm{ti} = 1/\eta_s$ for rays incident from the interior). The corresponding transmission Fresnel factors are $T_+ = 1 - R_+$ and $T_- = 1 - R_-$. The dielectric Fresnel reflection factor at normal incidence is given by (for both entering and exiting rays)
 \begin{equation} \label{unmodulated_fresnel}
-F_s = \left|\frac{1 - \eta_s}{1 + \eta_s}\right|^2 \ .
+F_0 = \left|\frac{1 - \eta_\mathrm{ti}}{1 + \eta_\mathrm{ti}}\right|^2 \ .
 \end{equation}
-This Fresnel factor (of the initial reflection from above) is then modulated by multiplying by $\xi_s$ = **`specular_weight`**. Thus solving for the new IOR ratio $\eta^\prime_s$ after the modulation:
-\begin{equation} \label{modulated_ior}
-\eta^\prime_s = \frac{1 + \epsilon} {1 - \epsilon} \quad \mathrm{with} \quad \epsilon = \mathrm{sgn}(\eta_s-1)\sqrt{\xi_s F_s}  \ .
+Given the angle cosine $\mu_i$ of rays incident to the base, the angle cosine $\mu_t$ of the refracted rays follows from the IOR ratio $\eta_\mathrm{ti}$:
+\begin{equation} \label{refracted_dir}
+\mu_t^2 = 1 - (1 - \mu_i^2) / \eta^2_\mathrm{ti} \ .
 \end{equation}
-Applying this modulated IOR ratio $\eta^\prime_s$ in the angle-dependent dielectric Fresnel formula $F(\mu, \eta^\prime_s)$ then produces the desired reflectivity modulation at any incident angle cosine $\mu$. The Fresnel transmission factor and refraction into and out of the base dielectric should also be consistent with the IOR ratio $\eta^\prime_s$.
+This refraction direction remains unmodified.
 
-For convenience, we also allow $\xi_s = \mathtt{specular\_weight}$ to exceed 1 so that the reflectivity is increased above the level set by **`specular_ior`**. Note though there is a constraint $\xi_s \le 1/F_s$ since the scaled reflection coefficient cannot exceed $1$. So there needs to be an internal clamp to ensure $\xi_s \in [0, 1/F_s]$.
+Now the modification due to **`specular_weight`** of this standard physical setup is as follows. The transmitted-incident IOR ratio $\eta_\mathrm{ti}$ is modified to $\eta^\prime_\mathrm{ti}$, in such a way as to scale the Fresnel factor at normal incidence by multiplying by $\xi_s$ = **`specular_weight`**:
+\begin{equation} \label{modulated_ior}
+\eta^\prime_\mathrm{ti} = \frac{1 + \epsilon} {1 - \epsilon} \quad \mathrm{with} \quad \epsilon = \mathrm{sgn}(\eta_\mathrm{ti} - 1)\sqrt{\xi_s F_0}  \ .
+\end{equation}
+
+There are two cases to consider:
+
+  - If there is no TIR possible (i.e. $\eta_\mathrm{ti}, \eta^\prime_\mathrm{ti} \ge 1$), then the modulated $\eta^\prime_\mathrm{ti}$ is used in
+    the angle-dependent dielectric Fresnel formula $F(\mu_i, \eta^\prime_\mathrm{ti})$ then produces the desired reflectivity modulation at any incident angle cosine $\mu_i$.
+
+  - However, if TIR *is* possible (i.e. $\eta_\mathrm{ti}, \eta^\prime_\mathrm{ti} \lt 1$), then a different procedure is used.
+    If the incident ray direction generates TIR then the reflection is unmodified with Fresnel factor 1 (and no transmission occurs).
+    However if the incident ray does *not* undergo TIR, then we apply the physical
+    [Stokes relations](https://en.wikipedia.org/wiki/Stokes_relations) (valid for a smooth dielectric interface)
+      \begin{equation} \label{stokes_reciprocity}
+      F(\mu_i, \eta_\mathrm{ti}) = F(\mu_t, 1/\eta_\mathrm{ti})
+      \end{equation}
+    which means the ray that enters along the refraction direction *reversed*, reflects the same amount as the original reflection. We maintain this relation after the IOR modulation (ensuring reciprocity), setting the reflection Fresnel factor to $F(\mu_t, 1/\eta^\prime_\mathrm{ti})$ (since $\eta^\prime_\mathrm{ti} \lt 1$, this maps to a Fresnel curve without TIR). Thus the modulated reflection curve for entering and exiting rays has the same shape, except with the curve for rays incident from the higher IOR hemisphere squeezed into a cone (with TIR occuring outside this cone).
+
+In both cases the associated transmission Fresnel factor for the refracted ray is given by one minus the reflection Fresnel factor, however as noted the refracted ray direction is computed using the *unmodified* IOR ratio $\eta_\mathrm{ti}$.
+
+
+
+For physical consistency, we assume that this modification of the Fresnel factor happens at the microfacet level. Thus in principle the multiple scattering lobe should be calculated accordingly taking this into account. In practice, it is a good enough approximation to simply apply the usual microfacet multiple scattering compensation schemes, with the modulated IOR ratio.
+
+
+
+
 
 
 Specular params                     | Label      | Type     | Range           | Norm       | Default       | Description
@@ -909,8 +937,7 @@ The IOR $n_c = \mathtt{coat\_ior}$ of the coat medium $V_\mathrm{coat}$ will alt
 \begin{equation} \label{specular_ior_ratio}
 \eta_s = \mathrm{lerp}(n_b/n_a, n_b/n_c, \mathtt{C}) \ .
 \end{equation}
-This ratio then determines the specular Fresnel factor, as in equation [modulated_ior].
-(Note that as discussed in the coat [TIR](index.html#model/coat/totalinternalreflection) section, evaluation of the specular Fresnel factor may need to be further modified to model the refraction of the ray inside the coat).
+This ratio then determines the specular Fresnel factor, as in equation [modulated_ior]. This adjustment to the effective IOR ratio occurs *before* any modulation due to the $\mathtt{specular\_weight}$. As discussed in the coat [TIR](index.html#model/coat/totalinternalreflection) section, evaluation of the specular Fresnel factor may need to be further modified to model the refraction of the ray inside the coat.
 
 The absorption of the medium $V_\mathrm{coat}$ is parametrized by **`coat_color`**, which is assumed to specify the _square_ of the transmittance of the coat at normal incidence (i.e. $T_\mathrm{coat}$ = **`coat_color`** in the notation of equation [non-reciprocal-albedo-scaling-with-T]). Thus the observed tint color of the underlying base due to absorption in the coat is approximately given by **`coat_color`** due to the absorption along the incident and outgoing rays (note that the specular reflection from the coat itself is _not_ tinted).
 
