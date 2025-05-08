@@ -36,7 +36,7 @@ However each of these models originated from a single company and was designed p
 OpenPBR is intended to be a common interface between products, as well as something practical that works well and looks plausible for most day-to-day use cases. For the more specialized use cases it does not cover (for example very high-end skin, hair, cloth or volume shading), one may need to use a renderer-specific shader, or build a bespoke shading network. We aim for the overall behavior to be simple, logical, intuitive, and understandable, so that users can become comfortable and familiar with it, while also being grounded in physically-based rendering.
 
 We thus adopt a specific form of material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]). In outline the structure consists of:
-   - A [base substrate](index.html#model/basesubstrate) made of a mixture of [metal](index.html#model/basesubstrate/metal) or dielectric. The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric base represents either of three components, that can be statistically mixed:
+   - A [base substrate](index.html#model/basesubstrate) made of a mixture of [metal](index.html#model/basesubstrate/metal) or [dielectric](index.html#model/basesubstrate/dielectricbase). The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric base represents either of three components, that can be statistically mixed:
         1. [Glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse): dielectric with opaque internal media, e.g. wood, granite, concrete, cardboard, and wall-paint.
         2. [Subsurface](index.html#model/basesubstrate/subsurface): dielectric with dense highly scattering internal media, e.g. plastic, marble, skin, vegetation, and food.
         3. [Translucent-base](index.html#model/basesubstrate/translucentbase): dielectric with translucent internal media, e.g. glass, crystals, and liquids.
@@ -390,7 +390,7 @@ f(\omega_i, \omega_o) \propto F(\omega_i, h) \; D(h) \; G(\omega_i, \omega_o)
 \end{equation}
 where $h = (\omega_i+\omega_o)/|\omega_i+\omega_o|$ is the half-vector, i.e. the micronormal which mirror reflects $\omega_i$ into $\omega_o$. For dielectrics there is also a BTDF, i.e. the portion of the BSDF where the input and output directions lie in opposite rather than the same hemispheres, which has a similar form to the BRDF except with a modified half-vector and Fresnel factor [#Walter2007].
 
-The _Fresnel factor_ $F(\omega_i, h)$ is determined by the complex index of refraction (IOR) of the reflecting material of each microfacet (or more technically, the ratio of this to the exterior IOR), and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric base section and Metal section.
+The _Fresnel factor_ $F(\omega_i, h)$ is determined by the complex index of refraction (IOR) of the reflecting material of each microfacet (or more technically, the ratio of this to the exterior IOR), and its form differs depending on whether the material is a dielectric or conductor [#Walter2007]. Its parametrization in each case is described in the Dielectric section and Metal section.
 
 The _masking-shadowing function_ $G(\omega_i, \omega_o)$ accounts for the probability that the input and output directions are occluded by the microsurface. It is usually derived using the Smith model which determines $G$ given the NDF, and for the GGX NDF equation [GGX] the masking-shadowing function then has a well-known form [#Heitz2014].
 
@@ -450,8 +450,7 @@ where $\mathtt{M} = \mathtt{base\_metalness}$, which controls the fraction of mi
 * +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+                 *
 ********************************************************************************************************************
 
-
-The dielectric base is assumed to have a surface BSDF described by a rough GGX dielectric [microfacet model](index.html#model/microfacetmodel) [#Walter2007], and a bulk volumetric medium supporting absorption and scattering (whether physically due to the inherent molecular properties of the dielectric as in water, or e.g. a dispersion of embedded particles or flakes as in paint).
+The [dielectric base](index.html#model/basesubstrate/dielectricbase) is assumed to have a surface BSDF described by a rough GGX dielectric [microfacet model](index.html#model/microfacetmodel) [#Walter2007], and a bulk volumetric medium supporting absorption and scattering (whether physically due to the inherent molecular properties of the dielectric as in water, or e.g. a dispersion of embedded particles or flakes as in paint).
 
 However we distinguish between a separate "translucent" dielectric bulk and "opaque" dielectric bulk, which are placed in a statistical mix:
 \begin{equation}
@@ -486,69 +485,6 @@ where $\mathtt{S} = \mathtt{subsurface\_weight}$.
 * |░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|        |░░░░░░░░░░░░░░░░░░░░░░░░|                        | *
 * +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
 ****************************************************************************************************
-
-Both the opaque and translucent dielectric-base share the same dielectric interface BSDF $f_\mathrm{dielectric}$, whose parameters are termed "specular" since they control the primary specular reflection lobe which is provided by the base dielectric (and the coat provides a secondary specular lobe, see the Coat section):
-
-- The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`** and **`specular_roughness_anisotropy`** (see the section on the [Microfacet model](index.html#model/microfacetmodel) NDF).
-
-- The **`specular_ior`** parameter controls the index of refraction (IOR) of the dielectric. The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the dielectric reflectivity at normal incidence via reduction of the IOR below the reference value. When **`specular_weight`** is $0$, the specular reflection disappears entirely, as the IOR of the dielectric is then equal to that of the surrounding medium. As a convenience, we also allow the **`specular_weight`** to exceed $1$, thus increasing the reflectivity via increase of the IOR above the reference value. Equation [modulated_ior] below gives the formula for the applied IOR modulation.
-
-- The **`specular_color`** parameter tints the Fresnel factor of $f_\mathrm{dielectric}$, but only the BRDF i.e. the light incident from the upper or lower hemisphere which is reflected back into the same hemisphere. The light transmitted from above or below is assumed to be unaffected. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight.
-
-The reflection Fresnel factor from the dielectric base is modified via **`specular_weight`**, by effectively changing the IOR ratio, as described below. However the refraction direction is *not* modified, as this control is designed to vary only the reflectivity without disturbing the refraction appearance. Thus the reflection highlight and the refraction direction are effectively *decoupled*, in an unphysical but artistically convenient way, which we now describe.
-
-The physical situation is that the interior of the dielectric has IOR $n_s$ = **`specular_ior`**, while the exterior has IOR $n_e$, which should take into account the presence of the coat, according to equation [specular_ior_ratio] in the Coat section. The interior to exterior IOR ratio is $\eta_s = n_s / n_e$. Incident rays are either entering the base dielectric from the exterior (or coat), or exiting the base dielectric from the interior. For incident rays the physical reflection Fresnel factors $R_+, R-$ (for entering and exiting incident rays respectively) are given by $F(\mu_i, \eta_\mathrm{ti})$ where $\eta_\mathrm{ti}$ is the IOR ratio between the transmitted and incident hemispheres (i.e. $\eta_\mathrm{ti} = \eta_s$ for rays incident from the exterior, and $\eta_\mathrm{ti} = 1/\eta_s$ for rays incident from the interior). The corresponding transmission Fresnel factors are $T_+ = 1 - R_+$ and $T_- = 1 - R_-$. The dielectric Fresnel reflection factor at normal incidence is given by (for both entering and exiting rays)
-\begin{equation} \label{unmodulated_fresnel}
-F_0 = \left|\frac{1 - \eta_\mathrm{ti}}{1 + \eta_\mathrm{ti}}\right|^2 \ .
-\end{equation}
-Given the angle cosine $\mu_i$ of rays incident to the base, the angle cosine $\mu_t$ of the refracted rays follows from the IOR ratio $\eta_\mathrm{ti}$:
-\begin{equation} \label{refracted_dir}
-\mu_t^2 = 1 - (1 - \mu_i^2) / \eta^2_\mathrm{ti} \ .
-\end{equation}
-This refraction direction remains unmodified.
-
-Now the modification due to **`specular_weight`** of this standard physical setup is as follows. The transmitted-incident IOR ratio $\eta_\mathrm{ti}$ is modified to $\eta^\prime_\mathrm{ti}$, in such a way as to scale the Fresnel factor at normal incidence by multiplying by $\xi_s$ = **`specular_weight`**:
-\begin{equation} \label{modulated_ior}
-\eta^\prime_\mathrm{ti} = \frac{1 + \epsilon} {1 - \epsilon} \quad \mathrm{with} \quad \epsilon = \mathrm{sgn}(\eta_\mathrm{ti} - 1)\sqrt{\xi_s F_0}  \ .
-\end{equation}
-
-There are two cases to consider:
-
-  - If there is no TIR possible (i.e. $\eta_\mathrm{ti}, \eta^\prime_\mathrm{ti} \ge 1$), then the modulated $\eta^\prime_\mathrm{ti}$ is used in
-    the angle-dependent dielectric Fresnel formula $F(\mu_i, \eta^\prime_\mathrm{ti})$ then produces the desired reflectivity modulation at any incident angle cosine $\mu_i$.
-
-  - However, if TIR *is* possible (i.e. $\eta_\mathrm{ti}, \eta^\prime_\mathrm{ti} \lt 1$), then a different procedure is used.
-    If the incident ray direction generates TIR then the reflection is unmodified with Fresnel factor 1 (and no transmission occurs).
-    However if the incident ray does *not* undergo TIR, then we apply the physical
-    [Stokes relations](https://en.wikipedia.org/wiki/Stokes_relations) (valid for a smooth dielectric interface)
-      \begin{equation} \label{stokes_reciprocity}
-      F(\mu_i, \eta_\mathrm{ti}) = F(\mu_t, 1/\eta_\mathrm{ti})
-      \end{equation}
-    which means the ray that enters along the refraction direction *reversed*, reflects the same amount as the original reflection. We maintain this relation after the IOR modulation (ensuring reciprocity), setting the reflection Fresnel factor to $F(\mu_t, 1/\eta^\prime_\mathrm{ti})$ (since $\eta^\prime_\mathrm{ti} \lt 1$, this maps to a Fresnel curve without TIR). Thus the modulated reflection curve for entering and exiting rays has the same shape, except with the curve for rays incident from the higher IOR hemisphere squeezed into a cone (with TIR occuring outside this cone).
-
-In both cases the associated transmission Fresnel factor for the refracted ray is given by one minus the reflection Fresnel factor, however as noted the refracted ray direction is computed using the *unmodified* IOR ratio $\eta_\mathrm{ti}$.
-
-
-
-For physical consistency, we assume that this modification of the Fresnel factor happens at the microfacet level. Thus in principle the multiple scattering lobe should be calculated accordingly taking this into account. In practice, it is a good enough approximation to simply apply the usual microfacet multiple scattering compensation schemes, with the modulated IOR ratio.
-
-
-
-
-
-
-Specular params                     | Label      | Type     | Range           | Norm       | Default       | Description
-------------------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
-**`specular_weight`**               | Weight     | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 1         $ | Modulates the dielectric reflectivity at normal incidence
-**`specular_color`**                | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric Fresnel factor
-**`specular_roughness`**            | Roughness  | `float`  | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_roughness_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_ior`**                  | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
-
-![](images/spec_ior1.png width=95%) ![](images/spec_ior2.png width=95%) ![](images/spec_ior3.png width=95%)
-<div class="shifted-caption">
-   ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.3, 1.5 (default)](dummy)
-</div>
 
 ###  Metal
 
@@ -600,6 +536,72 @@ Metal params                        | Label      | Type     | Range           | 
 ![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
 <div class="shifted-caption">
 ![Figure [metal]: Metals produced (in **`base_metalness`=1** mode) by setting only the **`base_color`** parameter (left) compared with metals produced by correctly setting both the **`base_color`** and **`specular_color`** parameters (right)](dummy)
+</div>
+
+
+### Dielectric Base
+
+Both the opaque and translucent dielectric-base share the same dielectric interface BSDF $f_\mathrm{dielectric}$. This section details the parametrization of the dielectric BSDF, which defines the upper interface of the [Translucent](index.html#model/basesubstrate/translucentbase), [Glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse) and [Subsurface](index.html#model/basesubstrate/subsurface) base slabs. The base dielectric BSDF (and the [Metal](index.html#model/basesubstrate/metal) BRDF) are informally termed the "specular" lobe, since they provide the primary specular reflection (while the coat provides a secondary specular lobe, see the Coat section).
+
+- The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`** and **`specular_roughness_anisotropy`** (see the section on the [Microfacet model](index.html#model/microfacetmodel) NDF).
+
+- The **`specular_ior`** parameter controls the index of refraction (IOR) of the base dielectric.
+
+- The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the base dielectric reflectivity at normal incidence via reduction of the IOR below the reference value. When **`specular_weight`** is $0$, the specular reflection disappears entirely, as the IOR of the dielectric is then equal to that of the surrounding medium. Equation [modulated_ior] below gives the formula for the applied IOR modulation. However the refraction direction is *not* modified by **`specular_weight`**, as this control is designed to vary only the reflectivity without disturbing the refraction appearance. Thus the reflection highlight and the refraction direction are effectively *decoupled*, in an unphysical but artistically convenient way. As a convenience, we also allow the **`specular_weight`** to exceed $1$, thus increasing the reflectivity via increase of the IOR above the reference value.
+
+- The **`specular_color`** parameter tints the Fresnel factor of $f_\mathrm{dielectric}$, but only in the BRDF, i.e. the light incident from the upper or lower hemisphere which is reflected back into the same hemisphere. The light transmitted from above or below is assumed to be unaffected. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight.
+
+We now give the full details of the required modification of the Fresnel factors due to **`specular_weight`** (see Figure [dielectric_fresnel] for reference).
+
+The physical situation is that the interior of the dielectric has IOR $n_i$ = **`specular_ior`**, while the exterior has IOR $n_e$, which should take into account the presence of the coat, according to equation [specular_ior_ratio] in the Coat section. The interior to exterior IOR ratio is $\eta = n_i / n_e$. Incident rays are either entering the base dielectric from the exterior (or coat), or exiting the base dielectric from the interior. For incident rays the physical reflection Fresnel factors $R_+, R-$ (for entering and exiting incident rays respectively) are given by $F(\mu_i, \eta_\mathrm{ti})$ where $\eta_\mathrm{ti}$ is the IOR ratio between the transmitted and incident hemispheres (i.e. $\eta_\mathrm{ti} = \eta$ for rays incident from the exterior, and $\eta_\mathrm{ti} = 1/\eta$ for rays incident from the interior). The corresponding transmission Fresnel factors are $T_+ = 1 - R_+$ and $T_- = 1 - R_-$. The dielectric Fresnel reflection factor at normal incidence is given by (for both entering and exiting rays)
+\begin{equation} \label{unmodulated_fresnel}
+F_0 = \left|\frac{1 - \eta_\mathrm{ti}}{1 + \eta_\mathrm{ti}}\right|^2 \ .
+\end{equation}
+Given the angle cosine $\mu_i$ of rays incident to the base, the angle cosine $\mu_t$ of the refracted rays follows from the IOR ratio $\eta_\mathrm{ti}$:
+\begin{equation} \label{refracted_dir}
+\mu_t^2 = 1 - (1 - \mu_i^2) / \eta^2_\mathrm{ti} \ .
+\end{equation}
+This refraction direction remains unmodified by **`specular_weight`** (only the Fresnel factors change).
+
+![Figure [dielectric_fresnel]: Fresnel factors for rays entering (left) and exiting (right) the base dielectric.](images/dielectric_fresnel.svg width="95%" align="center")
+
+Now the modification of the Fresnel factors due to **`specular_weight`** of this standard physical setup is as follows. The transmitted-incident IOR ratio $\eta_\mathrm{ti}$ is modified to $\eta^\prime_\mathrm{ti}$, in such a way as to scale the Fresnel factor at normal incidence by multiplying by $\xi_s$ = **`specular_weight`**:
+\begin{equation} \label{modulated_ior}
+\eta^\prime_\mathrm{ti} = \frac{1 + \epsilon} {1 - \epsilon} \quad \mathrm{with} \quad \epsilon = \mathrm{sgn}(\eta_\mathrm{ti} - 1)\sqrt{\xi_s F_0}  \ .
+\end{equation}
+
+There are two cases to consider:
+
+  - If there is no TIR possible (i.e. $\eta_\mathrm{ti}, \eta^\prime_\mathrm{ti} \ge 1$), then the modulated $\eta^\prime_\mathrm{ti}$ is used in
+    the angle-dependent dielectric Fresnel formula $F(\mu_i, \eta^\prime_\mathrm{ti})$, which produces the desired reflectivity modulation at any incident angle cosine $\mu_i$.
+
+  - However, if TIR *is* possible (i.e. $\eta_\mathrm{ti}, \eta^\prime_\mathrm{ti} \lt 1$), then a different procedure is used.
+    If the incident ray direction generates TIR then the reflection is unmodified with Fresnel factor 1 (and no transmission occurs).
+    However if the incident ray does *not* undergo TIR, then we apply the physical
+    [Stokes relations](https://en.wikipedia.org/wiki/Stokes_relations) (valid for a smooth dielectric interface)
+      \begin{equation} \label{stokes_reciprocity}
+      F(\mu_i, \eta_\mathrm{ti}) = F(\mu_t, 1/\eta_\mathrm{ti})
+      \end{equation}
+    which means the ray that enters along the refraction direction *reversed*, reflects the same amount as the original reflection. We maintain this relation after the IOR modulation (ensuring reciprocity), setting the reflection Fresnel factor to $F(\mu_t, 1/\eta^\prime_\mathrm{ti})$ (since $\eta^\prime_\mathrm{ti} \lt 1$, this maps to a Fresnel curve without TIR). Thus the modulated reflection curve for entering and exiting rays has the same shape, except with the curve for rays incident from the higher IOR hemisphere squeezed into a cone (with TIR occuring outside this cone).
+
+In both cases the associated transmission Fresnel factor for the refracted ray is given by one minus the reflection Fresnel factor, however as noted the refracted ray direction is computed using the *unmodified* IOR ratio $\eta_\mathrm{ti}$.
+
+For physical consistency, we assume that this modification of the Fresnel factor happens at the microfacet level of the base dielectric interface. Thus in principle the multiple scattering lobe should be calculated accordingly taking this into account. In practice, it is a good enough approximation to simply apply the usual microfacet multiple scattering compensation schemes, with the modulated IOR ratio.
+
+As noted, a further tint factor of **`specular_color`** is applied to the entire macroscopic dielectric BRDF (for both entering and exiting rays), while the BTDF is unaffected by this tint.
+
+
+Specular params                     | Label      | Type     | Range           | Norm       | Default       | Description
+------------------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
+**`specular_weight`**               | Weight     | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 1         $ | Modulates the dielectric reflectivity at normal incidence
+**`specular_color`**                | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric BRDF
+**`specular_roughness`**            | Roughness  | `float`  | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_roughness_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_ior`**                  | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
+
+![](images/spec_ior1.png width=95%) ![](images/spec_ior2.png width=95%) ![](images/spec_ior3.png width=95%)
+<div class="shifted-caption">
+   ![Figure [specular]: Varying the **`specular_ior`** from (left to right): 1.1, 1.3, 1.5 (default)](dummy)
 </div>
 
 
@@ -935,7 +937,7 @@ M_\textrm{coated-base} = \mathrm{\mathbf{layer}}(M_\textrm{base-substrate}, S_\t
 
 The IOR $n_c = \mathtt{coat\_ior}$ of the coat medium $V_\mathrm{coat}$ will alter the Fresnel factor of both the coat top interface and the underlying metal or dielectric. If there is a fractional $\mathtt{coat\_weight}$ $\mathtt{C}$, then the surrounding IOR of the base dielectric or metal varies statistically across the surface depending on whether the coat is locally present (and the fuzz layer can be assumed to have the ambient IOR $n_a$). The ratio between the specular IOR $n_b = \mathtt{specular\_ior}$ and the surrounding medium can thus reasonably be approximated as
 \begin{equation} \label{specular_ior_ratio}
-\eta_s = \mathrm{lerp}(n_b/n_a, n_b/n_c, \mathtt{C}) \ .
+\eta = \mathrm{lerp}(n_b/n_a, n_b/n_c, \mathtt{C}) \ .
 \end{equation}
 This ratio then determines the specular Fresnel factor, as in equation [modulated_ior]. This adjustment to the effective IOR ratio occurs *before* any modulation due to the $\mathtt{specular\_weight}$. As discussed in the coat [TIR](index.html#model/coat/totalinternalreflection) section, evaluation of the specular Fresnel factor may need to be further modified to model the refraction of the ray inside the coat.
 
