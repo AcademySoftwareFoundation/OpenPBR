@@ -565,10 +565,11 @@ This refraction direction remains unmodified by **`specular_weight`** (only the 
 
 ![Figure [dielectric_fresnel]: Fresnel factors for rays entering (left) and exiting (right) the base dielectric.](images/dielectric_fresnel.svg width="95%" align="center")
 
-Now the modification of the Fresnel factors due to **`specular_weight`** of this standard physical setup is as follows. The transmitted-incident IOR ratio $\eta_\mathrm{ti}$ is modified to $\eta^\prime_\mathrm{ti}$, in such a way as to scale the Fresnel factor at normal incidence by multiplying by $\xi_s$ = **`specular_weight`**:
+Now the modification of the Fresnel factors due to **`specular_weight`** of this standard physical setup is as follows. The transmitted-incident IOR ratio $\eta_\mathrm{ti}$ is modified to $\eta^\prime_\mathrm{ti}$, in such a way as to scale the Fresnel factor at normal incidence by multiplying by $\xi_s$ = **`specular_weight`** (with $\xi_s \in [0,1]$):
 \begin{equation} \label{modulated_ior}
-\eta^\prime_\mathrm{ti} = \frac{1 + \epsilon} {1 - \epsilon} \quad \mathrm{with} \quad \epsilon = \mathrm{sgn}(\eta_\mathrm{ti} - 1)\sqrt{\xi_s F_0}  \ .
+\eta^\prime_\mathrm{ti} = \frac{1 + \epsilon} {1 - \epsilon} \quad \mathrm{with} \quad \epsilon = \mathrm{sgn}(\eta_\mathrm{ti} - 1)\sqrt{\mathrm{min}(\xi_s F_0, 1)}  \ .
 \end{equation}
+For convenience, we also allow $\xi_s = \mathtt{specular\_weight}$ to exceed 1 so that the reflectivity is increased above the level set by **`specular_ior`**. The clamp inside the square root ensures that the scaled reflection coefficient cannot exceed $1$.
 
 There are two cases to consider:
 
