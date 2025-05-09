@@ -434,8 +434,8 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 It is also useful to provide a more configurable NDF which can support a "hazy gloss" look. This can easily be supported simply by having the BSDF be a blend between BSDFs with different roughnesses.
 We provide this via the following parameters:
 
-  - **`specular_tail_mix`**: Provides the $[0, 0.5]$ blend weight of a secondary specular NDF (which defaults to 0).
-  - **`specular_tail_roughening`**: Specifies the extra roughness of this secondary lobe, in $[0, 1]$. This is added to **`specular_roughness`** to produce the `r` value for the secondary lobe (up to a maximum of 1). Note that the anisotropy parameters are the same for both primary and secondary specular lobes.
+  - **`specular_tail_mix`**: Provides the $[0, 1]$ blend weight of a secondary specular NDF (which defaults to 0).
+  - **`specular_tail_roughening`**: Specifies the extra roughness of this secondary lobe, in $[0, 1]$. This is added to the primary specular lobe roughnness (**`specular_roughness`**) to produce the `r` value for the secondary lobe (with the sum clamped to the $[0,1]$ range). Note that the anisotropy parameters are the same for both primary and secondary specular lobes.
 
 Note that in practice implementations may
 
