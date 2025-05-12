@@ -559,8 +559,16 @@ The final metallic Fresnel term we employ is then given by an overall multiplica
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`specular_color`**.
 Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
-
-
+It is useful to be able to model *retroreflective* materials in which the light is predominantly scattered backwards towards its source, which are familiar in safety applications such as road markings, signs, vehicles and clothing items. Such materials are typically designed to be retroreflective via a substructure of elements which preferentially scatter light backwards. Various models have been proposed, but we adopt here the empirically-based approach of [#Belcour2014], in which the standard conductor microfacet BRDF is made retroreflective via a simple modification, which produces a visually plausible retroreflective effect.
+It can be shown [#Raab2025] that this is equivalent to simply reflecting the view vector about the normal $N$ before evaluation or sampling of the BRDF, i.e.:
+\begin{equation}
+f_\mathrm{retroreflective}(\omega_i, \omega_o) = f_\mathrm{conductor}(\mathrm{reflect}(\omega_i, N), \omega_o)
+\end{equation}
+where the resulting BRDF remains energy conserving and reciprocal. To provide this retroreflectivity functionality, the BRDF of the metallic base is thus taken to be a mix of the BRDF with and without the view vector modification, with the mix weight given by $w_\mathrm{retro}$  = **`specular_retroreflectivity`**:
+\begin{equation}
+f_\mathrm{conductor} \rightarrow (1 - w_\mathrm{retro}) f_\mathrm{conductor} + w_\mathrm{retro}f_\mathrm{retroreflective}
+\end{equation}
+(Note that **`specular_retroreflectivity`** has no effect on the dielectric base, as the corresponding modification is not as plausible in that case).
 
 
 Metal params                        | Label             | Type     | Range           | Norm          | Default             | Description
@@ -1516,6 +1524,8 @@ References
 
 [#Ashikhmin2000]: Michael Ashikhmin, Simon Premože, and Peter Shirley. *A Microfacet-based BRDF Generator*, ACM Transactions on Graphics (2000).
 
+[#Belcour2014]: Laurent Belcour, Romain Pacanowski, Marion Delahaie, Aude Laville-Geay, Laure Eupherte. *BRDF Measurements and Analysis of Retroreflective Materials*, INRIA (2014).
+
 [#Belcour2017]: Laurent Belcour and Pascal Barla. *A Practical Extension to Microfacet Theory for the Modeling of Varying Iridescence*, ACM Transactions on Graphics (2017).
 
 [#Belcour2018]: Laurent Belcour. *Efficient Rendering of Layered Materials using an Atomic Decomposition with Statistical Operators*, ACM Transactions on Graphics (2018).
@@ -1585,6 +1595,8 @@ References
 [#Polyanskiy2023]: Mikhail N. Polyanskiy. [*Refractive Index Database*](https://refractiveindex.info/) (2023).
 
 [#Portsmouth2024]: Jamie Portsmouth, Peter Kutz and Stephen Hill. [*EON: A practical energy-preserving rough diffuse BRDF*](https://arxiv.org/abs/2410.18026) (2024).
+
+[#Raab2025]: Matthias Raab. *Properties of the Back-vector Modification for Microfacet BRDF Models*, unpublished white paper (2025)
 
 [#Schott2023]: SCHOTT. [*Interactive Abbe Diagram*](https://www.schott.com/en-gb/interactive-abbe-diagram) (2023).
 
