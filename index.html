@@ -539,17 +539,21 @@ This is based on the standard Schlick approximation to the metallic Fresnel fact
 \begin{equation}
 \mathbf{F}_{\mathrm{Schlick}}(\mu) = \mathbf{F}_0 + (1 - \mathbf{F}_0) (1 - \mu)^5 \ .
 \end{equation}
-To better approximate the actual Fresnel curve of metals, in the F82-tint model the Schlick approximation is augmented with a correction term:
+To better approximate the actual Fresnel curve of metals, in the F82-tint model the Schlick approximation is augmented [^avg_fresnel_f82] with a correction term (using the notation of [#Kutz2021]):
 \begin{equation}
-\mathbf{F}_{82}(\mu) = \mathbf{F}_{\mathrm{Schlick}}(\mu) - \frac{\mu (1 - \mu)^6}{\bar{\mu}(1 - \bar{\mu})^6} \Bigl(\mathbf{F}_{\mathrm{Schlick}}(\bar{\mu}) - \mathbf{F}(\bar{\mu})\Bigr)
+\mathbf{F}_{82}(\mu) = \mathbf{F}_{\mathrm{Schlick}}(\mu) - \mathbf{b} \mu (1 - \mu)^6
 \end{equation}
-where $\bar{\mu} = 1/7$, and $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at that "grazing edge" angle cosine corresponding roughly to $82^\circ$ (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, controlled via **`specular_color`**, i.e.
-\begin{equation}
-\mathbf{F}(\bar{\mu}) = \mathtt{specular\_color} * \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
+where
+\begin{equation} \label{f82_b_coeff}
+    \mathbf{b} =  \frac{\mathbf{F}_{\mathrm{Schlick}}(\bar{\mu}) - \mathbf{F}(\bar{\mu})}{\bar{\mu}(1 - \bar{\mu})^6} \ .
 \end{equation}
-The final metallic Fresnel term we employ is then given by an overall multiplication by **`specular_weight`**, ensuring that entire metallic lobe is suppressed as the weight goes to zero:
+Here $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at the "grazing edge" angle cosine $\bar{\mu} = 1/7$ corresponding roughly to $82^\circ$ (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, controlled via $\mathbf{C}_s = \mathtt{specular\_color}$, i.e.
 \begin{equation}
-\mathbf{F}_{\mathrm{metal}}(\mu) = \mathtt{specular\_weight} * \mathbf{F}_{82}(\mu) \ .
+\mathbf{F}(\bar{\mu}) = \mathbf{C}_s \, \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
+\end{equation}
+The final metallic Fresnel term we employ is then given by an overall multiplication by $\xi_s = \mathtt{specular\_weight}$, ensuring that entire metallic lobe is suppressed as the weight goes to zero:
+\begin{equation}
+\mathbf{F}_{\mathrm{metal}}(\mu) = \xi_s \, \mathbf{F}_{82}(\mu) \ .
 \end{equation}
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`specular_color`**.
 Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
@@ -970,9 +974,9 @@ We can thus approximate the required boost factor as the reciprocal of this, i.e
 Here $K \in [0,1]$ is the _internal diffuse reflection coefficient_, which corresponds to the fraction of the energy leaving the base which returns
 to the base due to internal reflection from the coat. Higher values of $K$ lead to more internal reflections, thus more darkening and saturation. In the case of a Lambertian base (which should be a reasonable approximation to the rough metal, dielectric, or diffuse cases), $K = K_r$ where, with relative coat IOR $\eta_c$:
 \begin{equation} \label{internal_diffuse_reflection_coefficient_for_rough_base}
-K_r = 1 - \Bigl(1 - E_F(\eta_c)\Bigr)/\eta_c^2 \ .
+K_r = 1 - \Bigl(1 - E_\mathrm{avg}(\eta_c)\Bigr)/\eta_c^2 \ .
 \end{equation}
-The albedo $E_F(\eta_c)$ is the _hemispherical_ (or _average_) albedo of the coat Fresnel factor [^avg_fresnel]. If the base has specular reflection (due to a smooth metallic or dielectric interface) then equation [general_darkening_formula] still applies, but the appropriate value of the internal diffuse reflection coefficient $K$ should be closer to:
+The albedo $E_\mathrm{avg}(\eta_c)$ is the _hemispherical_ (or _average_) albedo of the coat Fresnel factor [^avg_fresnel_dielectric]. If the base has specular reflection (due to a smooth metallic or dielectric interface) then equation [general_darkening_formula] still applies, but the appropriate value of the internal diffuse reflection coefficient $K$ should be closer to:
 \begin{equation} \label{internal_diffuse_reflection_coefficient_for_smooth_base}
 K_s = F(\omega_o, \eta_c) \ ,
 \end{equation}
@@ -1593,6 +1597,12 @@ References
 
 [^anisotropy_g]: Technically, $g$ is the _mean cosine of deflection_ of the phase function, which is not specific to the Henyey--Greenstein phase function model [#d'Eon2021].
 
+[^avg_fresnel_f82]: The *hemispherical albedo* (or *average albedo*) of this F82-tint model, i.e. $\mathbf{E}_\mathrm{avg} \equiv 2 \int_0^1 \mathbf{F}_{82}(\mu) \,\mu\,\mathrm{d}\mu$, is given exactly by:
+\begin{equation}
+   \mathbf{E}_\mathrm{avg} = \mathbf{F}_0 + (\mathbf{1} - \mathbf{F}_0)/21 - \mathbf{b}/126 \ .
+\end{equation}
+where $\mathbf{b}$ is defined in equation [f82_b_coeff]. This formula is useful in multiple scattering compensation schemes, for example.
+
 [^Oren_Nayar_formula]: The $s$ term is given by (with normal $\mathbf{n}$):
 \begin{eqnarray*}
   s = \omega_i \cdot \omega_o - (\mathbf{n} \cdot \omega_i) (\mathbf{n} \cdot \omega_o) \nonumber = \cos(\phi_i-\phi_o) \,\sin\theta_i \,\sin\theta_o
@@ -1627,13 +1637,13 @@ The corresponding albedo averaged over the hemisphere is given by
 
 [^porosity]: In reality, coats can also darken the underlying surface due to a different mechanism where the coat modifies the Fresnel factor of the base due to the coat material filling in air gaps between granules or threads of a porous base material, which reduces the relative IORs at the internal interfaces. This occurs e.g. on adding water to sand or fabric, or adding a penetrating wood finish. We assume here that this effect explicitly does _not_ occur, at present, since we do not have enough knowledge about the properties of the underlying substance to model it. We can only safely assume that the first mechanism of darkening, i.e. internal reflections, occurs.
 
-[^avg_fresnel]: The hemispherical (or average) albedo of the Fresnel factor is defined as $E_F(\eta) \equiv 2 \int_0^1 F(\mu, \eta)\,\mu\,\mathrm{d}\mu$. This can be tabulated, or one can use the convenient analytical approximation [#d'Eon2021] (accurate to within 0.2% in the limited range $\eta \in [1,3]$):
+[^avg_fresnel_dielectric]: The hemispherical (or average) albedo of the dielectric Fresnel factor is defined as $E_\mathrm{avg}(\eta) \equiv 2 \int_0^1 F(\mu, \eta)\,\mu\,\mathrm{d}\mu$. This can be tabulated, or one can use the convenient analytical approximation [#d'Eon2021] (accurate to within 0.2% in the limited range $\eta \in [1,3]$):
 \begin{equation}
-  E_F(\eta) \approx \ln \biggl( \frac{10893\eta - 1438.2}{-774.4\eta^2 + 10212\eta + 1} \biggr) \ .
+E_\mathrm{avg}(\eta) \approx \ln \biggl( \frac{10893\eta - 1438.2}{-774.4\eta^2 + 10212\eta + 1} \biggr) \ .
 \end{equation}
-Values of $E_F(\eta)$ for $\eta < 1$ are related to the values for $\eta > 1$ via:
+Values of $E_\mathrm{avg}(\eta)$ for $\eta < 1$ are related to the values for $\eta > 1$ via:
 \begin{equation}
-    E_F(\eta) = 1 - \eta^2 \bigl(1 - E_F(1/\eta)\bigr) \ .
+   E_\mathrm{avg}(\eta) = 1 - \eta^2 \bigl(1 - E_\mathrm{avg}(1/\eta)\bigr) \ .
 \end{equation}
 
 [^absorption_effect_on_K]: Technically, the _internal diffuse reflection coefficient_ $K$ described in the Darkening section should also be modified to account for the absorption, but the effect of this can reasonably be ignored.
