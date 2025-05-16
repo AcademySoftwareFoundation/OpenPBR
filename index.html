@@ -555,7 +555,7 @@ The final metallic Fresnel term we employ is then given by an overall multiplica
 \begin{equation}
 \mathbf{F}_{\mathrm{metal}}(\mu) = \xi_s \, \mathbf{F}_{82}(\mu) \ .
 \end{equation}
-This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`specular_color`**.
+This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`base_weight`** * **`base_color`**.
 Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
 Metal params                        | Label      | Type     | Range        | Default             | Description
@@ -1597,11 +1597,11 @@ References
 
 [^anisotropy_g]: Technically, $g$ is the _mean cosine of deflection_ of the phase function, which is not specific to the Henyey--Greenstein phase function model [#d'Eon2021].
 
-[^avg_fresnel_f82]: The *hemispherical albedo* (or *average albedo*) of this F82-tint model, i.e. $\mathbf{E}_\mathrm{avg} \equiv 2 \int_0^1 \mathbf{F}_{82}(\mu) \,\mu\,\mathrm{d}\mu$, is given exactly by:
+[^avg_fresnel_f82]: The *hemispherical albedo* (or *average albedo*) of the F82-tint model, i.e. $\mathbf{E}_\mathrm{avg} \equiv 2 \int_0^1 \mathbf{F}_{82}(\mu) \,\mu\,\mathrm{d}\mu$, is required in multiple scattering compensation schemes, for example. It is given exactly by:
 \begin{equation}
    \mathbf{E}_\mathrm{avg} = \mathbf{F}_0 + (\mathbf{1} - \mathbf{F}_0)/21 - \mathbf{b}/126 \ .
 \end{equation}
-where $\mathbf{b}$ is defined in equation [f82_b_coeff]. This formula is useful in multiple scattering compensation schemes, for example.
+where $\mathbf{b}$ is defined in equation [f82_b_coeff]. Note that if both $\mathbf{F}_0$ = **`base_weight`** * **`base_color`** and $\mathbf{C}_s = \mathtt{specular\_color}$ are white, then $\mathbf{F}_0 = \mathbf{1}$ and $\mathbf{b}= \mathbf{0}$ reducing to $\mathbf{E}_\mathrm{avg} =1$, thus the metal satisfies the furnace test in this case.
 
 [^Oren_Nayar_formula]: The $s$ term is given by (with normal $\mathbf{n}$):
 \begin{eqnarray*}
