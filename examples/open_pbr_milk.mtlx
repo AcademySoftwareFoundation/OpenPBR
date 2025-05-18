@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <materialx version="1.39" colorspace="lin_rec709">
-  <surfacematerial name="Ketchup" type="material">
+  <surfacematerial name="Milk" type="material">
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
-    <input name="specular_roughness" type="float" value="0.1" />
-    <input name="specular_ior" type="float" value="1.30" />
+    <input name="specular_roughness" type="float" value="0.0" />
+    <input name="specular_ior" type="float" value="1.35" />
     <input name="subsurface_weight" type="float" value="1.0" />
-    <input name="subsurface_color" type="color3" value="0.164, 0.006, 0.002" />
-    <input name="subsurface_radius_scale" type="color3" value="0.476, 0.058, 0.039" />
+    <input name="subsurface_color" type="color3" value="0.815, 0.813, 0.682" />
+    <input name="subsurface_radius_scale" type="color3" value="1.842, 1.044, 0.35" />
   </open_pbr_surface>
 </materialx>

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<materialx version="1.39" colorspace="lin_rec709">
+  <surfacematerial name="Office_Paper" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
+  </surfacematerial>
+  <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
+    <input name="base_color" type="color3" value="0.794, 0.834, 0.884" />
+    <input name="specular_roughness" type="float" value="0.5" />
+  </open_pbr_surface>
+</materialx>
