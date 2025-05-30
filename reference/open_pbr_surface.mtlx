@@ -499,13 +499,17 @@
       <input name="in1" type="color3" nodename="Ebase" />
       <input name="in2" type="float" nodename="Kcoat" />
     </multiply>
+    <multiply name="Ebase_Kcoat_T2" type="color3">
+      <input name="in1" type="color3" nodename="Ebase_Kcoat" />
+      <input name="in2" type="color3" interfacename="coat_color" />
+    </multiply>
     <subtract name="one_minus_Kcoat" type="float">
       <input name="in1" type="float" value="1.0" />
       <input name="in2" type="float" nodename="Kcoat" />
     </subtract>
-    <subtract name="one_minus_Ebase_Kcoat" type="color3">
+    <subtract name="one_minus_Ebase_Kcoat_T2" type="color3">
       <input name="in1" type="color3" value="1.0, 1.0, 1.0" />
-      <input name="in2" type="color3" nodename="Ebase_Kcoat" />
+      <input name="in2" type="color3" nodename="Ebase_Kcoat_T2" />
     </subtract>
     <convert name="one_minus_Kcoat_color" type="color3">
       <input name="in" type="float" nodename="one_minus_Kcoat" />
@@ -514,18 +518,19 @@
       <input name="in1" type="color3" nodename="one_minus_Kcoat_color" />
       <input name="in2" type="color3" nodename="one_minus_Ebase_Kcoat" />
     </divide>
-    <multiply name="coat_weight_times_coat_darkening" type="float">
-      <input name="in1" type="float" interfacename="coat_weight" />
-      <input name="in2" type="float" interfacename="coat_darkening" />
-    </multiply>
     <mix name="modulated_base_darkening" type="color3">
       <input name="fg" type="color3" nodename="base_darkening" />
       <input name="bg" type="color3" value="1.0, 1.0, 1.0" />
-      <input name="mix" type="float" nodename="coat_weight_times_coat_darkening" />
+      <input name="mix" type="float" interfacename="coat_darkening" />
+    </mix>
+    <mix name="coat_modulated_base_darkening" type="color3">
+      <input name="fg" type="color3" nodename="modulated_base_darkening" />
+      <input name="bg" type="color3" value="1.0, 1.0, 1.0" />
+      <input name="mix" type="float" interfacename="coat_weight" />
     </mix>
     <multiply name="darkened_base_substrate" type="BSDF">
       <input name="in1" type="BSDF" nodename="base_substrate" />
-      <input name="in2" type="color3" nodename="modulated_base_darkening" />
+      <input name="in2" type="color3" nodename="coat_modulated_base_darkening" />
     </multiply>
 
     <!-- Coat Layer -->
