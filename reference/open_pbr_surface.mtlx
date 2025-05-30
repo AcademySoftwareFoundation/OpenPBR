@@ -533,7 +533,7 @@
       <input name="in1" type="BSDF" nodename="base_substrate" />
       <input name="in2" type="color3" nodename="modulated_base_darkening" />
     </multiply>
-    <!-- base_substrate, attenuated due to absorption color, and inter-reflection darkening  -->
+    <!-- base_substrate, attenuated due to absorption color, and (optional) inter-reflection darkening  -->
     <multiply name="base_substrate_attenuated" type="BSDF">
       <input name="in1" type="BSDF" nodename="darkened_base_substrate" />
       <input name="in2" type="color3" nodename="coat_color" />
