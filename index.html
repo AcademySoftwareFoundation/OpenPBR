@@ -553,10 +553,14 @@ Here $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at the "grazin
 \end{equation}
 The final metallic Fresnel term we employ is then given by an overall multiplication by $\xi_s = \mathtt{specular\_weight}$, ensuring that entire metallic lobe is suppressed as the weight goes to zero:
 \begin{equation}
-\mathbf{F}_{\mathrm{metal}}(\mu) = \xi_s \, \mathbf{F}_{82}(\mu) \ .
+\mathbf{F}_{\mathrm{metal}}(\mu) = \xi_s \, \max \big( 0, \mathbf{F}_{82}(\mu) \big) \ .
 \end{equation}
+Note that the clamp is applied since $\mathbf{F}_{82}(\mu)$ can become negative for some values of $\mu$, which is not physically meaningful [#Hoffman2019].
+
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`base_weight`** * **`base_color`**.
 Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
+
+
 
 Metal params                        | Label      | Type     | Range        | Default             | Description
 ------------------------------------|------------|----------|:------------:|:-------------------:|----------------------------------------------
@@ -1601,7 +1605,7 @@ References
 \begin{equation}
    \mathbf{E}_\mathrm{avg} = \mathbf{F}_0 + (\mathbf{1} - \mathbf{F}_0)/21 - \mathbf{b}/126 \ .
 \end{equation}
-where $\mathbf{b}$ is defined in equation [f82_b_coeff]. Note that if both $\mathbf{F}_0$ = **`base_weight`** * **`base_color`** and $\mathbf{C}_s = \mathtt{specular\_color}$ are white, then $\mathbf{F}_0 = \mathbf{1}$ and $\mathbf{b}= \mathbf{0}$ reducing to $\mathbf{E}_\mathrm{avg} = \mathbf{1}$, thus the metal satisfies the furnace test in this case.
+where $\mathbf{b}$ is defined in equation [f82_b_coeff]. If both $\mathbf{F}_0$ = **`base_weight`** * **`base_color`** and $\mathbf{C}_s = \mathtt{specular\_color}$ are white, then $\mathbf{F}_0 = \mathbf{1}$ and $\mathbf{b}= \mathbf{0}$ reducing to $\mathbf{E}_\mathrm{avg} = \mathbf{1}$, thus the metal satisfies the furnace test in this case. Note however that $\mathbf{F}_{82}(\mu)$ can be slightly negative (for very dark metals), thus it is necessary to clamp it. The albedo of the clamped Fresnel is not exactly given by clamping the formula above, but it is very close (never more than 0.01 incorrect in absolute albedo).
 
 [^Oren_Nayar_formula]: The $s$ term is given by (with normal $\mathbf{n}$):
 \begin{eqnarray*}
