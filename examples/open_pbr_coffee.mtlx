@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<materialx version="1.39" colorspace="lin_rec709">
+<materialx version="1.39" colorspace="acescg">
   <surfacematerial name="Coffee" type="material">
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
@@ -7,7 +7,7 @@
     <input name="specular_roughness" type="float" value="0.0" />
     <input name="specular_ior" type="float" value="1.33" />
     <input name="subsurface_weight" type="float" value="1.0" />
-    <input name="subsurface_color" type="color3" value="0.027, 0.019, 0.018" />
+    <input name="subsurface_color" type="color3" value="0.024, 0.020, 0.018" />
     <input name="subsurface_radius_scale" type="color3" value="10, 5, 1" />
   </open_pbr_surface>
 </materialx>

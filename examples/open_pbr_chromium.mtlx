@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<materialx version="1.39" colorspace="lin_rec709">
+<materialx version="1.39" colorspace="acescg">
   <surfacematerial name="Chromium" type="material">
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
-    <input name="base_color" type="color3" value="0.653, 0.650, 0.615" />
+    <input name="base_color" type="color3" value="0.666, 0.682, 0.698" />
     <input name="base_metalness" type="float" value="1.0" />
-    <input name="specular_color" type="color3" value="0.675, 0.720, 0.711" />
-    <input name="specular_roughness" type="float" value="0.0" />
+    <input name="specular_color" type="color3" value="0.706, 0.726, 0.788" />
+    <input name="specular_roughness" type="float" value="0.02" />
   </open_pbr_surface>
 </materialx>

@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<materialx version="1.39" colorspace="lin_rec709">
+<materialx version="1.39" colorspace="acescg">
   <surfacematerial name="Vanadium" type="material">
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
-    <input name="base_color" type="color3" value="0.547, 0.525, 0.506" />
+    <input name="base_color" type="color3" value="0.532, 0.527, 0.543" />
     <input name="base_metalness" type="float" value="1.0" />
-    <input name="specular_color" type="color3" value="0.474, 0.426, 0.175" />
-    <input name="specular_roughness" type="float" value="0.0" />
+    <input name="specular_color" type="color3" value="0.708, 0.714, 0.698" />
+    <input name="specular_roughness" type="float" value="0.02" />
   </open_pbr_surface>
 </materialx>

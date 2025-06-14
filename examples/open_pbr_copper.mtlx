@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<materialx version="1.39" colorspace="lin_rec709">
+<materialx version="1.39" colorspace="acescg">
   <surfacematerial name="Copper" type="material">
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
-    <input name="base_color" type="color3" value="0.988, 0.688, 0.448" />
+    <input name="base_color" type="color3" value="0.811, 0.643, 0.542" />
     <input name="base_metalness" type="float" value="1.0" />
-    <input name="specular_color" type="color3" value="0.999, 0.946, 0.705" />
-    <input name="specular_roughness" type="float" value="0.0" />
+    <input name="specular_color" type="color3" value="0.970, 0.950, 0.946" />
+    <input name="specular_roughness" type="float" value="0.02" />
   </open_pbr_surface>
 </materialx>

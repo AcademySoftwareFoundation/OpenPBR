@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<materialx version="1.39" colorspace="lin_rec709">
+<materialx version="1.39" colorspace="acescg">
   <surfacematerial name="Brass" type="material">
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
-    <input name="base_color" type="color3" value="0.931, 0.776, 0.392" />
+    <input name="base_color" type="color3" value="0.844, 0.782, 0.473" />
     <input name="base_metalness" type="float" value="1.0" />
-    <input name="specular_color" type="color3" value="0.995, 0.974, 0.747" />
-    <input name="specular_roughness" type="float" value="0.0" />
+    <input name="specular_color" type="color3" value="0.963, 0.977, 1.013" />
+    <input name="specular_roughness" type="float" value="0.02" />
   </open_pbr_surface>
 </materialx>

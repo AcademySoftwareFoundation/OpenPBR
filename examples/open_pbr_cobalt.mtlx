@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<materialx version="1.39" colorspace="lin_rec709">
+<materialx version="1.39" colorspace="acescg">
   <surfacematerial name="Cobalt" type="material">
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
-    <input name="base_color" type="color3" value="0.715, 0.702, 0.622" />
+    <input name="base_color" type="color3" value="0.699, 0.703, 0.676" />
     <input name="base_metalness" type="float" value="1.0" />
-    <input name="specular_color" type="color3" value="0.731, 0.775, 0.715" />
-    <input name="specular_roughness" type="float" value="0.0" />
+    <input name="specular_color" type="color3" value="0.747, 0.770, 0.815" />
+    <input name="specular_roughness" type="float" value="0.02" />
   </open_pbr_surface>
 </materialx>

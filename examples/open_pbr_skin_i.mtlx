@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<materialx version="1.39" colorspace="lin_rec709">
+<materialx version="1.39" colorspace="acescg">
   <surfacematerial name="Skin_I" type="material">
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
@@ -7,7 +7,7 @@
     <input name="specular_roughness" type="float" value="0.5" />
     <input name="specular_ior" type="float" value="1.40" />
     <input name="subsurface_weight" type="float" value="1.0" />
-    <input name="subsurface_color" type="color3" value="0.847, 0.638, 0.552" />
+    <input name="subsurface_color" type="color3" value="0.762, 0.652, 0.568" />
     <input name="subsurface_radius_scale" type="color3" value="0.482, 0.169, 0.109" />
   </open_pbr_surface>
 </materialx>

@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<materialx version="1.39" colorspace="lin_rec709">
+<materialx version="1.39" colorspace="acescg">
   <surfacematerial name="Sand" type="material">
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
-    <input name="base_color" type="color3" value="0.440, 0.386, 0.231" />
+    <input name="base_color" type="color3" value="0.412, 0.388, 0.252" />
     <input name="specular_roughness" type="float" value="0.5" />
   </open_pbr_surface>
 </materialx>
