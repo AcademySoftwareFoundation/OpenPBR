@@ -904,8 +904,6 @@ A more direct alternative is a "locally spectral" approach that computes reflect
 
 The shape and color of the fringe patterns in the reflection from the film will be affected (as described by Belcour and Barla) by the complex IOR of the adjacent media above and below the film, which in general are a statistical mix of metal and dielectric below and coat and ambient medium above (which the fuzz is index-matched to). Figure [ior_configs] illustrates the eight possible different structures depending on the presence of both the film and coat, each of which leads to different Fresnel effects due to the differing IORs at the interfaces. In principle the implementation should deal with all these physical configurations correctly, though modeling of the precise effect is implementation-dependent.
 
-![Figure [ior_configs]: Schematic of all 8 possible IOR configurations, including those involving the thin-film.](images/IOR_configs.svg width="95%" align="center")
-
 The thin-film thickness is assumed to be smaller than the scale of the microfacets and assumed to be smooth. With this assumption, in practice the effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers (thus it is *not* represented by incorporating an explicit thin-film Slab into the model).
 
 In practice, this wave-optics effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers. (For this reason, this effect is not represented by incorporating an explicit thin-film Slab into the model.)
@@ -913,6 +911,8 @@ In practice, this wave-optics effect is most easily incorporated directly into t
 Note that in the case of the dielectric base, the thin-film should also generate color fringes in the transmission lobe. This is important for example when rendering soap bubbles (see [#Belcour2017]).
 
 In the case of the metallic base the physics is somewhat ambiguous since, as described in the Metal section, the Fresnel factor for metal is defined according to the Schlick-based "F82-tint" parametrization which does not specify the underlying physical complex IOR. We suggest here that some reasonable approximation is employed to map the Fresnel factor to the best matching effective complex IOR, for example that described by [#Gulbrandsen2014].
+
+![Figure [ior_configs]: Schematic of all 8 possible IOR configurations, including those involving the thin-film.](images/IOR_configs.svg width="95%" align="center")
 
 </br>
 
