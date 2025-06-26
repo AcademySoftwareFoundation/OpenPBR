@@ -893,10 +893,10 @@ Thin-film iridescence
 _Iridescence_ is the occurrence of rainbow-like color fringes in the reflection when a thin dielectric film with thickness on the order of the wavelength of light is placed on top of a material, due to wave interference between the various electromagnetic reflection modes within the film. To model this, there is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by:
 
    - **`thin_film_weight`**: the coverage (presence) weight of the film,
-   - **`thin_film_thickness`**: the thickness of the film in micrometers ($\mathrm{\mu m}$), mostly affecting the spacing of the fringes,
-   - **`thin_film_ior`**: the index of refraction (IOR) of the film, mostly affecting the hue of the fringes.
+   - **`thin_film_thickness`**: the thickness of the film in micrometers ($\mathrm{\mu m}$),
+   - **`thin_film_ior`**: the index of refraction (IOR) of the film.
 
-The coverage weight functions as a blend between the BSDF with and without the presence of the film, and thus allows one to dial the effect without altering the shape and saturation of the color fringes.
+The thickness and IOR together affect the intensity, spacing, and hue of the color fringes. The coverage weight acts as a blend between the BSDF with and without the presence of the film, allowing the overall strength of the effect to be dialed without altering its structure or color.
 
 The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017], which pre-integrates interference effects using Fourier-domain convolutions and Gaussian filtering. This method efficiently produces high-quality fringe patterns in an RGB rendering context, but it can be challenging to implement and may introduce inaccuracies in some cases, as it assumes that Fresnel amplitude and phase coefficients remain constant across each spectral band.
 
