@@ -908,7 +908,7 @@ Regardless of which approach is chosen, a few properties and considerations appl
 
    - The thin-film thickness is assumed to be smaller than the scale of the microfacets and assumed to be smooth. With this assumption, in practice the effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers (thus it is *not* represented by incorporating an explicit thin-film Slab into the model).
 
-   - Note that in the case of the dielectric base, the thin-film should also generate color fringes in the transmission lobe. This is important for example when rendering soap bubbles (see [#Belcour2017]).
+   - In the case of the dielectric base, the thin-film should also generate color fringes in the transmission lobe. This is important for example when rendering soap bubbles (see [#Belcour2017]).
 
    - In the case of the metallic base the physics is somewhat ambiguous since, as described in the Metal section, the Fresnel factor for metal is defined according to the Schlick-based "F82-tint" parametrization which does not specify the underlying physical complex IOR. We suggest here that some reasonable approximation is employed to map the Fresnel factor to the best matching effective complex IOR, for example that described by [#Gulbrandsen2014].
 
