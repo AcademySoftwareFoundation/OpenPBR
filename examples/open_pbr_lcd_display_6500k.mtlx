@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <materialx version="1.39" colorspace="acescg">
-  <surfacematerial name="Light_Bulb" type="material">
+  <surfacematerial name="LCD_Display_6500_K" type="material">
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
-    <input name="emission_color" type="color3" value="0.759, 0.452, 0.152" />
-    <input name="emission_luminance" type="float" value="10000" />
+    <input name="emission_color" type="color3" value="0.980, 0.948, 0.987" />
+    <input name="emission_luminance" type="float" value="200" />
   </open_pbr_surface>
 </materialx>
