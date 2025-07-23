@@ -5,7 +5,7 @@
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
     <input name="specular_roughness" type="float" value="0.0" />
-    <input name="specular_ior" type="float" value="1.30" />
+    <input name="specular_ior" type="float" value="1.35" />
     <input name="transmission_weight" type="float" value="1.0" />
     <input name="transmission_color" type="color3" value="0.396, 0.048, 0.018" />
     <input name="transmission_depth" type="float" value="0.08" />
