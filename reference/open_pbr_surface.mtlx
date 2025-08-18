@@ -550,6 +550,10 @@
     </layer>
 
     <!-- Emission Layer -->
+    <max name="emission_luminance_nonnegative" type="float">
+      <input name="in1" type="float" interfacename="emission_luminance" />
+      <input name="in2" type="float" value="0.0" />
+    </max>
     <subtract name="coat_ior_minus_one" type="float">
       <input name="in1" type="float" interfacename="coat_ior" />
       <input name="in2" type="float" value="1.0" />
@@ -568,7 +572,7 @@
     </multiply>
     <multiply name="weighted_emission_luminance" type="float">
       <input name="in1" type="float" interfacename="emission_weight" />
-      <input name="in2" type="float" interfacename="emission_luminance" />
+      <input name="in2" type="float" interfacename="emission_luminance_nonnegative" />
     </multiply>
     <multiply name="emission_color_weight" type="color3">
       <input name="in1" type="color3" interfacename="emission_color" />
