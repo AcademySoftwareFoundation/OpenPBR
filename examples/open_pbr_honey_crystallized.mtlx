@@ -4,7 +4,7 @@
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
-    <input name="specular_roughness" type="float" value="0.0" />
+    <input name="specular_roughness" type="float" value="0.2" />
     <input name="specular_ior" type="float" value="1.50" />
     <input name="subsurface_weight" type="float" value="1.0" />
     <input name="subsurface_color" type="color3" value="0.384, 0.324, 0.054" />
