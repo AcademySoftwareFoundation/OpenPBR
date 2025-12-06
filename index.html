@@ -437,7 +437,7 @@ The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not 
 ### Retroreflectivity
 
 It is useful to be able to model *retroreflective* materials in which the light is predominantly scattered backwards towards its source, which are familiar in safety applications such as road markings, signs, vehicles and clothing items. Such materials are typically designed to be retroreflective via a substructure of elements which preferentially scatter light backwards. Various models have been proposed, but we adopt here the empirically-based approach of [#Belcour2014], in which the standard conductor microfacet BRDF is made retroreflective via a simple modification, which produces a visually plausible retroreflective effect.
-It can be shown [#Raab2025] that this is equivalent to simply reflecting the view vector about the normal $N$ before evaluation or sampling of the BRDF, i.e.:
+It can be shown [#Raab2025] that this is equivalent to simply reflecting the view vector about the shading normal $N$ before evaluation or sampling of the BRDF, i.e.:
 \begin{equation}
 f_\mathrm{retroreflective}(\omega_i, \omega_o) = f_\mathrm{microfacet}(\mathrm{reflect}(\omega_i, N), \omega_o)
 \end{equation}
