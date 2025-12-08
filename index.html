@@ -1182,13 +1182,14 @@ The intensity of the EDF is controlled by a luminance value with color and weigh
 
 Moreover, the overall material luminance may be further reduced in the presence of coat or fuzz, as they can absorb light coming from the emissive layer before it exits the surface. The emission from the top surface should in principle gain a directional dependence due to the combined effects of absorption, total internal reflection (TIR) and multiple bounces in the coat layer, and absorption in the fuzz layer. The combined effect should result mostly in darkening and saturation at grazing angles.
 
-Being an intensity, **`emission_luminance`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1000]$, corresponding to the typical range of home appliances. (Note that if the renderer does not deal with photometric units internally, a scale factor may need to be applied to bring the emission into a sensible range).
+Being an intensity, **`emission_luminance`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 2000]$ nits (with default 1000 nits), corresponding to the typical range of home appliances.
 
+Note that if the renderer does not deal with photometric units internally, a scale factor may need to be applied to bring the emission into a sensible range.
 
 Emission params          | Label     | Type     | Range           | Norm          | Default       | Description
 -------------------------|-----------|----------|:---------------:|:-------------:|:-------------:|----------------------------------------------
 **`emission_weight`**    | Weight    | `float`  | $ [0, 1]      $ |               | $ 0         $ | Emission weight luminance multiplier
-**`emission_luminance`** | Luminance | `float`  | $ [0, \infty) $ | $ [0, 1000] $ | $ 1000      $ | Emission luminance, in cd/m^2 (aka. nits)
+**`emission_luminance`** | Luminance | `float`  | $ [0, \infty) $ | $ [0, 2000] $ | $ 1000      $ | Emission luminance, in cd/m^2 (aka. nits)
 **`emission_color`**     | Color     | `color3` | $ [0, 1]^3    $ |               | $ (1, 1, 1) $ | Emission color luminance multiplier
 
 ![](images/emitting_lava.png width=90% align=left) ![](images/emission_under_coat.png width=90% align=right)

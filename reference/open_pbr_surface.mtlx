@@ -73,7 +73,7 @@
            doc="The index of refraction of the thin-film." />
     <input name="emission_weight" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Emission Weight" uifolder="Emission"
            doc="Emission weight luminance multiplier." />
-    <input name="emission_luminance" type="float" value="0.0" uimin="0.0" uisoftmax="1000.0" uiname="Emission Luminance" uifolder="Emission"
+    <input name="emission_luminance" type="float" value="1000.0" uimin="0.0" uisoftmax="2000.0" uiname="Emission Luminance" uifolder="Emission"
            doc="The amount of emitted light, as a luminance in nits." />
     <input name="emission_color" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Emission Color" uifolder="Emission"
            doc="The color of the emitted light." />
