@@ -815,27 +815,20 @@ The index of refraction of $V^\infty_\mathrm{dielectric}$ is specified by **`spe
 The volumetric properties of $V^\infty_\mathrm{dielectric}$ are specified as follows.
 The RGB **`transmission_color`** $\mathbf{T}$ and scalar **`transmission_depth`** $\lambda$ parameter pair is a commonly used artist-friendly way to set the volumetric medium extinction coefficient $\boldsymbol{\mu}_t$.
 
-The **`transmission_depth`** is the distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law, determining the extinction coefficient of the interior medium $\boldsymbol{\mu}_t$ as follows:
+The **`transmission_depth`** is the distance traveled inside the medium by white light before its color becomes exactly **`transmission_color`** by Beer's law (assuming homogeneity), determining the extinction coefficient of the interior medium $\boldsymbol{\mu}_t$ as follows:
 \begin{equation}
 \boldsymbol{\mu}_t = - \frac{\ln \mathbf{T}} {\lambda} \ .
 \end{equation}
 Being a length, **`transmission_depth`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1]$, thus covering common cases. However when **`transmission_depth`** $\lambda$ is zero, it is assumed that the interior medium is absent ($\boldsymbol{\mu}_t=0$) and **`transmission_color`** is used instead to non-physically tint the dielectric refraction Fresnel factor multiplicatively by a constant amount (ignoring the dielectric energy balance).
 
-The **`transmission_scatter`** parameter $\mathbf{S}$ directly sets the medium scattering coefficient $\boldsymbol{\mu}_s$ (as a multiple of the inverse **`transmission_depth`**):
+The **`transmission_scatter`** parameter $\mathbf{\Omega}_s$ directly sets the medium's single-scattering albedo, i.e. the ratio of scattering coefficient $\boldsymbol{\mu}_s$ and extinction coefficient $\boldsymbol{\mu}_t$:
 \begin{equation}
-\boldsymbol{\mu}_s = \frac{\mathbf{S}} {\lambda} \ .
+\boldsymbol{\mu}_s = \mathbf{\Omega}_s \; \boldsymbol{\mu}_t \ .
 \end{equation}
-The **`transmission_scatter`** color thus controls the observed color of the single-scattered light. (Note that in the case **`transmission_depth`** $\lambda$ is zero, however, the scattering coefficient is ignored). The absorption coefficient $\boldsymbol{\mu}_a$ is then computed as
-\begin{equation}
-\boldsymbol{\mu}_a = \boldsymbol{\mu}_t - \boldsymbol{\mu}_s \ .
-\end{equation}
-If any component of $\boldsymbol{\mu}_a$ is negative, then $\boldsymbol{\mu}_a$ is shifted by enough gray to make all the components positive, i.e.:  [^component_wise]
-\begin{eqnarray}
-&& \mathrm{if \;\; min(\boldsymbol{\mu}_a)} < 0 \nonumber \\
-&& \quad\quad \boldsymbol{\mu}_a \leftarrow \boldsymbol{\mu}_a - \mathrm{min}(\boldsymbol{\mu}_a) \ .
-\end{eqnarray}
-After this shifting, the final extinction coefficient is given by the new $\boldsymbol{\mu}_a + \boldsymbol{\mu}_s$.
-This formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light. Finally the medium phase function anisotropy $g \in [-1, 1]$ is given by **`transmission_scatter_anisotropy`** (the standard Henyey--Greenstein phase function is assumed [^anisotropy_g]).
+The **`transmission_scatter`** color thus controls the observed color of the single-scattered light.
+Single-scattering is expected to be most dominant in the types of thin, highly-absorbing media that this volume is used for, thus this formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light.
+
+Finally the medium phase function anisotropy $g \in [-1, 1]$ is given by **`transmission_scatter_anisotropy`** (the standard Henyey--Greenstein phase function is assumed [^anisotropy_g]).
 
 ![](images/transmission1.jpg width=99%) ![](images/transmission2.jpg width=99%) ![](images/transmission3.jpg width=99%)
 <div class="shifted-caption">
@@ -877,7 +870,7 @@ Translucent base params                   | Label            | Type     | Range 
 **`transmission_weight`**                 | Weight           | `float`  | $ [0, 1]      $ |             | $ 0         $ | Mix weight between translucent base and opaque base slabs
 **`transmission_color`**                  | Color            | `color3` | $ [0, 1]^3    $ |             | $ (1, 1, 1) $ | Transmission color, specifies the extinction of $V^\infty_\mathrm{dielectric}$
 **`transmission_depth`**                  | Depth            | `float`  | $ [0, \infty) $ | $ [0, 1]  $ | $ 0         $ | Controls the depth into the volume at which the **`transmission_color`** is realized; if zero, acts as a constant (on-surface) transmission tint
-**`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3    $ |             | $ (0, 0, 0) $ | Scattering coefficient of the interior medium
+**`transmission_scatter`**                | Scatter          | `color3` | $ [0, 1]^3    $ |             | $ (0, 0, 0) $ | Single-scattering albedo of the interior medium $V^\infty_\mathrm{dielectric}$
 **`transmission_scatter_anisotropy`**     | Anisotropy       | `float`  | $ [-1,  1]    $ |             | $ 0         $ | Anisotropy of the Henyey--Greenstein phase function of the interior medium $V^\infty_\mathrm{dielectric}$
 **`transmission_dispersion_scale`**       | Dispersion scale | `float`  | $ [0,  1]     $ |             | $ 0         $ | Linearly scales the amount of dispersion
 **`transmission_dispersion_abbe_number`** | Abbe number      | `float`  | $ [0, \infty) $ | $ [9, 91] $ | $ 20        $ | Physical Abbe number of the base dielectric medium
