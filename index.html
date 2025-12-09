@@ -302,7 +302,7 @@ However the parameters of the physical model that we describe do not specify all
 
    - Any shader networks which drive the parameters of the model.
 
-   - The assumed convention for converting the input **`geometry_normal`**, **`geometry_coat_normal`**, **`geometry_tangent`** and **`geometry_coat_tangent`** maps, if present, to the final shading normal of the local surface at each point.
+   - The assumed convention for converting the input **`geometry_normal`**, **`geometry_coat_normal`**, **`geometry_tangent`** and **`geometry_coat_tangent`** maps, if present, to the final shading normal of the local surface at each point. (See the Normal maps section for a more detailed discussion).
 
 As in practice OpenPBR will be integrated within data exchange frameworks such as MaterialX and USD, the specific form and content of this metadata is outside the scope of this specification.
 
@@ -1243,14 +1243,19 @@ Normal maps
 The geometry of the surface is assumed to be given externally to the model, defining a local unperturbed shading normal and tangent space frame.
 
 However we allow for normal mapping, which (optionally) alters this unperturbed shading frame, as a part of the material model, as this alters the light transport and appearance fundamentally.
+There is an input **`geometry_normal`** for the perturbed shading normal $\mathbf{N}_B$ of all slabs of the base, and a separate input **`geometry_coat_normal`** for the perturbed shading normal $\mathbf{N}_C$ of the coat slab. Separately perturbing the coat normal allows for the appearance of a finite thickness coat on top of the base.
 
-There are assumed to be separate normal inputs **`geometry_normal`**, **`geometry_coat_normal`** defining the perturbation of the shading normal for the base and coat BSDF models. Separately perturbing the coat normal allows for the appearance of a finite thickness coat on top of the base.
+The **`geometry_tangent`** $\mathbf{T}_B$ and **`geometry_coat_tangent`** $\mathbf{T}_C$ may also be specified, to define the direction of the microfacet anisotropy on the base slabs and coat slab, for effects such as brushed metal.
 
-The **`geometry_tangent`** and **`geometry_coat_tangent`** may also be specified, to define the direction of the microfacet anisotropy on the base layer and coat layer, for effects such as brushed metal. Similar to normal mapping, the tangent may be transformed with a 2D vector map to alter the direction of the anisotropy.
+In practice, the supplied base normal $\mathbf{N}_B$ (and similarly for the coat) will typically be defined via texture maps which specify how to transform the reference normal $\mathbf{N}'_B$ and reference tangent $\mathbf{T}'_B$ into the perturbed normal $\mathbf{N}_B$. Similarly, the anisotropy tangent $\mathbf{T}_B$ will typically be defined with respect to the reference $\mathbf{N}'_B$ and $\mathbf{T}'_B$, for example via 2D vector "flow maps" [#Vlachos2010]. As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal or tangent in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
 
-The perturbed normals and tangents will of course be specified by input textures (or possibly procedurally). As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal or tangent in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
+It is *not* required that the resultant input **`geometry_normal`** $\mathbf{N}_B$ and **`geometry_tangent`** $\mathbf{T}_B$ are strictly normalized and orthogonal (and similarly for the coat normal and tangent).
+For example reconstruction filtering techniques such as texture filtering may cause the interpolated normal to not be normalized. However, we *do* require that the implementation should (if not already ensured) ensure orthonormality of the final vertex shading frame of the BSDF, by applying
+\begin{align*}
+&\mathbf{N}_B \rightarrow \mathrm{normalize}(\mathbf{N}_B), &\quad& \mathbf{T}_B \rightarrow \mathrm{normalize}\bigl(\mathbf{T}_B - (\mathbf{N}_B\cdot \mathbf{T}_B) \mathbf{N}_B\bigr) \nonumber \\
+&\mathbf{N}_C \rightarrow \mathrm{normalize}(\mathbf{N}_C), &\quad& \mathbf{T}_C \rightarrow \mathrm{normalize}\bigl(\mathbf{T}_C - (\mathbf{N}_C\cdot \mathbf{T}_C) \mathbf{N}_C\bigr) \ .
+\end{align*}
 
-The normal and tangent are assumed to be unit vectors. Reconstruction filtering techniques such as texture filtering may cause the interpolated value to not be normalized, which can be corrected with a renormalization to reduce visible artifacts caused by this filtering.
 
 
 Thin-walled mode
@@ -1622,6 +1627,8 @@ References
 [#Turquin2019]: Emmanuel Turquin. *Practical multiple scattering compensation for microfacet models.*, Industrial Light & Magic white paper (2019).
 
 [#Veach1997]: Eric Veach. *Robust Monte Carlo Methods for Light Transport Simulation*, Ph.D. dissertation, Stanford University (1997).
+
+[#Vlachos2010]: Alex Vlachos, Alexey Agapov and Ryan Mitchell. *Water Flow in Portal 2*, ACM SIGGRAPH (2010)
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
 
