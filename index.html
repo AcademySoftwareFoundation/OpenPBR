@@ -821,9 +821,9 @@ The **`transmission_depth`** is the distance traveled inside the medium by white
 \end{equation}
 Being a length, **`transmission_depth`** can be any value greater than or equal to zero. For convenience, we make the soft range $[0, 1]$, thus covering common cases. However when **`transmission_depth`** $\lambda$ is zero, it is assumed that the interior medium is absent ($\boldsymbol{\mu}_t=0$) and **`transmission_color`** is used instead to non-physically tint the dielectric refraction Fresnel factor multiplicatively by a constant amount (ignoring the dielectric energy balance).
 
-The **`transmission_scatter`** parameter $\mathbf{\Omega}_s$ directly sets the medium's single-scattering albedo, i.e. the ratio of scattering coefficient $\boldsymbol{\mu}_s$ and extinction coefficient $\boldsymbol{\mu}_t$:
+The **`transmission_scatter`** parameter $\mathbf{\Omega}_s$ specifies the single-scattering albedo of the medium, which thus by definition specifies the scattering coefficient $\boldsymbol{\mu}_s$ in terms of the extinction coefficient $\boldsymbol{\mu}_t$ as:
 \begin{equation}
-\boldsymbol{\mu}_s = \mathbf{\Omega}_s \; \boldsymbol{\mu}_t \ .
+\boldsymbol{\mu}_s = \mathbf{\Omega}_s \, \boldsymbol{\mu}_t \ .
 \end{equation}
 The **`transmission_scatter`** color thus controls the observed color of the single-scattered light.
 Single-scattering is expected to be most dominant in the types of thin, highly-absorbing media that this volume is used for, thus this formulation produces volumetric parameters which reproduce reasonably well the independently specified colors of the transmitted and single-scattered light.
