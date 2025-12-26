@@ -602,7 +602,7 @@
 
     <!-- Coat Layer -->
 
-    <!--  Coat inter-reflection darkening darkening calculation   -->
+    <!-- Inter-reflection darkening darkening calculation -->
     <!-- approximate Kcoat, "internal diffuse reflection coefficient" of coat  -->
     <subtract name="one_minus_coat_F0" type="float">
       <input name="in1" type="float" value="1.0" />
@@ -620,24 +620,24 @@
       <input name="in1" type="float" value="1.0" />
       <input name="in2" type="float" nodename="one_minus_coat_F0_over_eta2" />
     </subtract>
-    <!-- approximate base metal albedo estimate, Emetal  -->
+    <!-- Approximate base metal albedo estimate, Emetal  -->
     <multiply name="Emetal" type="color3">
       <input name="in1" type="color3" nodename="base_color_clamped" />
       <input name="in2" type="float" nodename="specular_weight_nonnegative" />
     </multiply>
-    <!-- approximate base dielectric albedo estimate, Edielectric  -->
+    <!-- Approximate base dielectric albedo estimate, Edielectric  -->
     <mix name="Edielectric" type="color3">
       <input name="fg" type="color3" nodename="subsurface_color_clamped" />
       <input name="bg" type="color3" nodename="base_color_clamped" />
       <input name="mix" type="float" nodename="subsurface_weight_clamped" />
     </mix>
-    <!-- thus calculate overall base albedo estimate approximation, Ebase  -->
+    <!-- Thus calculate overall base albedo estimate approximation, Ebase  -->
     <mix name="Ebase" type="color3">
       <input name="fg" type="color3" nodename="Emetal" />
       <input name="bg" type="color3" nodename="Edielectric" />
       <input name="mix" type="float" nodename="base_metalness_clamped" />
     </mix>
-    <!-- final base inter-reflection darkening darkening factor due to coat,
+    <!-- Final base inter-reflection darkening darkening factor due to coat,
          where Tcoat2 = coat_color:
               base_darkening = (1 - Kcoat) / (1 - Ebase*Kcoat*Tcoat2) -->
     <multiply name="Ebase_Kcoat" type="color3">
@@ -664,7 +664,7 @@
       <input name="in2" type="color3" nodename="one_minus_Ebase_Kcoat_Tcoat2" />
     </divide>
 
-    <!-- inter-reflection darkening, modulated by coat_darkening -->
+    <!-- Inter-reflection darkening, modulated by coat_darkening -->
     <mix name="modulated_base_darkening" type="color3">
       <input name="fg" type="color3" nodename="base_darkening" />
       <input name="bg" type="color3" value="1.0, 1.0, 1.0" />
@@ -674,12 +674,12 @@
       <input name="in1" type="BSDF" nodename="base_substrate" />
       <input name="in2" type="color3" nodename="modulated_base_darkening" />
     </multiply>
-    <!-- base_substrate, attenuated due to absorption color, and (optional) inter-reflection darkening  -->
+    <!-- Base substrate, attenuated due to absorption color, and (optional) inter-reflection darkening  -->
     <multiply name="base_substrate_attenuated" type="BSDF">
       <input name="in1" type="BSDF" nodename="darkened_base_substrate" />
       <input name="in2" type="color3" nodename="coat_color" />
     </multiply>
-    <!-- coat BSDF  -->
+    <!-- Coat BSDF  -->
     <open_pbr_anisotropy name="coat_roughness_vector" type="vector2">
       <input name="roughness" type="float" nodename="coat_roughness_clamped" />
       <input name="anisotropy" type="float" nodename="coat_roughness_anisotropy_clamped" />
@@ -692,18 +692,17 @@
       <input name="tangent" type="vector3" interfacename="geometry_coat_tangent" />
       <input name="scatter_mode" type="string" value="R" />
     </dielectric_bsdf>
-    <!-- coated base  -->
+    <!-- Coated base  -->
     <layer name="coated_base_substrate" type="BSDF">
       <input name="top" type="BSDF" nodename="coat_bsdf" />
       <input name="base" type="BSDF" nodename="base_substrate_attenuated" />
     </layer>
-    <!-- statistical mix of coated and uncoated base  -->
+    <!-- Statistical mix of coated and uncoated base  -->
     <mix name="partially_coated_base" type="color3">
       <input name="fg" type="BSDF" nodename="coated_base_substrate" />
       <input name="bg" type="BSDF" nodename="base_substrate" />
       <input name="mix" type="float" interfacename="coat_weight" />
     </mix>
-
 
     <!--  Fuzz Layer  -->
     <sheen_bsdf name="fuzz_bsdf" type="BSDF">
