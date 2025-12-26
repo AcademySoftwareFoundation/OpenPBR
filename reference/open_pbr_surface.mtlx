@@ -704,7 +704,7 @@
       <input name="mix" type="float" interfacename="coat_weight" />
     </mix>
 
-    <!--  Fuzz Layer  -->
+    <!-- Fuzz Layer -->
     <sheen_bsdf name="fuzz_bsdf" type="BSDF">
       <input name="weight" type="float" nodename="fuzz_weight_clamped" />
       <input name="color" type="color3" nodename="fuzz_color_clamped" />
