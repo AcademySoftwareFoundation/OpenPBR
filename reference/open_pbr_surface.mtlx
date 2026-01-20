@@ -379,54 +379,21 @@
       <input name="in1" type="vector3" nodename="extinction_coeff_denom" />
       <input name="in2" type="vector3" nodename="transmission_depth_vector" />
     </divide>
-    <convert name="transmission_scatter_vector" type="vector3">
+    <convert name="transmission_scatter_albedo_vector" type="vector3">
       <input name="in" type="color3" nodename="transmission_scatter_clamped" />
     </convert>
-    <divide name="scattering_coeff" type="vector3">
-      <input name="in1" type="vector3" nodename="transmission_scatter_vector" />
-      <input name="in2" type="vector3" nodename="transmission_depth_vector" />
-    </divide>
+    <multiply name="scattering_coeff" type="vector3">
+      <input name="in1" type="vector3" nodename="transmission_scatter_albedo_vector" />
+      <input name="in2" type="vector3" nodename="extinction_coeff" />
+    </multiply>
     <subtract name="absorption_coeff" type="vector3">
       <input name="in1" type="vector3" nodename="extinction_coeff" />
       <input name="in2" type="vector3" nodename="scattering_coeff" />
     </subtract>
-    <extract name="absorption_coeff_x" type="float">
-      <input name="in" type="vector3" nodename="absorption_coeff" />
-      <input name="index" type="integer" value="0" />
-    </extract>
-    <extract name="absorption_coeff_y" type="float">
-      <input name="in" type="vector3" nodename="absorption_coeff" />
-      <input name="index" type="integer" value="1" />
-    </extract>
-    <extract name="absorption_coeff_z" type="float">
-      <input name="in" type="vector3" nodename="absorption_coeff" />
-      <input name="index" type="integer" value="2" />
-    </extract>
-    <min name="absorption_coeff_min_x_y" type="float">
-      <input name="in1" type="float" nodename="absorption_coeff_x" />
-      <input name="in2" type="float" nodename="absorption_coeff_y" />
-    </min>
-    <min name="absorption_coeff_min" type="float">
-      <input name="in1" type="float" nodename="absorption_coeff_min_x_y" />
-      <input name="in2" type="float" nodename="absorption_coeff_z" />
-    </min>
-    <convert name="absorption_coeff_min_vector" type="vector3">
-      <input name="in" type="float" nodename="absorption_coeff_min" />
-    </convert>
-    <subtract name="absorption_coeff_shifted" type="vector3">
-      <input name="in1" type="vector3" nodename="absorption_coeff" />
-      <input name="in2" type="vector3" nodename="absorption_coeff_min_vector" />
-    </subtract>
-    <ifgreater name="if_absorption_coeff_shifted" type="vector3">
-      <input name="value1" type="float" value="0.0" />
-      <input name="value2" type="float" nodename="absorption_coeff_min" />
-      <input name="in1" type="vector3" nodename="absorption_coeff_shifted" />
-      <input name="in2" type="vector3" nodename="absorption_coeff" />
-    </ifgreater>
     <ifgreater name="if_volume_absorption" type="vector3">
       <input name="value1" type="float" nodename="transmission_depth_nonnegative" />
       <input name="value2" type="float" value="0.0" />
-      <input name="in1" type="vector3" nodename="if_absorption_coeff_shifted" />
+      <input name="in1" type="vector3" nodename="absorption_coeff" />
       <input name="in2" type="vector3" value="0.0,0.0,0.0" />
     </ifgreater>
     <ifgreater name="if_volume_scattering" type="vector3">
