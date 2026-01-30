@@ -665,7 +665,7 @@
       <input name="base" type="BSDF" nodename="base_substrate_attenuated" />
     </layer>
     <!-- Statistical mix of coated and uncoated base  -->
-    <mix name="partially_coated_base" type="color3">
+    <mix name="partially_coated_base" type="BSDF">
       <input name="fg" type="BSDF" nodename="coated_base_substrate" />
       <input name="bg" type="BSDF" nodename="base_substrate" />
       <input name="mix" type="float" interfacename="coat_weight" />
