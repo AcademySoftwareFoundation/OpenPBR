@@ -736,7 +736,7 @@
       <input name="bsdf" type="BSDF" nodename="fuzz_layer" />
       <input name="edf" type="EDF" nodename="emission_edf" />
       <input name="opacity" type="float" nodename="geometry_opacity_clamped" />
-      <input name="thin_walled" type="boolean" interface="geometry_thin_walled" />
+      <input name="thin_walled" type="boolean" interfacename="geometry_thin_walled" />
     </surface>
 
     <!-- Output -->
