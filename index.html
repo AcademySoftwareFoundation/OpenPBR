@@ -36,7 +36,7 @@ However each of these models originated from a single company and was designed p
 OpenPBR is intended to be a common interface between products, as well as something practical that works well and looks plausible for most day-to-day use cases. For the more specialized use cases it does not cover (for example very high-end skin, hair, cloth or volume shading), one may need to use a renderer-specific shader, or build a bespoke shading network. We aim for the overall behavior to be simple, logical, intuitive, and understandable, so that users can become comfortable and familiar with it, while also being grounded in physically-based rendering.
 
 We thus adopt a specific form of material structure that has proved useful as a general purpose model in media and entertainment (Figure [diagram_model]). In outline the structure consists of:
-   - A [base substrate](index.html#model/basesubstrate) made of a mixture of [metal](index.html#model/basesubstrate/metal) or [dielectric](index.html#model/basesubstrate/dielectricbase). The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric base represents either of three components, that can be statistically mixed:
+   - A [base substrate](index.html#model/basesubstrate) made of a mixture of [metal](index.html#model/basesubstrate/metallicbase) or [dielectric](index.html#model/basesubstrate/dielectricbase). The interface (dielectric or metal) of this base layer produces the primary specular reflection lobe. The dielectric base represents either of three components, that can be statistically mixed:
         1. [Glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse): dielectric with opaque internal media, e.g. wood, granite, concrete, cardboard, and wall-paint.
         2. [Subsurface](index.html#model/basesubstrate/subsurface): dielectric with dense highly scattering internal media, e.g. plastic, marble, skin, vegetation, and food.
         3. [Translucent-base](index.html#model/basesubstrate/translucentbase): dielectric with translucent internal media, e.g. glass, crystals, and liquids.
@@ -381,7 +381,7 @@ Microfacet model
 
 We give here some general assumptions about the form and parametrization of the BSDFs which describe the interfaces in the model outlined in the previous section.
 
-The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$, $f_\mathrm{coat}$ and $f_\mathrm{diffuse}$ of the [metal](index.html#model/basesubstrate/metal), [dielectric](index.html#model/basesubstrate), [coat](index.html#model/coat) and [glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse) slabs respectively, are each assumed to be described by a standard _microfacet model_. This is a widely used approximation ([#Pharr2023]) in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal, dielectric or Lambertian material, where the statistical distribution of the normal of these facets, termed the _micronormal_, determines the surface roughness characteristics at the macroscopic scale. (The [fuzz](index.html#model/fuzz) model is distinct and based on a volumetric "microflake" model [#Heitz2015]).
+The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$, $f_\mathrm{coat}$ and $f_\mathrm{diffuse}$ of the [metal](index.html#model/basesubstrate/metallicbase), [dielectric](index.html#model/basesubstrate), [coat](index.html#model/coat) and [glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse) slabs respectively, are each assumed to be described by a standard _microfacet model_. This is a widely used approximation ([#Pharr2023]) in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal, dielectric or Lambertian material, where the statistical distribution of the normal of these facets, termed the _micronormal_, determines the surface roughness characteristics at the macroscopic scale. (The [fuzz](index.html#model/fuzz) model is distinct and based on a volumetric "microflake" model [#Heitz2015]).
 
 A microfacet BRDF has the standard form [^Jacobian] ([#Walter2007], [#Pharr2023]) in the single-scattering approximation:
 \begin{equation}
@@ -403,6 +403,8 @@ where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, 
 \alpha = r^2
 \end{equation}
 where $r \in [0,1]$ is the user-facing _roughness_, as this produces a more perceptually linear resulting change in apparent roughness as $r$ is varied.
+
+### Roughness Anisotropy
 
 In the general case the roughness is anisotropic, that is the NDF is not circularly symmetric but stretched along some direction in the surface plane, producing an elongation of the specular highlight along that direction. This simulates coherent microscale groove geometry due to processes like scratches or brushing. It is assumed that a reference tangent vector field is defined (via **`geometry_tangent`** and **`geometry_coat_tangent`**). The reference tangent vector indicates the direction along which the NDF is stretched, meaning the microscale grooves tend to be aligned with the orthogonal bitangent.
 
@@ -426,7 +428,22 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 
 - **`specular_roughness_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the NDF is stretched in the direction of the local surface tangent). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula]. Note that the appearance of the specular highlight is identical for tangent vectors of opposite directions; this also allows the preservation of value when converting to or from other models that support directional anisotropy.
 
+### Multiple Scattering
+
 The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016a], where the multiple bounces are explicitly modeled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
+
+### Retroreflectivity
+
+It is useful to be able to model *retroreflective* materials in which the light is predominantly scattered backwards towards its source, which are familiar in safety applications such as road markings, signs, vehicles and clothing items. Such materials are typically designed to be retroreflective via a substructure of elements which preferentially scatter light backwards. Various models have been proposed, but we adopt here the empirically-based approach of [#Belcour2014], in which the standard conductor microfacet BRDF is made retroreflective via a simple modification, which produces a visually plausible retroreflective effect.
+It can be shown [#Raab2025] that this is equivalent to simply reflecting the view vector about the shading normal $N$ before evaluation or sampling of the BRDF, i.e.:
+\begin{equation}
+f_\mathrm{retroreflective}(\omega_i, \omega_o) = f_\mathrm{microfacet}(\mathrm{reflect}(\omega_i, N), \omega_o)
+\end{equation}
+where the resulting BRDF remains energy conserving and reciprocal. To provide this retroreflectivity functionality, the microfacet BRDF of the entire base is thus taken to be a mix of the BRDF with and without the view vector modification, with the mix weight given by $w_\mathrm{retro}$  = **`specular_retroreflectivity`**:
+\begin{equation}
+f_\mathrm{conductor} \rightarrow (1 - w_\mathrm{retro}) f_\mathrm{conductor} + w_\mathrm{retro}f_\mathrm{retroreflective}
+\end{equation}
+This is applied in both the metallic BRDF $f_\mathrm{conductor}$ and dielectric BSDF $f_\mathrm{dielectric}$. Howevever, in the dielectric case we require that the view vector reflection is applied in the BRDF *only*, leaving the BTDF unchanged, since this produces a more physically plausible look with undisturbed refraction, while remaining energy conserving and reciprocal [#Raab2025],.
 
 
 ![](images/carbon_fiber_a0.0.png width=99%) ![](images/carbon_fiber_a0.5.png width=99%) ![](images/carbon_fiber_a0.9.png width=99%)
@@ -438,7 +455,7 @@ The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not 
 Base Substrate
 -------------------------------------
 
-The bulk at the bottom of the material structure, termed the base substrate, consists of a statistical mix of metal and dielectric semi-infinite slabs:
+The bulk at the bottom of the material structure, termed the base substrate, consists of a statistical mix of metal and dielectric (i.e. non-metallic) semi-infinite slabs:
 
 \begin{eqnarray}
 M_\textrm{base-substrate} &=& \mathrm{\mathbf{mix}}  (M_\textrm{dielectric-base}, S_\textrm{metal}, \mathtt{M})
@@ -490,7 +507,7 @@ where $\mathtt{S} = \mathtt{subsurface\_weight}$.
 * +- - - - - - - - - - - - - - - - - -+        +- - - - - - - - - - - - + - - - - - - - - - - - -+ *
 ****************************************************************************************************
 
-###  Metal
+###  Metallic Base
 
 Metals are completely opaque and have a characteristic and familiar form of specularity due to the Fresnel factor for conductors differing from that for dielectrics.
 The metallic base is thus represented as a separate bulk slab which consists of an opaque GGX microfacet conductor BRDF $f_\mathrm{conductor}$, whose NDF is parametrized by **`specular_roughness`** and **`specular_roughness_anisotropy`** (overloading the same parameters used for the dielectric BSDF $f_\mathrm{dielectric}$, as noted in the [Microfacet model](index.html#model/microfacetmodel) section):
@@ -533,14 +550,17 @@ Note that the clamp at the lower end is applied since $\mathbf{F}_{82}(\mu)$ can
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`base_weight`** * **`base_color`**.
 Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
-Metal params                        | Label      | Type     | Range           | Norm          | Default             | Description
-------------------------------------|------------|----------|:---------------:|:-------------:|:-------------------:|----------------------------------------------
-**`base_weight`**                   | Weight     | `float`  | $ [0, 1]      $ |               | $ 1               $ | Scalar multiplier to **`base_color`**
-**`base_color`**                    | Color      | `color3` | $ [0, 1]^3    $ |               | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
-**`specular_weight`**               | Weight     | `float`  | $ [0, \infty) $ |  $ [0, 1] $   | $ 1               $ | Overall multiplier of the metal Fresnel
-**`specular_color`**                | Color      | `color3` | $ [0, 1]^3    $ |               | $ (1, 1, 1)       $ | Tint color of metallic Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
-**`specular_roughness`**            | Roughness  | `float`  | $ [0, 1]      $ |               | $ 0.3             $ | Roughness of NDF of BRDF $f_\mathrm{conductor}$
-**`specular_roughness_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |               | $ 0               $ | Anisotropy of NDF of BRDF $f_\mathrm{conductor}$
+The **`specular_retroreflectivity`** mixes the metallic BRDF with the [retroreflective](index.html#model/microfacetmodel/retroreflectivity) modification of the microfacet model.
+
+Metal params                        | Label             | Type     | Range           | Norm          | Default             | Description
+------------------------------------|-------------------|----------|:---------------:|:-------------:|:-------------------:|----------------------------------------------
+**`base_weight`**                   | Weight            | `float`  | $ [0, 1]      $ |               | $ 1               $ | Scalar multiplier to **`base_color`**
+**`base_color`**                    | Color             | `color3` | $ [0, 1]^3    $ |               | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
+**`specular_weight`**               | Weight            | `float`  | $ [0, \infty) $ |  $ [0, 1] $   | $ 1               $ | Overall multiplier of the metal Fresnel
+**`specular_color`**                | Color             | `color3` | $ [0, 1]^3    $ |               | $ (1, 1, 1)       $ | Tint color of metallic Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
+**`specular_roughness`**            | Roughness         | `float`  | $ [0, 1]      $ |               | $ 0.3             $ | Roughness of NDF of BRDF $f_\mathrm{conductor}$
+**`specular_roughness_anisotropy`** | Anisotropy        | `float`  | $ [0, 1]      $ |               | $ 0               $ | Anisotropy of NDF of BRDF $f_\mathrm{conductor}$
+**`specular_retroreflectivity`**    | Retroreflectivity | `float`  |  $ [0, 1]     $ |               | $ 0               $ | Retroreflectivity of BRDF $f_\mathrm{conductor}$
 
 
 ![](images/metal_with_default_edge_tint.png width=90% align=right) ![](images/metal_with_correct_edge_tint.png width=90% align=left)
@@ -551,7 +571,7 @@ Metal params                        | Label      | Type     | Range           | 
 
 ### Dielectric Base
 
-Both the opaque and translucent dielectric-base share the same dielectric interface BSDF $f_\mathrm{dielectric}$. This section details the parametrization of the dielectric BSDF, which defines the upper interface of the [Translucent](index.html#model/basesubstrate/translucentbase), [Glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse) and [Subsurface](index.html#model/basesubstrate/subsurface) base slabs. The base dielectric BSDF (and the [Metal](index.html#model/basesubstrate/metal) BRDF) are informally termed the "specular" lobe, since they provide the primary specular reflection (while the coat provides a secondary specular lobe, see the Coat section).
+Both the opaque and translucent dielectric-base share the same dielectric interface BSDF $f_\mathrm{dielectric}$. This section details the parametrization of the dielectric BSDF, which defines the upper interface of the [Translucent](index.html#model/basesubstrate/translucentbase), [Glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse) and [Subsurface](index.html#model/basesubstrate/subsurface) base slabs. The base dielectric BSDF (and the [Metal](index.html#model/basesubstrate/metallicbase) BRDF) are informally termed the "specular" lobe, since they provide the primary specular reflection (while the coat provides a secondary specular lobe, see the Coat section).
 
 - The specular lobe shape is controlled by the roughness properties of the surface, parametrized by **`specular_roughness`** and **`specular_roughness_anisotropy`** (see the section on the [Microfacet model](index.html#model/microfacetmodel) NDF).
 
@@ -560,6 +580,8 @@ Both the opaque and translucent dielectric-base share the same dielectric interf
 - The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the base dielectric reflectivity at normal incidence via reduction of the IOR below the reference value. When **`specular_weight`** is $0$, the specular reflection disappears entirely, as the IOR of the dielectric is then equal to that of the surrounding medium. Equation [modulated_ior] below gives the formula for the applied IOR modulation. However the refraction direction is *not* modified by **`specular_weight`**, as this control is designed to vary only the reflectivity without disturbing the refraction appearance. Thus the reflection highlight and the refraction direction are effectively *decoupled*, in an unphysical but artistically convenient way. As a convenience, we also allow the **`specular_weight`** to exceed $1$, thus increasing the reflectivity via increase of the IOR above the reference value.
 
 - The **`specular_color`** parameter tints the Fresnel factor of $f_\mathrm{dielectric}$, but only in the BRDF, i.e. the light incident from the upper or lower hemisphere which is reflected back into the same hemisphere. The light transmitted from above or below is assumed to be unaffected. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight.
+
+- The **`specular_retroreflectivity`** mixes the dielectric BRDF with the [retroreflective](index.html#model/microfacetmodel/retroreflectivity) modification of the microfacet model. Note that this alters the BRDF of the dielectric only, leaving the BTDF unchanged, so refraction is undisturbed.
 
 We now give the full details of the required modification of the Fresnel factors due to **`specular_weight`** (see Figure [dielectric_fresnel] for reference).
 
@@ -602,13 +624,15 @@ For physical consistency, we assume that this modification of the Fresnel factor
 As noted, a further tint factor of **`specular_color`** is applied to the entire macroscopic dielectric BRDF (for both entering and exiting rays), while the BTDF is unaffected by this tint.
 
 
-Specular params                     | Label      | Type     | Range           | Norm       | Default       | Description
-------------------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
-**`specular_weight`**               | Weight     | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 1         $ | Modulates the dielectric reflectivity at normal incidence
-**`specular_color`**                | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric BRDF
-**`specular_roughness`**            | Roughness  | `float`  | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_roughness_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
-**`specular_ior`**                  | IOR        | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
+Specular params                     | Label             | Type     | Range           | Norm       | Default       | Description
+------------------------------------|-------------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
+**`specular_weight`**               | Weight            | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 1         $ | Modulates the dielectric reflectivity at normal incidence
+**`specular_color`**                | Color             | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric BRDF
+**`specular_roughness`**            | Roughness         | `float`  | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_roughness_anisotropy`** | Anisotropy        | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
+**`specular_ior`**                  | IOR               | `float`  | $ (0, \infty) $ | $ [1, 3] $ | $ 1.5       $ | Refractive index of $V_\mathrm{dielectric}$
+**`specular_retroreflectivity`**    | Retroreflectivity | `float`  |  $ [0, 1]     $ |            | $ 0         $ | Retroreflectivity of BRDF $f_\mathrm{dielectric}$
+
 
 ![](images/spec_ior1.png width=95%) ![](images/spec_ior2.png width=95%) ![](images/spec_ior3.png width=95%)
 <div class="shifted-caption">
@@ -616,7 +640,7 @@ Specular params                     | Label      | Type     | Range           | 
 </div>
 
 
-### Glossy-diffuse
+### Dielectric Base: Glossy-diffuse
 
 The glossy-diffuse slab represents the base dielectric (parametrized as described in the Dielectric base section), embedding a semi-infinite bulk of extremely dense scattering material. The BRDF of the slab is the combination of a "glossy" specular lobe provided by immediate reflection from the dielectric interface, and a diffuse lobe provided by scattering off the embedded substrate. This models for example the reflection from shiny, totally opaque surfaces such as dense plastic, rock, and concrete.
 
@@ -741,7 +765,7 @@ Glossy-diffuse params        | Label             | Type     | Range            |
 </div>
 
 
-### Subsurface
+### Dielectric Base: Subsurface
 
 The subsurface slab represents a dielectric embedding a dense scattering volumetric medium, which generates significant light bleeding effects due to light propagation and diffusion under the surface, where the exiting ray leaves at a different surface location than the incident ray. Physically, as for the slabs defined in the Glossy-diffuse section and Translucent base section, this is a dielectric substrate with surface BSDF $f_\mathrm{dielectric}$ and homogeneous interior medium $V^\infty_\mathrm{subsurface}$:
 
@@ -805,7 +829,7 @@ Subsurface params                   | Label        | Type      | Range          
 </div>
 
 
-### Translucent base
+### Dielectric Base: Translucent
 
 For cases where the substrate medium is translucent, i.e. transmits and refracts a significant quantity of light, we provide a separate parametrization of the underlying medium more appropriate for this use case than the subsurface model, where the **`transmission_weight`** mix weight selects this model rather than the opaque mix of glossy-diffuse and subsurface. This is a more traditional volumetric parametrization specifying the properties of a homogeneous medium interior to the object, with or without absorption and scattering, which is useful for modeling materials ranging from clear or colored absorbing-only glass and liquids to translucent materials with visually significant scattering such as honey, fruit juice, murky water, opalescent glass, or milky glass.
 
@@ -1562,6 +1586,8 @@ References
 
 [#Ashikhmin2000]: Michael Ashikhmin, Simon Premože, and Peter Shirley. *A Microfacet-based BRDF Generator*, ACM Transactions on Graphics (2000).
 
+[#Belcour2014]: Laurent Belcour, Romain Pacanowski, Marion Delahaie, Aude Laville-Geay, and Laure Eupherte. *BRDF Measurements and Analysis of Retroreflective Materials*, INRIA (2014).
+
 [#Belcour2017]: Laurent Belcour and Pascal Barla. *A Practical Extension to Microfacet Theory for the Modeling of Varying Iridescence*, ACM Transactions on Graphics (2017).
 
 [#Belcour2018]: Laurent Belcour. *Efficient Rendering of Layered Materials using an Atomic Decomposition with Statistical Operators*, ACM Transactions on Graphics (2018).
@@ -1631,6 +1657,8 @@ References
 [#Polyanskiy2023]: Mikhail N. Polyanskiy. [*Refractive Index Database*](https://refractiveindex.info/) (2023).
 
 [#Portsmouth2024]: Jamie Portsmouth, Peter Kutz and Stephen Hill. [*EON: A practical energy-preserving rough diffuse BRDF*](https://arxiv.org/abs/2410.18026) (2024).
+
+[#Raab2025]: Matthias Raab, Laurent Belcour, Frankie Liu and Jamie Portsmouth. *The Minimal Retroreflective Microfacet Model*, to appear (2025)
 
 [#Schott2023]: SCHOTT. [*Interactive Abbe Diagram*](https://www.schott.com/en-gb/interactive-abbe-diagram) (2023).
 
