@@ -423,6 +423,11 @@ To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{diele
 
 - **`specular_roughness_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the NDF is stretched in the direction of the local surface tangent). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula]. Note that the appearance of the specular highlight is identical for tangent vectors of opposite directions; this also allows the preservation of value when converting to or from other models that support directional anisotropy.
 
+![](images/carbon_fiber_a0.0.png width=99%) ![](images/carbon_fiber_a0.5.png width=99%) ![](images/carbon_fiber_a0.9.png width=99%)
+<div class="shifted-caption">
+    ![Figure [anisotropy]: Textured **`geometry_tangent`**, with **`specular_roughness_anisotropy`** varying over 0 (default), 0.5, 0.9.](dummy)
+</div>
+
 ### Multiple Scattering
 
 The single-scattering microfacet BRDF of equation [microfacet_brdf_ss] does not conserve energy, as it neglects to account for multiple scattering between the microfacets. An implementation should ideally account for this, via one of a number of schemes, otherwise the reflection from rough metals and dielectrics is dimmer and less saturated than it should be. A fully accurate approach is described in [#Heitz2016a], where the multiple bounces are explicitly modeled via Monte Carlo. Simpler approximate models are presented in [#Kulla2017] (which functions by adding compensation lobes to account for the missing energy), and [#Turquin2019] (which scales the albedo of the lobe to maintain energy preservation at the expense of reciprocity).
@@ -440,11 +445,6 @@ f_\mathrm{conductor} \rightarrow (1 - w_\mathrm{retro}) f_\mathrm{conductor} + w
 \end{equation}
 This is applied in both the metallic BRDF $f_\mathrm{conductor}$ and dielectric BSDF $f_\mathrm{dielectric}$. Howevever, in the dielectric case we require that the view vector reflection is applied in the BRDF *only*, leaving the BTDF unchanged, since this produces a more physically plausible look with undisturbed refraction, while remaining energy conserving and reciprocal [#Portsmouth2025],.
 
-
-![](images/carbon_fiber_a0.0.png width=99%) ![](images/carbon_fiber_a0.5.png width=99%) ![](images/carbon_fiber_a0.9.png width=99%)
-<div class="shifted-caption">
-    ![Figure [anisotropy]: Textured **`geometry_tangent`**, with **`specular_roughness_anisotropy`** varying over 0 (default), 0.5, 0.9.](dummy)
-</div>
 
 
 Base Substrate
