@@ -717,7 +717,7 @@ automatically compensate for this effect by adjusting the $\boldsymbol{\rho}$ pa
 to make the observed color match the input color $\mathbf{C} =$ **`base_color`** (in a similar spirit to the albedo
 remapping described in the Subsurface section).
 To define the meaning of the specified color in terms of the underlying base albedo, we write the normal-direction
-reflectance of the glossy-diffuse slab (in the $w_\mathrm{d}=1$ case), $\mathbf{E}_\textrm{glossy-diffuse}$ in the
+reflectance of the bare glossy-diffuse slab with vacuum exterior (in the $w_\mathrm{d}=1$ case), $\mathbf{E}_\textrm{glossy-diffuse}$ in the
 general form
 \begin{eqnarray} \label{glossy-diffuse-albedo}
 \mathbf{E}_\textrm{glossy-diffuse} = \mathbf{E}_\textrm{spec} + \mathbf{E}_\textrm{diffuse}
@@ -784,8 +784,7 @@ We now define in detail how these subsurface parameters collectively determine t
 
 The extinction coefficient is simply given by the reciprocal of the MFP per channel: $\boldsymbol{\mu}_t = 1/\mathbf{r}$ (this may need to be regularized in the limit $\mathbf{r} \rightarrow 0$ to avoid numerical issues). Note that since the extinction $\boldsymbol{\mu}_t$ is independent of the anisotropy $g$, the anisotropy has the familiar physical effect of allowing light to transmit more deeply into the medium when positive than when negative.
 
-To define the meaning of the observed **`subsurface_color`** $\mathbf{C}$ in terms of the underlying medium, the reflection from the medium needs to be separated from the Fresnel reflection at the dielectric interface. To make this precise, we denote by $\mathbf{E}_\mathrm{subsurface}$ the directional reflectance along the the normal direction (according to the definition of equation [directional-reflectance-definition]).
-This can always be broken into two components:
+To define the meaning of the observed **`subsurface_color`** $\mathbf{C}$ in terms of the underlying medium, the reflection from the medium needs to be separated from the Fresnel reflection at the dielectric interface. To make this precise, we denote by $\mathbf{E}_\mathrm{subsurface}$ the directional albedo along the normal direction (according to the definition of equation [directional-reflectance-definition]), assuming a bare subsurface slab with vacuum exterior. This albedo can be broken into two components:
 \begin{equation} \label{subsurface-albedo}
 \mathbf{E}_\mathrm{subsurface} = \mathbf{E}_\mathrm{spec} + \mathbf{E}_\mathrm{multi-scatter}
 \end{equation}
@@ -1325,7 +1324,7 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
 
    - The $\textrm{translucent-base}$ slab can be considered an infinitesimally thin sheet of dielectric (absorbing but non-scattering), with the BSDF $f_\mathrm{dielectric}$ on both sides. A ladder of inter-reflections occurs inside this slab producing a reflected lobe and un-deflected refracted lobe. The **`transmission_color`** can be assumed to give the transmittance through the thin sheet at normal incidence (due to absorption). In the smooth case the BRDF and BTDF of this sheet can be solved exactly by summing over a geometrical series of terms containing Fresnel and absorption factors, and this can be extended to a good approximation of the rough case by appropriately roughening the transmission lobe (as described in [#Kulla2017]). This model of thin-walled glass is a cheaper, much more convenient way to render windows than a finite thickness non-thin-walled mesh.
 
-   - The $\textrm{subsurface}$ slab is considered to degenerate into an infinitesimally thin sheet of dense scattering material (bounded by dielectric interfaces $f_\mathrm{dielectric}$), which scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_scatter_anisotropy} \in [-1, 1]$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
+   - The $\textrm{subsurface}$ slab is considered to degenerate into an infinitesimally thin sheet of dense scattering material, embedded inside a finite thickness slab of dielectric with BSDF $f_\mathrm{dielectric}$ on both the upper and lower interfaces. The thin embedded dense sheet scatters a fraction $S = \texttt{subsurface_color}$ of the incident light, split between a diffuse reflection lobe $f^R_\mathrm{diffuse}$ and diffuse transmission lobe $f^T_\mathrm{diffuse}$ according to $g = \texttt{subsurface_scatter_anisotropy} \in [-1, 1]$. That is, where $f_+$, $f_-$ are albedo 1 diffuse lobes in the positive and negative hemisphere respectively:
       \begin{eqnarray}
             f^R_\mathrm{diffuse} &=& \frac{1}{2} S (1 - g)\, f_+ \ , \nonumber \\
             f^T_\mathrm{diffuse} &=& \frac{1}{2} S (1 + g)\, f_- \ . \label{thin_wall_subsurface}
@@ -1334,9 +1333,9 @@ In the thin-wall structure, the base slabs are interpreted as infinitesimally th
       \begin{equation}
          E_R[f^R_\mathrm{diffuse}] + E_T[f^T_\mathrm{diffuse}] = S \le 1 \ .
       \end{equation}
-      At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission.
-      The diffuse transmission lobe shape (in both hemispheres) is assumed to be controlled by the **`base_diffuse_roughness`** parameter. Typically the diffuse lobes $f_+$, $f_-$ will be represented by an Oren-Nayar lobe flipped into the appropriate hemisphere (which technically should be modified due to the dielectric boundaries, though a renderer may choose to ignore this). This model is useful for rendering cases such as light scattering through a thin sheet of paper (Figure [thinwalled]).
+      At the default of zero anisotropy ($g=0$) the energy is balanced equally between diffuse reflection and transmission. The diffuse lobes $f_+$, $f_-$ are assumed to be represented as Energy-preserving Oren-Nayar [#Portsmouth2024] lobes flipped into the appropriate hemisphere, with roughness parameter given by the **`base_diffuse_roughness`** (as described in the Glossy-diffuse section). This model is useful for rendering cases such as light scattering through a thin sheet of paper (Figure [thinwalled]).
 
+Note that in the $\textrm{translucent-base}$ and $\textrm{subsurface}$ cases, a specular lobe is generated as usual due to reflection from the embedding dielectric slab, with IOR given by **`specular_ior`** (including any modulation via **`specular_weight`** as in equation [modulated_ior]). Technically, there should also be darkening and saturation due to the inter-reflections between the dielectric interfaces, in both cases.
 
 ![](images/thin_walled1.jpg width=99% align=right) ![](images/thin_walled2.jpg width=99% align=left)
 <div class="shifted-caption">
