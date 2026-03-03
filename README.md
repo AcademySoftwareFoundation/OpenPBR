@@ -25,6 +25,10 @@ OpenPBR Surface is an open standard hosted by the [Academy Software Foundation](
 * **[Reference implementation](reference/open_pbr_surface.mtlx)** – written in [MaterialX](https://materialx.org/)
 * **[BibTeX citation](openpbr.bib)**
 
+### Implementations
+
+* [Adobe OpenPBR BSDF](https://github.com/adobe/openpbr-bsdf) – Adobe's open-source BSDF implementation of OpenPBR
+
 ### Resources
 
 * [MaterialX Web Viewer](https://academysoftwarefoundation.github.io/MaterialX/?file=Materials/Examples/OpenPbr/open_pbr_default.mtlx) - WebGL rasterization renderer using MaterialX [implementation](reference/open_pbr_surface.mtlx) of OpenPBR
