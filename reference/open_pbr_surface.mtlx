@@ -3,7 +3,7 @@
   <!--
     OpenPBR Surface node definition
   -->
-  <nodedef name="ND_open_pbr_surface_surfaceshader" node="open_pbr_surface" nodegroup="pbr" version="1.1" isdefaultversion="true"
+  <nodedef name="ND_open_pbr_surface_surfaceshader" node="open_pbr_surface" nodegroup="pbr" version="1.2" isdefaultversion="true"
            doc="OpenPBR Surface Shading Model" uiname="OpenPBR Surface">
     <input name="base_weight" type="float" value="1.0" uimin="0.0" uimax="1.0" uiname="Base Weight" uifolder="Base"
            doc="Multiplier on the intensity of the reflection from the diffuse and metallic base." />
@@ -379,54 +379,21 @@
       <input name="in1" type="vector3" nodename="extinction_coeff_denom" />
       <input name="in2" type="vector3" nodename="transmission_depth_vector" />
     </divide>
-    <convert name="transmission_scatter_vector" type="vector3">
+    <convert name="transmission_scatter_albedo_vector" type="vector3">
       <input name="in" type="color3" nodename="transmission_scatter_clamped" />
     </convert>
-    <divide name="scattering_coeff" type="vector3">
-      <input name="in1" type="vector3" nodename="transmission_scatter_vector" />
-      <input name="in2" type="vector3" nodename="transmission_depth_vector" />
-    </divide>
+    <multiply name="scattering_coeff" type="vector3">
+      <input name="in1" type="vector3" nodename="transmission_scatter_albedo_vector" />
+      <input name="in2" type="vector3" nodename="extinction_coeff" />
+    </multiply>
     <subtract name="absorption_coeff" type="vector3">
       <input name="in1" type="vector3" nodename="extinction_coeff" />
       <input name="in2" type="vector3" nodename="scattering_coeff" />
     </subtract>
-    <extract name="absorption_coeff_x" type="float">
-      <input name="in" type="vector3" nodename="absorption_coeff" />
-      <input name="index" type="integer" value="0" />
-    </extract>
-    <extract name="absorption_coeff_y" type="float">
-      <input name="in" type="vector3" nodename="absorption_coeff" />
-      <input name="index" type="integer" value="1" />
-    </extract>
-    <extract name="absorption_coeff_z" type="float">
-      <input name="in" type="vector3" nodename="absorption_coeff" />
-      <input name="index" type="integer" value="2" />
-    </extract>
-    <min name="absorption_coeff_min_x_y" type="float">
-      <input name="in1" type="float" nodename="absorption_coeff_x" />
-      <input name="in2" type="float" nodename="absorption_coeff_y" />
-    </min>
-    <min name="absorption_coeff_min" type="float">
-      <input name="in1" type="float" nodename="absorption_coeff_min_x_y" />
-      <input name="in2" type="float" nodename="absorption_coeff_z" />
-    </min>
-    <convert name="absorption_coeff_min_vector" type="vector3">
-      <input name="in" type="float" nodename="absorption_coeff_min" />
-    </convert>
-    <subtract name="absorption_coeff_shifted" type="vector3">
-      <input name="in1" type="vector3" nodename="absorption_coeff" />
-      <input name="in2" type="vector3" nodename="absorption_coeff_min_vector" />
-    </subtract>
-    <ifgreater name="if_absorption_coeff_shifted" type="vector3">
-      <input name="value1" type="float" value="0.0" />
-      <input name="value2" type="float" nodename="absorption_coeff_min" />
-      <input name="in1" type="vector3" nodename="absorption_coeff_shifted" />
-      <input name="in2" type="vector3" nodename="absorption_coeff" />
-    </ifgreater>
     <ifgreater name="if_volume_absorption" type="vector3">
       <input name="value1" type="float" nodename="transmission_depth_nonnegative" />
       <input name="value2" type="float" value="0.0" />
-      <input name="in1" type="vector3" nodename="if_absorption_coeff_shifted" />
+      <input name="in1" type="vector3" nodename="absorption_coeff" />
       <input name="in2" type="vector3" value="0.0,0.0,0.0" />
     </ifgreater>
     <ifgreater name="if_volume_scattering" type="vector3">
@@ -600,7 +567,9 @@
       <input name="mix" type="float" nodename="base_metalness_clamped" />
     </mix>
 
-    <!-- Coat darkening calculation  -->
+    <!-- Coat Layer -->
+
+    <!-- Inter-reflection darkening darkening calculation -->
     <!-- approximate Kcoat, "internal diffuse reflection coefficient" of coat  -->
     <subtract name="one_minus_coat_F0" type="float">
       <input name="in1" type="float" value="1.0" />
@@ -618,84 +587,89 @@
       <input name="in1" type="float" value="1.0" />
       <input name="in2" type="float" nodename="one_minus_coat_F0_over_eta2" />
     </subtract>
-    <!-- approximate base metal albedo estimate, Emetal  -->
+    <!-- Approximate base metal albedo estimate, Emetal  -->
     <multiply name="Emetal" type="color3">
       <input name="in1" type="color3" nodename="base_color_clamped" />
       <input name="in2" type="float" nodename="specular_weight_nonnegative" />
     </multiply>
-    <!-- approximate base dielectric albedo estimate, Edielectric  -->
+    <!-- Approximate base dielectric albedo estimate, Edielectric  -->
     <mix name="Edielectric" type="color3">
       <input name="fg" type="color3" nodename="subsurface_color_clamped" />
       <input name="bg" type="color3" nodename="base_color_clamped" />
       <input name="mix" type="float" nodename="subsurface_weight_clamped" />
     </mix>
-    <!-- thus calculate overall base albedo estimate approximation, Ebase  -->
+    <!-- Thus calculate overall base albedo estimate approximation, Ebase  -->
     <mix name="Ebase" type="color3">
       <input name="fg" type="color3" nodename="Emetal" />
       <input name="bg" type="color3" nodename="Edielectric" />
       <input name="mix" type="float" nodename="base_metalness_clamped" />
     </mix>
-    <!-- final base darkening factor due to coat:  base_darkening = (1 - Kcoat) / (1 - Ebase*Kcoat)  -->
+    <!-- Final base inter-reflection darkening darkening factor due to coat,
+         where Tcoat2 = coat_color:
+              base_darkening = (1 - Kcoat) / (1 - Ebase*Kcoat*Tcoat2) -->
     <multiply name="Ebase_Kcoat" type="color3">
       <input name="in1" type="color3" nodename="Ebase" />
       <input name="in2" type="float" nodename="Kcoat" />
+    </multiply>
+    <multiply name="Ebase_Kcoat_Tcoat2" type="color3">
+      <input name="in1" type="color3" nodename="Ebase_Kcoat" />
+      <input name="in2" type="color3" interfacename="coat_color" />
     </multiply>
     <subtract name="one_minus_Kcoat" type="float">
       <input name="in1" type="float" value="1.0" />
       <input name="in2" type="float" nodename="Kcoat" />
     </subtract>
-    <subtract name="one_minus_Ebase_Kcoat" type="color3">
+    <subtract name="one_minus_Ebase_Kcoat_Tcoat2" type="color3">
       <input name="in1" type="color3" value="1.0, 1.0, 1.0" />
-      <input name="in2" type="color3" nodename="Ebase_Kcoat" />
+      <input name="in2" type="color3" nodename="Ebase_Kcoat_Tcoat2" />
     </subtract>
     <convert name="one_minus_Kcoat_color" type="color3">
       <input name="in" type="float" nodename="one_minus_Kcoat" />
     </convert>
     <divide name="base_darkening" type="color3">
       <input name="in1" type="color3" nodename="one_minus_Kcoat_color" />
-      <input name="in2" type="color3" nodename="one_minus_Ebase_Kcoat" />
+      <input name="in2" type="color3" nodename="one_minus_Ebase_Kcoat_Tcoat2" />
     </divide>
-    <multiply name="coat_weight_times_coat_darkening" type="float">
-      <input name="in1" type="float" nodename="coat_weight_clamped" />
-      <input name="in2" type="float" nodename="coat_darkening_clamped" />
-    </multiply>
+
+    <!-- Inter-reflection darkening, modulated by coat_darkening -->
     <mix name="modulated_base_darkening" type="color3">
       <input name="fg" type="color3" nodename="base_darkening" />
       <input name="bg" type="color3" value="1.0, 1.0, 1.0" />
-      <input name="mix" type="float" nodename="coat_weight_times_coat_darkening" />
+      <input name="mix" type="float" interfacename="coat_darkening" />
     </mix>
     <multiply name="darkened_base_substrate" type="BSDF">
       <input name="in1" type="BSDF" nodename="base_substrate" />
       <input name="in2" type="color3" nodename="modulated_base_darkening" />
     </multiply>
-
-    <!-- Coat Layer -->
-    <mix name="coat_attenuation" type="color3">
-      <input name="fg" type="color3" nodename="coat_color_clamped" />
-      <input name="bg" type="color3" value="1.0, 1.0, 1.0" />
-      <input name="mix" type="float" nodename="coat_weight_clamped" />
-    </mix>
-    <multiply name="coat_substrate_attenuated" type="BSDF">
+    <!-- Base substrate, attenuated due to absorption color, and (optional) inter-reflection darkening  -->
+    <multiply name="base_substrate_attenuated" type="BSDF">
       <input name="in1" type="BSDF" nodename="darkened_base_substrate" />
-      <input name="in2" type="color3" nodename="coat_attenuation" />
+      <input name="in2" type="color3" nodename="coat_color" />
     </multiply>
-
+    <!-- Coat BSDF  -->
     <open_pbr_anisotropy name="coat_roughness_vector" type="vector2">
       <input name="roughness" type="float" nodename="coat_roughness_clamped" />
       <input name="anisotropy" type="float" nodename="coat_roughness_anisotropy_clamped" />
     </open_pbr_anisotropy>
     <dielectric_bsdf name="coat_bsdf" type="BSDF">
-      <input name="weight" type="float" nodename="coat_weight_clamped" />
-      <input name="ior" type="float" nodename="coat_ior_nonnegative" />
+      <input name="weight" type="float" value="1.0" />
+      <input name="ior" type="float" interfacename="coat_ior" />
       <input name="roughness" type="vector2" nodename="coat_roughness_vector" />
       <input name="normal" type="vector3" interfacename="geometry_coat_normal" />
       <input name="tangent" type="vector3" interfacename="geometry_coat_tangent" />
       <input name="scatter_mode" type="string" value="R" />
     </dielectric_bsdf>
-    <layer name="coat_layer" type="BSDF">
+    <!-- Coated base  -->
+    <layer name="coated_base_substrate" type="BSDF">
       <input name="top" type="BSDF" nodename="coat_bsdf" />
-      <input name="base" type="BSDF" nodename="coat_substrate_attenuated" />
+      <input name="base" type="BSDF" nodename="base_substrate_attenuated" />
     </layer>
+    <!-- Statistical mix of coated and uncoated base  -->
+    <mix name="partially_coated_base" type="BSDF">
+      <input name="fg" type="BSDF" nodename="coated_base_substrate" />
+      <input name="bg" type="BSDF" nodename="base_substrate" />
+      <input name="mix" type="float" interfacename="coat_weight" />
+    </mix>
 
     <!-- Fuzz Layer -->
     <sheen_bsdf name="fuzz_bsdf" type="BSDF">
@@ -707,7 +681,7 @@
     </sheen_bsdf>
     <layer name="fuzz_layer" type="BSDF">
       <input name="top" type="BSDF" nodename="fuzz_bsdf" />
-      <input name="base" type="BSDF" nodename="coat_layer" />
+      <input name="base" type="BSDF" nodename="partially_coated_base" />
     </layer>
 
     <!-- Emission Layer -->
@@ -762,7 +736,7 @@
       <input name="bsdf" type="BSDF" nodename="fuzz_layer" />
       <input name="edf" type="EDF" nodename="emission_edf" />
       <input name="opacity" type="float" nodename="geometry_opacity_clamped" />
-      <input name="thin_walled" type="boolean" interface="geometry_thin_walled" />
+      <input name="thin_walled" type="boolean" interfacename="geometry_thin_walled" />
     </surface>
 
     <!-- Output -->
