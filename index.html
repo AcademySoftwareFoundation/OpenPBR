@@ -299,7 +299,7 @@ However the parameters of the physical model that we describe do not specify all
 
    - Any shader networks which drive the parameters of the model.
 
-   - The assumed convention for converting the input **`geometry_normal`**, **`geometry_coat_normal`**, **`geometry_tangent`** and **`geometry_coat_tangent`** maps, if present, to the final shading normal of the local surface at each point.
+   - The assumed convention for converting the input **`geometry_normal`**, **`geometry_coat_normal`**, **`geometry_tangent`** and **`geometry_coat_tangent`** maps, if present, to the final shading normal of the local surface at each point. (See the Normal maps and Tangents section for a more detailed discussion).
 
 As in practice OpenPBR will be integrated within data exchange frameworks such as MaterialX and USD, the specific form and content of this metadata is outside the scope of this specification.
 
@@ -377,6 +377,7 @@ Microfacet model
 We give here some general assumptions about the form and parametrization of the BSDFs which describe the interfaces in the model outlined in the previous section.
 
 The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$, $f_\mathrm{coat}$ and $f_\mathrm{diffuse}$ of the [metal](index.html#model/basesubstrate/metallicbase), [dielectric](index.html#model/basesubstrate), [coat](index.html#model/coat) and [glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse) slabs respectively, are each assumed to be described by a standard _microfacet model_. This is a widely used approximation ([#Pharr2023]) in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal, dielectric or Lambertian material, where the statistical distribution of the normal of these facets, termed the _micronormal_, determines the surface roughness characteristics at the macroscopic scale. (The [fuzz](index.html#model/fuzz) model is distinct and based on a volumetric "microflake" model [#Heitz2015]).
+The average surface orientation at the macroscopic scale is defined by the _macronormal_, which is the mean micronormal. This macronormal is provided by the local geometry, optionally pertubed via techniques such as normal or bump mapping. Control over the macronormal of the base and coat slabs is provided via the parameters **`geometry_normal`** and **`geometry_coat_normal`**.
 
 A microfacet BRDF has the standard form [^Jacobian] ([#Walter2007], [#Pharr2023]) in the single-scattering approximation:
 \begin{equation}
@@ -393,7 +394,7 @@ The _Normal Distribution Function_ (NDF) $D(m)$ describes the relative probabili
 \begin{equation} \label{GGX}
 D_\mathrm{GGX}(m) \propto \left( 1 + \frac{\tan^2\theta_m}{\alpha^2} \right)^{-2}
 \end{equation}
-where $\theta_m$ is the angle between $m$ and the (macroscopic) surface normal, and the parameter $\alpha$ controls the apparent roughness of the microsurface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ so the microsurface is mostly flat leading to a smooth appearance, while as $\alpha$ grows the microsurface becomes increasingly jagged, leading to a rough appearance. In practice we restrict to the range $\alpha \in [0,1]$, as $\alpha > 1$ does not produce a plausible rough appearance. Following [#Burley2012], we set (in the isotropic case)
+where $\theta_m$ is the angle between $m$ and the macronormal, and the parameter $\alpha$ controls the apparent roughness of the microsurface. As $\alpha \rightarrow 0$, the distribution of normals becomes highly peaked around $\theta_m=0$ so the microsurface is mostly flat leading to a smooth appearance, while as $\alpha$ grows the microsurface becomes increasingly jagged, leading to a rough appearance. In practice we restrict to the range $\alpha \in [0,1]$, as $\alpha > 1$ does not produce a plausible rough appearance. Following [#Burley2012], we set (in the isotropic case)
 \begin{equation}
 \alpha = r^2
 \end{equation}
@@ -419,9 +420,11 @@ This formulation satisfies $\alpha_t^2 + \alpha_b^2 = 2\alpha^2$, to preserve th
 
 To summarize the NDF parameterization, the dielectric-base BSDF $f_\mathrm{dielectric}$ and metal-base BRDF $f_\mathrm{conductor}$ share the same parameters, while the coat BSDF $f_\mathrm{coat}$ uses an independent set:
 
+- **`geometry_normal`** and **`geometry_coat_normal`** define the local macronormal of the base and coat slabs respectively.
+
 - **`specular_roughness`** for both $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness`** for $f_\mathrm{coat}$, define the roughness parameter $r$. These roughnesses are limited to the range $[0,1]$, since $r=1$ corresponds to a perceptually very rough surface.
 
-- **`specular_roughness_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the NDF is stretched in the direction of the local surface tangent). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula]. Note that the appearance of the specular highlight is identical for tangent vectors of opposite directions; this also allows the preservation of value when converting to or from other models that support directional anisotropy.
+- **`specular_roughness_anisotropy`** for $f_\mathrm{dielectric}$ and $f_\mathrm{conductor}$, and **`coat_roughness_anisotropy`** for $f_\mathrm{coat}$, specify $a \in [0, 1]$ (the degree to which the NDF is stretched in the direction of the local surface tangent, defined via **`geometry_tangent`** and **`geometry_coat_tangent`** for the base and coat respectively). The resulting NDF $\alpha_t$, $\alpha_b$ parameters are then determined by equation [openpbr-anisotropy-formula]. Note that the appearance of the specular highlight is identical for tangent vectors of opposite directions; this also allows the preservation of value when converting to or from other models that support directional anisotropy.
 
 ![](images/carbon_fiber_a0.0.png width=99%) ![](images/carbon_fiber_a0.5.png width=99%) ![](images/carbon_fiber_a0.9.png width=99%)
 <div class="shifted-caption">
@@ -590,7 +593,7 @@ Both the opaque and translucent dielectric-base share the same dielectric interf
 
 - The **`specular_ior`** parameter controls the index of refraction (IOR) of the base dielectric.
 
-- The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the base dielectric reflectivity at normal incidence via reduction of the IOR below the reference value. When **`specular_weight`** is $0$, the specular reflection disappears entirely, as the IOR of the dielectric is then equal to that of the surrounding medium. Equation [modulated_ior] below gives the formula for the applied IOR modulation. However the refraction direction is *not* modified by **`specular_weight`**, as this control is designed to vary only the reflectivity without disturbing the refraction appearance. Thus the reflection highlight and the refraction direction are effectively *decoupled*, in an unphysical but artistically convenient way. As a convenience, we also allow the **`specular_weight`** to exceed $1$, thus increasing the reflectivity via increase of the IOR above the reference value.
+- The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the base dielectric reflectivity at normal incidence via reduction of the IOR below the reference value. When **`specular_weight`** is $0$, the specular reflection disappears entirely, as the IOR of the dielectric is then equal to that of the surrounding medium. Equation [modulated_ior] below gives the formula for the applied IOR modulation. However the refraction direction is _not_ modified by **`specular_weight`**, as this control is designed to vary only the reflectivity without disturbing the refraction appearance. Thus the reflection highlight and the refraction direction are effectively *decoupled*, in an unphysical but artistically convenient way. As a convenience, we also allow the **`specular_weight`** to exceed $1$, thus increasing the reflectivity via increase of the IOR above the reference value.
 
 - The **`specular_color`** parameter tints the Fresnel factor of $f_\mathrm{dielectric}$, but only in the BRDF, i.e. the light incident from the upper or lower hemisphere which is reflected back into the same hemisphere. The light transmitted from above or below is assumed to be unaffected. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight.
 
@@ -623,7 +626,7 @@ There are two cases to consider:
 
   - However, if TIR *is* possible (i.e. $\eta_\mathrm{ti}, \eta^\prime_\mathrm{ti} \lt 1$), then a different procedure is used.
     If the incident ray direction generates TIR then the reflection is unmodified with Fresnel factor 1 (and no transmission occurs).
-    However if the incident ray does *not* undergo TIR, then we apply the physical
+    However if the incident ray does _not_ undergo TIR, then we apply the physical
     [Stokes relations](https://en.wikipedia.org/wiki/Stokes_relations) (valid for a smooth dielectric interface)
       \begin{equation} \label{stokes_reciprocity}
       F(\mu_i, \eta_\mathrm{ti}) = F(\mu_t, 1/\eta_\mathrm{ti})
@@ -930,7 +933,7 @@ _Iridescence_ is the occurrence of rainbow-like color fringes in the reflection 
 
  The coverage weight functions as a blend between the BSDF with and without the presence of the film, and thus allows one to dial the effect without altering the shape and saturation of the color fringes.
 
- The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017], in which the thin-film thickness is smaller than the scale of the microfacets and assumed to be smooth. With this assumption, in practice the effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers (thus it is *not* represented by incorporating an explicit thin-film Slab into the model).
+ The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017], in which the thin-film thickness is smaller than the scale of the microfacets and assumed to be smooth. With this assumption, in practice the effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers (thus it is _not_ represented by incorporating an explicit thin-film Slab into the model).
 
  The shape and color of the fringe patterns in the reflection from the film will be affected (as described by Belcour and Barla) by the complex IOR of the adjacent media above and below the film, which in general are a statistical mix of metal and dielectric below and coat and ambient medium above (which the fuzz is index-matched to). Figure [ior_configs] illustrates the eight possible different structures depending on the presence of both the film and coat, each of which leads to different Fresnel effects due to the differing IORs at the interfaces.
 
@@ -1287,20 +1290,25 @@ Opacity params         | Label   | Type    | Range      | Default | Description
 </div>
 
 
-Normal maps
+Normal maps and Tangents
 -------------------------------------
 
 The geometry of the surface is assumed to be given externally to the model, defining a local unperturbed shading normal and tangent space frame.
 
 However we allow for normal mapping, which (optionally) alters this unperturbed shading frame, as a part of the material model, as this alters the light transport and appearance fundamentally.
+There is an input **`geometry_normal`** for the perturbed shading normal $\mathbf{N}_B$ of all slabs of the base, and a separate input **`geometry_coat_normal`** for the perturbed shading normal $\mathbf{N}_C$ of the coat slab. Separately perturbing the coat normal allows for the appearance of a finite thickness coat on top of the base.
 
-There are assumed to be separate normal inputs **`geometry_normal`**, **`geometry_coat_normal`** defining the perturbation of the shading normal for the base and coat BSDF models. Separately perturbing the coat normal allows for the appearance of a finite thickness coat on top of the base.
+The **`geometry_tangent`** $\mathbf{T}_B$ and **`geometry_coat_tangent`** $\mathbf{T}_C$ may also be specified, to define the direction of the microfacet anisotropy on the base slabs and coat slab, for effects such as brushed metal.
 
-The **`geometry_tangent`** and **`geometry_coat_tangent`** may also be specified, to define the direction of the microfacet anisotropy on the base layer and coat layer, for effects such as brushed metal. Similar to normal mapping, the tangent may be transformed with a 2D vector map to alter the direction of the anisotropy.
+In practice, the supplied base normal $\mathbf{N}_B$ (and similarly for the coat) will typically be defined via texture maps which specify how to transform the reference normal $\mathbf{N}'_B$ and reference tangent $\mathbf{T}'_B$ into the perturbed normal $\mathbf{N}_B$. Similarly, the anisotropy tangent $\mathbf{T}_B$ will typically be defined with respect to the reference $\mathbf{N}'_B$ and $\mathbf{T}'_B$, for example via 2D vector "flow maps" [#Vlachos2010]. As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal or tangent in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
 
-The perturbed normals and tangents will of course be specified by input textures (or possibly procedurally). As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal or tangent in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
+It is _not_ required that the resultant input **`geometry_normal`** $\mathbf{N}_B$ and **`geometry_tangent`** $\mathbf{T}_B$ are strictly normalized and orthogonal (and similarly for the coat normal and tangent).
+For example reconstruction filtering techniques such as texture filtering may cause the interpolated normal to not be normalized. However, we _do_ require that the implementation should (if not already ensured) ensure orthonormality of the final vertex shading frame of the BSDF, by applying (via Gram-Schmidt orthogonalization)
+\begin{align*}
+&\mathbf{N}_B \rightarrow \mathrm{normalize}(\mathbf{N}_B), &\quad& \mathbf{T}_B \rightarrow \mathrm{normalize}\bigl(\mathbf{T}_B - (\mathbf{N}_B\cdot \mathbf{T}_B) \mathbf{N}_B\bigr) \nonumber \\
+&\mathbf{N}_C \rightarrow \mathrm{normalize}(\mathbf{N}_C), &\quad& \mathbf{T}_C \rightarrow \mathrm{normalize}\bigl(\mathbf{T}_C - (\mathbf{N}_C\cdot \mathbf{T}_C) \mathbf{N}_C\bigr) \ .
+\end{align*}
 
-The normal and tangent are assumed to be unit vectors. Reconstruction filtering techniques such as texture filtering may cause the interpolated value to not be normalized, which can be corrected with a renormalization to reduce visible artifacts caused by this filtering.
 
 
 Thin-walled mode
@@ -1700,6 +1708,8 @@ References
 [#Turquin2019]: Emmanuel Turquin. *Practical multiple scattering compensation for microfacet models.*, Industrial Light & Magic white paper (2019).
 
 [#Veach1997]: Eric Veach. *Robust Monte Carlo Methods for Light Transport Simulation*, Ph.D. dissertation, Stanford University (1997).
+
+[#Vlachos2010]: Alex Vlachos, Alexey Agapov and Ryan Mitchell. *Water Flow in Portal 2*, ACM SIGGRAPH (2010)
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
 
