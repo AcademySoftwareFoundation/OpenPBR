@@ -1093,14 +1093,20 @@ and similarly for $\mu^t_o$. Note that at normal incidence, this factor reduces 
 
 If the coat is rough, the microfacet BSDF lobes of the underlying base substrate (metal and dielectric) are also effectively roughened. If this is not otherwise accounted for by the light transport, it can instead be reasonably approximated by directly altering the NDF of the base BSDFs.
 
-A formula we recommend for this is obtained by identifying the NDF of each microfacet lobe as corresponding approximately to a Gaussian in slope-space with variance given by $\alpha_t^2 + \alpha_b^2 = r^4$ (in the notation of the [Microfacet model](index.html#model/microfacetmodel) section).
-The effect of the coat roughening can then be modeled as the convolution of these Gaussian NDFs, which corresponds to adding the variances (double counting the coat variance since the reflection passes through the coat boundary twice). The IOR ratio of the coat and ambient medium $\eta_\mathrm{ca}$ also needs to be accounted for, since as $\eta_\mathrm{ca} \rightarrow 1$ the roughening due to the coat goes to zero.
-This leads to the following suggested approximate formula for the modified roughness $r'_\mathrm{B}$  of the base due to the coat:
-\begin{equation} \label{coat_roughening_heuristic}
-r'_\mathrm{B} = \mathrm{min} \bigl(1, r^4_\mathrm{B} + 2 x_C r^4_\mathrm{C} \bigr)^\frac{1}{4} \quad \textrm{with  } x_C  = 1 - \mathrm{min}(\eta_\mathrm{ca}, 1/\eta_\mathrm{ca})
+We work in GGX $\alpha$-space, where $\alpha = r^2$. Let $\alpha_\mathrm{B} = r_\mathrm{B}^2$ and $\alpha_\mathrm{C} = r_\mathrm{C}^2$ denote the GGX alphas of the base and coat respectively, and let $\eta_\mathrm{ca} = n_c/n_a$ be the IOR of the coat relative to the ambient medium (i.e. **`coat_ior`**). A base lobe with GGX alpha $\alpha_\mathrm{B}$ inside the coat appears broadened to $\eta_\mathrm{ca}\,\alpha_\mathrm{B}$ when viewed from outside, due to Snell's law angular expansion at the exit interface. The coat contributes additional broadening via refraction through its tilted microfacets, with both entry and exit refractions adding variance independently. This motivates an IOR-dependent coat broadening coefficient:
+\begin{equation}
+B(\eta_\mathrm{ca}) = 1.05\;\frac{(\eta_\mathrm{ca}-1)\sqrt{1+\eta_\mathrm{ca}^2}}{\eta_\mathrm{ca}}
 \end{equation}
-where $r_\mathrm{B}=$ **`specular_roughness`** and $r_\mathrm{C}=$ **`coat_roughness`**.
-Of course, the presence weight of the coat ($\mathtt{C}=$ **`coat_weight`**) also needs to be taken into account, ideally by blending between the effect with and without the coat present. Alternatively, a cruder approximation would be to just set the roughness of the base to $\mathrm{lerp}(r_\mathrm{B}, r'_\mathrm{B}, \mathtt{C})$.
+where the prefactor $1.05$ is fit to Monte Carlo simulations. Adding the base and coat contributions in quadrature gives the raw broadened alpha:
+\begin{equation} \label{coat_roughening_heuristic}
+\alpha_\mathrm{raw} = \sqrt{\bigl(\eta_\mathrm{ca}\,\alpha_\mathrm{B}\bigr)^2 + \bigl(B(\eta_\mathrm{ca})\,\alpha_\mathrm{C}\bigr)^2}
+\end{equation}
+At high roughness, total internal reflection at the coat exit prevents steeply angled rays from escaping, imposing an upper limit on the observable lobe width. This is modeled with a smooth $\tanh$ saturation:
+\begin{equation}
+\alpha_\mathrm{eff} = \alpha_\mathrm{max}\,\tanh\!\left(\frac{\alpha_\mathrm{raw}}{\alpha_\mathrm{max}}\right), \qquad \alpha_\mathrm{max} = 0.85
+\end{equation}
+The effective roughness is then $r'_\mathrm{B} = \sqrt{\alpha_\mathrm{eff}}$, where $r_\mathrm{B}=$ **`specular_roughness`** and $r_\mathrm{C}=$ **`coat_roughness`**.
+The presence weight of the coat ($\mathtt{C}=$ **`coat_weight`**) is accounted for by blending: $\mathrm{lerp}(r_\mathrm{B},\, r'_\mathrm{B},\, \mathtt{C})$.
 
 
 ### Total internal reflection
@@ -1183,12 +1189,7 @@ Then accounting for the coverage weight of the fuzz layer, $\mathtt{F}$ = **`fuz
 
 The fuzz shading normal is assumed to inherit from that of the substrate layer, the physical picture being that the fuzz volume settles and conforms to the geometry of the substrate. The substrate is generally a mixture of coat and uncoated base. Thus physically the fuzz model should be evaluated with each of the **`geometry_coat_normal`** and **`geometry_normal`** separately (if they differ), and the final result blended according to the **`coat_weight`**. As a practical approximation, it may be more convenient and efficient to instead approximate the fuzz normal by interpolating the coat and base normal according to **`coat_weight`**.
 
-The scattering within the fuzz layer will have the effect of roughening the appearance of the substrate beneath it.
-A simple suggested approximation for this can be adapted from the formula used to model the coat roughening, in equation [coat_roughening_heuristic]. If we consider the fuzz layer to generate roughening by scattering, we can approximate its effective roughness as being proportional to the albedo of the layer, as well as to the tint color (since darker fuzz will physically scatter less and absorb more). This leads to the following heuristic for the modified roughness $r'_\mathrm{B}$ of the substrate lobe:
-\begin{equation} \label{fuzz_roughening_heuristic}
-r'_\mathrm{B} = \mathrm{min} \bigl(1, r^4_\mathrm{B} + 2 R^4_\mathrm{F} \bigr)^\frac{1}{4} \quad \textrm{with $R_F = \mathrm{lum}(\mathbf{F} E_\mathrm{fuzz})$}
-\end{equation}
-where $r_\mathrm{B}$ is the original substrate roughness, and $\mathrm{lum}(\cdots)$ computes the luminance of the RGB argument. This should be applied to both the coat (if present) and the base lobes. If both the fuzz and the coat are present, then the base lobe roughness will be broadened by both the coat and fuzz formulas successively. The presence weights of the fuzz and coat should be accounted for appropriately.
+Unlike the coat, the fuzz layer is index-matched with the ambient medium (IOR $n_a$), so refraction does not alter the direction of unscattered rays passing through it. Consequently, *we recommend that the base lobe should not be roughened by the fuzz layer.* The base lobe retains its original angular distribution, attenuated only by the extinction through the fuzz volume. Any apparent broadening of the overall reflected lobe arises from the scattered fuzz contribution sitting alongside the unmodified base lobe, not from widening the base lobe itself.
 
 
 Fuzz params          | Label     | Type     | Range        | Default       | Description
