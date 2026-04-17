@@ -984,13 +984,13 @@ The IOR $n_c = \mathtt{coat\_ior}$ of the coat medium $V_\mathrm{coat}$ will alt
 \end{equation}
 This ratio then determines the specular Fresnel factor, as in equation [modulated_ior]. This adjustment to the effective IOR ratio occurs *before* any modulation due to the $\mathtt{specular\_weight}$. As discussed in the coat [TIR](index.html#model/coat/totalinternalreflection) section, evaluation of the specular Fresnel factor may need to be further modified to model the refraction of the ray inside the coat.
 
-The absorption of the medium $V_\mathrm{coat}$ is parametrized by **`coat_color`**, which is assumed to specify the _square_ of the transmittance $\mathbf{T}_\mathrm{coat}$ of the coat at normal incidence (i.e. $\mathbf{T}^2_\mathrm{coat}$ = **`coat_color`** in the notation of equation [non-reciprocal-albedo-scaling-with-T]). Thus the observed tint color of the underlying base due to absorption in the coat is approximately given by **`coat_color`** due to the absorption along the incident and outgoing rays (note that the specular reflection from the coat itself is _not_ tinted).
+The absorption of the medium $V_\mathrm{coat}$ is parametrized by **`coat_color`**, which is assumed to specify the _square_ of the transmittance $T_\mathrm{coat}$ of the coat at normal incidence (i.e. $T^2_\mathrm{coat}$ = **`coat_color`** in the notation of equation [non-reciprocal-albedo-scaling-with-T]). Thus the observed tint color of the underlying base due to absorption in the coat is approximately given by **`coat_color`** due to the absorption along the incident and outgoing rays (note that the specular reflection from the coat itself is _not_ tinted).
 
 In the full light transport within the coat, various physical effects [^porosity] occur which we assume are accounted for in the ground truth appearance.
 
    - The observed color of the coated base is darkened and saturated due to multiple internal reflections from the inside of the coat, which causes light to strike the underlying material multiple times and undergo more absorption. This effect is controlled via the **`coat_darkening`** parameter, as described in the coat Darkening section.
 
-   - The observed **`coat_color`** tint (defined as the square of the transmittance of the coat at normal incidence, $\mathbf{T}_\mathrm{coat}$ ) also darkens as the incidence angle changes due to the change in path length in the medium, as described in the View-dependent absorption section.
+   - The observed **`coat_color`** tint (defined as the square of the transmittance of the coat at normal incidence, $T_\mathrm{coat}$ ) also darkens as the incidence angle changes due to the change in path length in the medium, as described in the View-dependent absorption section.
 
    - The presence of a rough coat will increase the apparent roughness of the BSDF lobes of the underlying base. A recommendation for implementation of this effect is given in the coat Roughening section.
 
@@ -1025,13 +1025,13 @@ However this darkening may not always be desirable artistically, as in some appl
 where $\mathbf{E}_\mathrm{spec}$ is the normal-direction reflectance of all energy reflected from the coat's dielectric interface _without_ macroscopic transmission, and $\mathbf{E}^\prime_c$ represents the albedo due to transmission into the coat medium (and scattering off the base substrate, potentially multiple internal reflections off the coat interface, and re-transmission back out).
 We then require that the *effect* of $\delta$ = **`coat_darkening`** is to multiply $\mathbf{E}^\prime_c$ by an RGB boost factor
 \begin{equation} \label{undarkened_coat_albedo_scaling}
-\mathbf{B}(\delta) = \mathrm{lerp}\biggl(\frac{\mathbf{T}_\mathrm{coat}^2 \mathbf{E}_b}{\mathbf{E}^\prime_c}, 1, \delta \biggr)
+\mathbf{B}(\delta) = \mathrm{lerp}\biggl(\frac{T^2_\mathrm{coat} \mathbf{E}_b}{\mathbf{E}^\prime_c}, 1, \delta \biggr)
 \end{equation}
-where $\mathbf{T}_\mathrm{coat}$ is the coat absorption transmittance, and $\mathbf{E}_b$ represents the normal-incidence albedo of the entire base beneath the coat (which can be approximated as the normal-incidence albedos of the individual slabs of the base, blended according to their mix weights).
+where $T_\mathrm{coat}$ is the coat absorption transmittance, and $\mathbf{E}_b$ represents the normal-incidence albedo of the entire base beneath the coat (which can be approximated as the normal-incidence albedos of the individual slabs of the base, blended according to their mix weights).
 
 This is a straightforward implementation of the requirement for the albedo of the "un-darkened" coat to be equal to the usual albedo scaling formula of equation [non-reciprocal-albedo-scaling-with-T] (which involves no color shift other than that due to the absorption, and the combination with the Fresnel factor), i.e.
 \begin{equation} \label{undarkened_coat_albedo}
-\mathbf{E}_c = \mathbf{E}_\mathrm{spec} + (1 - \mathbf{E}_\mathrm{spec}) \mathbf{E}^\prime_c \mathbf{B}(\delta) \; \rightarrow \; \mathbf{E}_\mathrm{spec} + \mathbf{T}^2_\mathrm{coat} \, \mathbf{E}_b (1 - \mathbf{E}_\mathrm{spec})
+\mathbf{E}_c = \mathbf{E}_\mathrm{spec} + (1 - \mathbf{E}_\mathrm{spec}) \mathbf{E}^\prime_c \mathbf{B}(\delta) \; \rightarrow \; \mathbf{E}_\mathrm{spec} + T^2_\mathrm{coat} \, \mathbf{E}_b (1 - \mathbf{E}_\mathrm{spec})
 \end{equation}
 as $\delta \rightarrow 0$.
 
@@ -1071,21 +1071,21 @@ while the metallic roughness can be taken to be $r_m = r$. (Note that in this fo
 
 Incorporating the absorption coefficient is more complicated, but a rough approximation at normal incidence is to replace
 \begin{equation} \label{general_darkening_formula_with_absorption}
-\mathbf{\Delta}(\mathbf{E}_b, \eta_c) \approx \frac{1 - K}{1 - K \mathbf{E}_b \mathbf{T}^2_\mathrm{coat}}
+\mathbf{\Delta}(\mathbf{E}_b, \eta_c) \approx \frac{1 - K}{1 - K \mathbf{E}_b T^2_\mathrm{coat}}
 \end{equation}
-and equation [interfaced_lambertian_albedo] is modified with an additional $\mathbf{T}^2_\mathrm{coat}$ factor in the second term.
-We can thus approximate $\mathbf{E}^\prime_c \approx \mathbf{E}_b \mathbf{T}^2_\mathrm{coat} \mathbf{\Delta}$. The boost factor of equation [undarkened_coat_albedo_scaling] then reduces to:
+and equation [interfaced_lambertian_albedo] is modified with an additional $T^2_\mathrm{coat}$ factor in the second term.
+We can thus approximate $\mathbf{E}^\prime_c \approx \mathbf{E}_b T^2_\mathrm{coat} \mathbf{\Delta}$. The boost factor of equation [undarkened_coat_albedo_scaling] then reduces to:
 \begin{equation} \label{B_approx}
 \mathbf{B}(\delta) = \mathrm{lerp}\biggl(\frac{1}{\mathbf{\Delta}}, 1, \delta\biggr) \ .
 \end{equation}
 
 Given the general formula equation [general_darkening_formula_with_absorption] for the darkening, a reasonable approximate scheme -- assuming no other compensation is made to approximate the effect -- is to multiply the base BSDF by the uniform _modulated darkening factor_ (depending on the darkening parameter $\delta$ = **`coat_darkening`**):
 \begin{equation} \label{modulated_darkening_factor}
-\mathbf{B}(\delta) \,\mathbf{\Delta} \mathbf{T}^2_\mathrm{coat} = \mathrm{lerp}\left(1, \mathbf{\Delta}, \delta\right) \,\mathbf{T}^2_\mathrm{coat}
+\mathbf{B}(\delta) \,\mathbf{\Delta} T^2_\mathrm{coat} = \mathrm{lerp}\left(1, \mathbf{\Delta}, \delta\right) \,T^2_\mathrm{coat}
 \end{equation}
 with $\mathbf{\Delta}$ evaluated via equation [general_darkening_formula_with_absorption] with internal diffuse reflection coefficient, accounting for base roughness, given by equation [internal_diffuse_reflection_coefficient_for_general_base].
 
-In the absense of the coat the physical darkening does not occur, which may be modelled by having the base darkening factor be $\mathrm{lerp}(1, \mathbf{B}(\delta) \,\mathbf{\Delta} \mathbf{T}^2_\mathrm{coat}, \mathtt{C})$ where $\mathtt{C}$ = **`coat_weight`** is the presence weight of the coat.
+In the absense of the coat the physical darkening does not occur, which may be modelled by having the base darkening factor be $\mathrm{lerp}(1, \mathbf{B}(\delta) \,\mathbf{\Delta} T^2_\mathrm{coat}, \mathtt{C})$ where $\mathtt{C}$ = **`coat_weight`** is the presence weight of the coat.
 
 
 
@@ -1418,9 +1418,9 @@ f^T_\mathrm{dielectric-base} &= \mathtt{T} \color{darkblue}{f^T_\textrm{specular
                               &= \mathrm{lerp}\left(\mathrm{lerp}(\color{darkblue}{f_\mathrm{diffuse}}, \color{darkblue}{f_\textrm{SSS}}, \mathtt{S}), \color{darkblue}{f^T_\textrm{specular}}, \mathtt{T}\right) \ .
 \end{align}
 
-Next, the coat is layered on top of the base substrate with the coverage weight $\mathtt{C}$, where the BRDF of the coat dielectric interface is taken to be $\color{darkblue}{f_\mathrm{coat}}$, with a transmittance $T_\mathrm{coat}$. As in equation [coat_layering_formula_with_albedo_scaling], this can be expressed as:
+Next, the coat is layered on top of the base substrate with the coverage weight $\mathtt{C}$, where the BRDF of the coat dielectric interface is taken to be $\color{darkblue}{f_\mathrm{coat}}$, with a combined transmittance $T^2_\mathrm{coat}$. As in equation [coat_layering_formula_with_albedo_scaling], this can be expressed as:
 \begin{equation}
-f_\mathrm{coated-base} = \mathtt{C} \,\color{darkblue}{f_\mathrm{coat}} +  \mathrm{lerp}\left(1,  T_\mathrm{coat} (1 - E[\color{darkblue}{f_\mathrm{coat}}]), \mathtt{C}\right) f_\textrm{base-substrate} \ .
+f_\mathrm{coated-base} = \mathtt{C} \,\color{darkblue}{f_\mathrm{coat}} +  \mathrm{lerp}\left(1,  T^2_\mathrm{coat} (1 - E[\color{darkblue}{f_\mathrm{coat}}]), \mathtt{C}\right) f_\textrm{base-substrate} \ .
 \end{equation}
 
 Similarly, the fuzz layer is applied with coverage weight $\mathtt{F}$ (with albedo-scaling adjusted to account for the gray transmission, according to equation [fuzz-layering-approx]), producing (where $\color{darkblue}{\overline{f_\mathrm{fuzz}}}$ is the fuzz BRDF with the tint color set to white):
@@ -1450,7 +1450,7 @@ To summarize, we have thus expressed the model as the following linear combinati
          \begin{aligned}
             \; f_\mathrm{PBR}               &=& \!\!\!\!\!\!\!\!\!\!                                                    &\mathrm{lerp}\left(\color{darkblue}{f_\textrm{transparent}},                              f_\mathrm{surface}          ,      \mathtt{\alpha}\right)                           \ ,   \; \nonumber \\
             \; f_\mathrm{surface}           &=& \!\!\!\!\!\!\!\!\!\!\mathtt{F} \,\color{darkblue}{f_\mathrm{fuzz}}    + &\mathrm{lerp}\left(1,                              \quad\quad\; 1 - E[\color{darkblue}{\overline{f_\mathrm{fuzz}}}]   ,    \;\mathtt{F}     \right) f_\textrm{coated-base}    \ ,   \; \nonumber \\
-            \; f_\mathrm{coated-base}       &=& \!\!\!\!\!\!\!\!\!\!\mathtt{C} \,\color{darkblue}{f_\mathrm{coat}}    + &\mathrm{lerp}\left(1,                          T_\mathrm{coat} (1 - E[\color{darkblue}{f_\mathrm{coat}}])             ,      \mathtt{C}     \right) f_\textrm{base-substrate} \ ,   \; \nonumber \\
+            \; f_\mathrm{coated-base}       &=& \!\!\!\!\!\!\!\!\!\!\mathtt{C} \,\color{darkblue}{f_\mathrm{coat}}    + &\mathrm{lerp}\left(1,                          T^2_\mathrm{coat} (1 - E[\color{darkblue}{f_\mathrm{coat}}])             ,      \mathtt{C}     \right) f_\textrm{base-substrate} \ ,   \; \nonumber \\
             \; \color{darkblue}{L_e}        &=& \!\!\!\!\!\!\!\!\!\!                                                    &\mathrm{lerp}\left(1,                                                                        T_\mathrm{coat}          ,      \mathtt{C}     \right) \mathtt{E}                \ ,   \; \nonumber \\
             \; f_\textrm{base-substrate}    &=& \!\!\!\!\!\!\!\!\!\!                                                    &\mathrm{lerp}\left(f_\textrm{dielectric-base}, \color{darkblue}{f_\mathrm{conductor}}                                 ,      \mathtt{M}     \right)                           \ ,   \; \nonumber \\
             \; f_\textrm{dielectric-base}   &=& \!\!\!\!\!\!\!\!\!\!\color{darkblue}{f^R_\textrm{specular}}           + &(1 - E[\color{darkblue}{f^R_\textrm{specular}}]) f^T_\mathrm{dielectric-base}                                                                                                 \ ,   \; \nonumber \\
