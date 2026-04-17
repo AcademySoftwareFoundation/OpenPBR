@@ -1,7 +1,14 @@
-# OpenPBR Surface
 
+
+<br>
 <p align="center">
-<img src="images/OpenPBR_title.jpg" title="OpenPBR demonstration scene" />
+<img src="images/logo/openpbr-logo-glyph.svg" alt="homepage" height="80px" style="vertical-align: middle; position: relative; bottom: 3px"/>&nbsp;&nbsp;
+<img src="images/logo/openpbr-logo-text.svg"  alt="homepage" height="96px" style="vertical-align: middle; position: relative; bottom: 3px"/>
+</p>
+<br>
+<p align="center">
+<img src="images/OpenPBR_title.jpg" title="OpenPBR demonstration scene" width="80%"/>
+<br>
 <sub><i>Shader Playground, rendered in Arnold for Maya, using OpenPBR Surface. Artwork by Nikie Monteleone.</i></sub>
 </p>
 <br>
