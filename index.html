@@ -922,25 +922,31 @@ Translucent base params                   | Label            | Type     | Range 
 Thin-film iridescence
 -------------------------------------
 
-_Iridescence_ is the occurrence of rainbow-like color fringes in the reflection when a thin dielectric film with thickness on the order of the wavelength of light is placed on top of a material, due to wave interference between the various electromagnetic reflection modes within the film. To model this, there is assumed to be such a thin-film sitting on top of the base substrate (whether metal or dielectric), parametrized only by:
+_Iridescence_ is the occurrence of rainbow-like color fringes in the reflection when a thin dielectric film with thickness on the order of the wavelength of light is placed on top of a material, due to interference between light reflected from the film's top and bottom surfaces, including internal reflections. To model this, we assume such a thin film sits atop the base substrate (whether metal or dielectric), parametrized by:
 
    - **`thin_film_weight`**: the coverage (presence) weight of the film,
-   - **`thin_film_thickness`**: the thickness of the film in micrometers ($\mathrm{\mu m}$), mostly affecting the spacing of the fringes,
-   - **`thin_film_ior`**: the index of refraction (IOR) of the film, mostly affecting the hue of the fringes
+   - **`thin_film_thickness`**: the thickness of the film in micrometers ($\mathrm{\mu m}$),
+   - **`thin_film_ior`**: the index of refraction (IOR) of the film.
 
- The coverage weight functions as a blend between the BSDF with and without the presence of the film, and thus allows one to dial the effect without altering the shape and saturation of the color fringes.
+The thickness and IOR together affect the intensity, spacing, and hue of the color fringes. The coverage weight acts as a blend between the BSDF with and without the presence of the film, allowing the overall strength of the effect to be adjusted without altering its structure or color.
 
- The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017], in which the thin-film thickness is smaller than the scale of the microfacets and assumed to be smooth. With this assumption, in practice the effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers (thus it is *not* represented by incorporating an explicit thin-film Slab into the model).
+The currently recommended thin-film model is that of Belcour and Barla [#Belcour2017]. This model provides an efficient, high-quality approximation of thin-film interference suitable for typical RGB-based production rendering.
 
- The shape and color of the fringe patterns in the reflection from the film will be affected (as described by Belcour and Barla) by the complex IOR of the adjacent media above and below the film, which in general are a statistical mix of metal and dielectric below and coat and ambient medium above (which the fuzz is index-matched to). Figure [ior_configs] illustrates the eight possible different structures depending on the presence of both the film and coat, each of which leads to different Fresnel effects due to the differing IORs at the interfaces.
+Implementations that operate in a spectral rendering context (or that otherwise wish to account for wavelength-dependent IOR and extinction) may alternatively compute the thin-film Fresnel effect directly from first principles by evaluating Fresnel and thin-film interference at one or more wavelengths and integrating the result according to the renderer's spectral pipeline. In such implementations, the thin-film effect is typically evaluated using an Airy-style multi-bounce formulation (e.g., Equation 3 in [#Belcour2017]) together with wavelength-dependent Fresnel amplitude and phase at the film interfaces. Results should be validated against the recommended Belcour and Barla model in the parameter regimes where that model applies.
+
+Regardless of which approach is used, several considerations apply:
+
+   - The shape and color of the fringe patterns in the reflection from the film are affected by the complex IOR of the adjacent media above and below the film, which in general are a statistical mix of metal and dielectric below, and of coat and ambient medium above (to which the fuzz is index-matched). Figure [ior_configs] illustrates the eight possible different structures depending on the presence of both the film and coat, each of which leads to different Fresnel effects due to the differing IORs at the interfaces. In principle the implementation should account for all of these configurations accurately, though the precise modeling of these effects is implementation-dependent.
+
+   - The thin-film thickness is assumed to be smaller than the scale of the microfacets and the film is assumed to be smooth. With this assumption, in practice the effect is most easily incorporated directly into the Fresnel factor of the microfacet BSDFs of both the metal and dielectric-base layers (thus it is *not* represented by incorporating an explicit thin-film Slab into the model).
+
+   - In the case of a dielectric base, the thin film should also generate color fringes in the transmission lobe. This is important, for example, when rendering soap bubbles (see [#Belcour2017]).
+
+   - In the case of a metallic base the physics is somewhat ambiguous since, as described in the Metal section, the Fresnel factor for metal is defined according to the Schlick-based "F82-tint" parametrization, which does not specify the underlying physical complex IOR. We suggest that some reasonable approximation is employed to map the Fresnel factor to a best-matching effective complex IOR, for example that described by [#Gulbrandsen2014].
+
+   - Because the thin film is non-absorbing and interference-based, it only redistributes the probabilities of reflection and transmission; therefore, it should not violate energy conservation. 
 
 ![Figure [ior_configs]: Schematic of all 8 possible IOR configurations, including those involving the thin-film.](images/IOR_configs.svg width="95%" align="center")
-
-In principle the implementation should deal with all these physical configurations correctly, though modeling of the precise effect is implementation-dependent.
-
-Note that in the case of the dielectric base, the thin-film should also generate color fringes in the transmission lobe. This is important for example when rendering soap bubbles (see [#Belcour2017]).
-
-In the case of the metallic base the physics is somewhat ambiguous since, as described in the Metal section, the Fresnel factor for metal is defined according to the Schlick-based "F82-tint" parametrization which does not specify the underlying physical complex IOR. We suggest here that some reasonable approximation is employed to map the Fresnel factor to the best matching effective complex IOR, for example that described by [#Gulbrandsen2014].
 
 </br>
 
