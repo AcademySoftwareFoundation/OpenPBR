@@ -23,6 +23,10 @@
            doc="Index of refraction of the dielectric base." />
     <input name="specular_roughness_anisotropy" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Specular Anisotropy" uifolder="Specular" uiadvanced="true"
            doc="The directional bias of the roughness of the metal/dielectric base, resulting in increasingly stretched highlights along the tangent direction." />
+    <input name="specular_haze" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Specular Haze" uifolder="Specular" uiadvanced="true"
+           doc="Mix weight of a secondary specular lobe for a hazy gloss appearance." />
+    <input name="specular_haze_spread" type="float" value="0.3" uimin="0.0" uimax="1.0" uiname="Specular Haze Spread" uifolder="Specular" uiadvanced="true"
+           doc="Extra roughness of the secondary haze lobe, interpolating between core roughness and 1." />
     <input name="transmission_weight" type="float" value="0.0" uimin="0.0" uimax="1.0" uiname="Transmission Weight" uifolder="Transmission" uiadvanced="true" hint="transparency"
            doc="Mixture weight between the transparent and opaque dielectric base. The greater the value the more transparent the material." />
     <input name="transmission_color" type="color3" value="1, 1, 1" uimin="0,0,0" uimax="1,1,1" uiname="Transmission Color" uifolder="Transmission" uiadvanced="true"
@@ -138,6 +142,16 @@
     </max>
     <clamp name="specular_roughness_anisotropy_clamped" type="float">
       <input name="in" type="float" interfacename="specular_roughness_anisotropy" />
+      <input name="low" type="float" value="0.0" />
+      <input name="high" type="float" value="1.0" />
+    </clamp>
+    <clamp name="specular_haze_clamped" type="float">
+      <input name="in" type="float" interfacename="specular_haze" />
+      <input name="low" type="float" value="0.0" />
+      <input name="high" type="float" value="1.0" />
+    </clamp>
+    <clamp name="specular_haze_spread_clamped" type="float">
+      <input name="in" type="float" interfacename="specular_haze_spread" />
       <input name="low" type="float" value="0.0" />
       <input name="high" type="float" value="1.0" />
     </clamp>
@@ -300,6 +314,40 @@
     <!-- Calculate main specular roughness -->
     <open_pbr_anisotropy name="main_roughness" type="vector2">
       <input name="roughness" type="float" nodename="effective_specular_roughness" />
+      <input name="anisotropy" type="float" nodename="specular_roughness_anisotropy_clamped" />
+    </open_pbr_anisotropy>
+
+    <!-- Calculate haze specular roughness -->
+    <!-- r_haze = lerp(specular_roughness, 1.0, specular_haze_spread) -->
+    <mix name="haze_roughness_base" type="float">
+      <input name="fg" type="float" value="1.0" />
+      <input name="bg" type="float" nodename="specular_roughness_clamped" />
+      <input name="mix" type="float" nodename="specular_haze_spread_clamped" />
+    </mix>
+    <!-- Apply coat roughening to haze roughness -->
+    <power name="haze_roughness_to_power_4" type="float">
+      <input name="in1" type="float" nodename="haze_roughness_base" />
+      <input name="in2" type="float" value="4.0" />
+    </power>
+    <add name="add_coat_and_haze_roughnesses_to_power_4" type="float">
+      <input name="in1" type="float" nodename="two_times_coat_roughness_to_power_4" />
+      <input name="in2" type="float" nodename="haze_roughness_to_power_4" />
+    </add>
+    <min name="min_1_add_coat_and_haze_roughnesses_to_power_4" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="add_coat_and_haze_roughnesses_to_power_4" />
+    </min>
+    <power name="coat_affected_haze_roughness" type="float">
+      <input name="in1" type="float" nodename="min_1_add_coat_and_haze_roughnesses_to_power_4" />
+      <input name="in2" type="float" value="0.25" />
+    </power>
+    <mix name="effective_haze_roughness" type="float">
+      <input name="fg" type="float" nodename="coat_affected_haze_roughness" />
+      <input name="bg" type="float" nodename="haze_roughness_base" />
+      <input name="mix" type="float" nodename="coat_weight_clamped" />
+    </mix>
+    <open_pbr_anisotropy name="haze_roughness" type="vector2">
+      <input name="roughness" type="float" nodename="effective_haze_roughness" />
       <input name="anisotropy" type="float" nodename="specular_roughness_anisotropy_clamped" />
     </open_pbr_anisotropy>
 
@@ -528,8 +576,38 @@
       <input name="bg" type="BSDF" nodename="dielectric_reflection" />
       <input name="mix" type="float" nodename="thin_film_weight_clamped" />
     </mix>
+
+    <!-- Dielectric Haze -->
+    <dielectric_bsdf name="dielectric_reflection_haze" type="BSDF">
+      <input name="tint" type="color3" nodename="specular_color_clamped" />
+      <input name="ior" type="float" nodename="modulated_eta_s" />
+      <input name="roughness" type="vector2" nodename="haze_roughness" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
+      <input name="tangent" type="vector3" interfacename="geometry_tangent" />
+      <input name="scatter_mode" type="string" value="R" />
+    </dielectric_bsdf>
+    <dielectric_bsdf name="dielectric_reflection_haze_tf" type="BSDF">
+      <input name="tint" type="color3" nodename="specular_color_clamped" />
+      <input name="ior" type="float" nodename="modulated_eta_s" />
+      <input name="roughness" type="vector2" nodename="haze_roughness" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
+      <input name="tangent" type="vector3" interfacename="geometry_tangent" />
+      <input name="scatter_mode" type="string" value="R" />
+      <input name="thinfilm_thickness" type="float" nodename="thin_film_thickness_nm" />
+      <input name="thinfilm_ior" type="float" nodename="thin_film_ior_nonnegative" />
+    </dielectric_bsdf>
+    <mix name="dielectric_reflection_haze_tf_mix" type="BSDF">
+      <input name="fg" type="BSDF" nodename="dielectric_reflection_haze_tf" />
+      <input name="bg" type="BSDF" nodename="dielectric_reflection_haze" />
+      <input name="mix" type="float" nodename="thin_film_weight_clamped" />
+    </mix>
+    <mix name="dielectric_reflection_with_haze" type="BSDF">
+      <input name="fg" type="BSDF" nodename="dielectric_reflection_haze_tf_mix" />
+      <input name="bg" type="BSDF" nodename="dielectric_reflection_tf_mix" />
+      <input name="mix" type="float" nodename="specular_haze_clamped" />
+    </mix>
     <layer name="dielectric_base" type="BSDF">
-      <input name="top" type="BSDF" nodename="dielectric_reflection_tf_mix" />
+      <input name="top" type="BSDF" nodename="dielectric_reflection_with_haze" />
       <input name="base" type="BSDF" nodename="dielectric_substrate" />
     </layer>
 
@@ -561,8 +639,39 @@
       <input name="bg" type="BSDF" nodename="metal_bsdf" />
       <input name="mix" type="float" nodename="thin_film_weight_clamped" />
     </mix>
+
+    <!-- Metal Haze -->
+    <generalized_schlick_bsdf name="metal_bsdf_haze" type="BSDF">
+      <input name="weight" type="float" nodename="specular_weight_nonnegative" />
+      <input name="color0" type="color3" nodename="metal_reflectivity" />
+      <input name="color82" type="color3" nodename="specular_color_clamped" />
+      <input name="roughness" type="vector2" nodename="haze_roughness" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
+      <input name="tangent" type="vector3" interfacename="geometry_tangent" />
+    </generalized_schlick_bsdf>
+    <generalized_schlick_bsdf name="metal_bsdf_haze_tf" type="BSDF">
+      <input name="weight" type="float" nodename="specular_weight_nonnegative" />
+      <input name="color0" type="color3" nodename="metal_reflectivity" />
+      <input name="color82" type="color3" nodename="specular_color_clamped" />
+      <input name="roughness" type="vector2" nodename="haze_roughness" />
+      <input name="normal" type="vector3" interfacename="geometry_normal" />
+      <input name="tangent" type="vector3" interfacename="geometry_tangent" />
+      <input name="thinfilm_thickness" type="float" nodename="thin_film_thickness_nm" />
+      <input name="thinfilm_ior" type="float" nodename="thin_film_ior_nonnegative" />
+    </generalized_schlick_bsdf>
+    <mix name="metal_bsdf_haze_tf_mix" type="BSDF">
+      <input name="fg" type="BSDF" nodename="metal_bsdf_haze_tf" />
+      <input name="bg" type="BSDF" nodename="metal_bsdf_haze" />
+      <input name="mix" type="float" nodename="thin_film_weight_clamped" />
+    </mix>
+    <mix name="metal_bsdf_with_haze" type="BSDF">
+      <input name="fg" type="BSDF" nodename="metal_bsdf_haze_tf_mix" />
+      <input name="bg" type="BSDF" nodename="metal_bsdf_tf_mix" />
+      <input name="mix" type="float" nodename="specular_haze_clamped" />
+    </mix>
+
     <mix name="base_substrate" type="BSDF">
-      <input name="fg" type="BSDF" nodename="metal_bsdf_tf_mix" />
+      <input name="fg" type="BSDF" nodename="metal_bsdf_with_haze" />
       <input name="bg" type="BSDF" nodename="dielectric_base" />
       <input name="mix" type="float" nodename="base_metalness_clamped" />
     </mix>
