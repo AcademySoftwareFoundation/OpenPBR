@@ -6,7 +6,7 @@
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
     <input name="base_color" type="color3" value="0.970, 0.962, 0.940" />
     <input name="base_metalness" type="float" value="1.0" />
-    <input name="specular_color" type="color3" value="1.000, 1.002, 1.010" />
+    <input name="specular_color" type="color3" value="0.990, 0.992, 1.0" />
     <input name="specular_roughness" type="float" value="0.02" />
   </open_pbr_surface>
 </materialx>
