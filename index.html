@@ -197,9 +197,9 @@ It also ensures that if the substrate BSDF perfectly preserves energy, i.e. $E_\
 Note though that this albedo-scaling approximation does not correctly take into account the effect of multiple light bounces back and forth between the interfaces, or absorption and scattering in the volumetric medium of the coat $V_\mathrm{coat}$. In general the resulting BSDF lobe shape will not be a simple linear combination of the interface BSDFs.
 To some extent these effects can be put back into the albedo-scaling model by making various approximations. For example the effect of the volumetric absorption through the coat in the incident and output directions could be approximately modeled as
 \begin{equation} \label{non-reciprocal-albedo-scaling-with-T}
-f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + T^2_\mathrm{coat} \bigl(1 - E_\mathrm{coat}(\omega_o)\bigr) \,f_\mathrm{sub}(\omega_i, \omega_o)
+f_\mathrm{layer}(\omega_i, \omega_o) = f_\mathrm{coat}(\omega_i, \omega_o)  + \mathbf{T}^2_\mathrm{coat} \bigl(1 - E_\mathrm{coat}(\omega_o)\bigr) \,f_\mathrm{sub}(\omega_i, \omega_o)
 \end{equation}
-where $T^2_\mathrm{coat}$ accounts for the total volumetric transmittance of the coat along the input and output rays. Similarly if the coat is rough this will effectively roughen the substrate BSDF lobe also, which can be accounted for approximately via various heuristics.
+where $\mathbf{T}^2_\mathrm{coat}$ accounts for the total volumetric transmittance of the coat along the input and output rays. Similarly if the coat is rough this will effectively roughen the substrate BSDF lobe also, which can be accounted for approximately via various heuristics.
 
 
 Mixing
@@ -262,11 +262,11 @@ f_\mathrm{weighted-layer} = (1 - w_\mathrm{coat}) f_\mathrm{sub} + w_\mathrm{coa
 where $f_\mathrm{layer}$ is the BSDF corresponding to $\mathrm{\mathbf{layer}}(S_\mathrm{sub}, S_\mathrm{coat})$.
 If we use the non-reciprocal albedo-scaling approach described in the Layering section (equation [non-reciprocal-albedo-scaling-with-T]), then $f_\mathrm{layer}$ can be expressed as
 \begin{equation}
-f_\mathrm{layer} = f_\mathrm{coat} + T^2_\mathrm{coat} \left(1 - E_\mathrm{coat}\right) \,f_\mathrm{sub}
+f_\mathrm{layer} = f_\mathrm{coat} + \mathbf{T}^2_\mathrm{coat} \left(1 - E_\mathrm{coat}\right) \,f_\mathrm{sub}
 \end{equation}
-where $f_\mathrm{coat}$ is the BSDF of the coat and $T^2_\mathrm{coat}$ is the volumetric transmittance along the path of the input and output rays. Thus combining these [^lerp],
+where $f_\mathrm{coat}$ is the BSDF of the coat and $\mathbf{T}^2_\mathrm{coat}$ is the volumetric transmittance along the path of the input and output rays. Thus combining these [^lerp],
 \begin{equation} \label{coat_layering_formula_with_albedo_scaling}
-f_\mathrm{weighted-layer} = w_\mathrm{coat} f_\mathrm{coat} +  \mathrm{lerp}\bigl(1, T^2_\mathrm{coat} (1 - E_\mathrm{coat}),  w_\mathrm{coat}\bigr) f_\mathrm{sub} \ ,
+f_\mathrm{weighted-layer} = w_\mathrm{coat} f_\mathrm{coat} +  \mathrm{lerp}\bigl(1, \mathbf{T}^2_\mathrm{coat} (1 - E_\mathrm{coat}),  w_\mathrm{coat}\bigr) f_\mathrm{sub} \ ,
 \end{equation}
 which, for example, is the formula used in the Autodesk Standard Surface [#Georgiev2019] coat layer.
 
@@ -1031,7 +1031,7 @@ However this darkening may not always be desirable artistically, as in some appl
 where $\mathbf{E}_\mathrm{spec}$ is the normal-direction reflectance of all energy reflected from the coat's dielectric interface _without_ macroscopic transmission, and $\mathbf{E}^\prime_c$ represents the albedo due to transmission into the coat medium (and scattering off the base substrate, potentially multiple internal reflections off the coat interface, and re-transmission back out).
 We then require that the *effect* of $\delta$ = **`coat_darkening`** is to multiply $\mathbf{E}^\prime_c$ by an RGB boost factor
 \begin{equation} \label{undarkened_coat_albedo_scaling}
-\mathbf{B}(\delta) = \mathrm{lerp}\biggl(\frac{\mathbf{T}_\mathrm{coat}^2 \mathbf{E}_b}{\mathbf{E}^\prime_c}, 1, \delta \biggr)
+\mathbf{B}(\delta) = \mathrm{lerp}\biggl(\frac{\mathbf{T}^2_\mathrm{coat} \mathbf{E}_b}{\mathbf{E}^\prime_c}, 1, \delta \biggr)
 \end{equation}
 where $\mathbf{T}_\mathrm{coat}$ is the coat absorption transmittance, and $\mathbf{E}_b$ represents the normal-incidence albedo of the entire base beneath the coat (which can be approximated as the normal-incidence albedos of the individual slabs of the base, blended according to their mix weights).
 
@@ -1099,13 +1099,13 @@ In the absense of the coat the physical darkening does not occur, which may be m
 
 In the case of an absorbing coat, there is also enhanced darkening and saturation at grazing angles due to increased path-length within the coat medium. The effect of this can be modeled via a factor in the coat BRDF of
 \begin{equation}
-T_\mathrm{coat}^\mbox{$1/\mu^t_i + 1/\mu^t_o$}
+\mathbf{T}_\mathrm{coat}^\mbox{$1/\mu^t_i + 1/\mu^t_o$}
 \end{equation}
 where $\mu^t_i$ is the angle cosine of the incident ray refracted into the coat, i.e.
 \begin{equation}
 \mu^t_i =\sqrt{1 - \frac{1 - \mu^2_i}{\eta^2_c}}
 \end{equation}
-and similarly for $\mu^t_o$. Note that at normal incidence, this factor reduces to $T^2_\mathrm{coat}$ which we defined to equal **`coat_color`**. [^absorption_effect_on_K]
+and similarly for $\mu^t_o$. Note that at normal incidence, this factor reduces to $\mathbf{T}^2_\mathrm{coat}$ which we defined to equal **`coat_color`**. [^absorption_effect_on_K]
 
 ![Figure [coat_view_dependent_absorption_color]: The color of an absorbing coat becomes darker and more saturated at grazing angles.](images/coat_view_dependent_absorption_color.png width="75%")
 
@@ -1424,9 +1424,9 @@ f^T_\mathrm{dielectric-base} &= \mathtt{T} \color{darkblue}{f^T_\textrm{specular
                               &= \mathrm{lerp}\left(\mathrm{lerp}(\color{darkblue}{f_\mathrm{diffuse}}, \color{darkblue}{f_\textrm{SSS}}, \mathtt{S}), \color{darkblue}{f^T_\textrm{specular}}, \mathtt{T}\right) \ .
 \end{align}
 
-Next, the coat is layered on top of the base substrate with the coverage weight $\mathtt{C}$, where the BRDF of the coat dielectric interface is taken to be $\color{darkblue}{f_\mathrm{coat}}$, with a transmittance $T_\mathrm{coat}$. As in equation [coat_layering_formula_with_albedo_scaling], this can be expressed as:
+Next, the coat is layered on top of the base substrate with the coverage weight $\mathtt{C}$, where the BRDF of the coat dielectric interface is taken to be $\color{darkblue}{f_\mathrm{coat}}$, with a combined transmittance $\mathbf{T}^2_\mathrm{coat}$. As in equation [coat_layering_formula_with_albedo_scaling], this can be expressed as:
 \begin{equation}
-f_\mathrm{coated-base} = \mathtt{C} \,\color{darkblue}{f_\mathrm{coat}} +  \mathrm{lerp}\left(1,  T_\mathrm{coat} (1 - E[\color{darkblue}{f_\mathrm{coat}}]), \mathtt{C}\right) f_\textrm{base-substrate} \ .
+f_\mathrm{coated-base} = \mathtt{C} \,\color{darkblue}{f_\mathrm{coat}} +  \mathrm{lerp}\left(1,  \mathbf{T}^2_\mathrm{coat} (1 - E[\color{darkblue}{f_\mathrm{coat}}]), \mathtt{C}\right) f_\textrm{base-substrate} \ .
 \end{equation}
 
 Similarly, the fuzz layer is applied with coverage weight $\mathtt{F}$ (with albedo-scaling adjusted to account for the gray transmission, according to equation [fuzz-layering-approx]), producing (where $\color{darkblue}{\overline{f_\mathrm{fuzz}}}$ is the fuzz BRDF with the tint color set to white):
@@ -1442,8 +1442,8 @@ where $\color{darkblue}{f_\textrm{transparent}}$ is understood to denote a delta
 
 If $\mathtt{E}$ represents the isotropic emission luminance from the base, then the total EDF lobe $\color{darkblue}{L_e}$ can be modeled according to the absorption in the coat layer as:
 \begin{eqnarray}
-\color{darkblue}{L_e}  &=& (1 - \mathtt{C}) \,\mathtt{E} + \mathtt{C} \,T_\mathrm{coat} \mathtt{E}  \nonumber \\
-                        &=& \mathrm{lerp}\left(1,  T_\mathrm{coat}, \mathtt{C}\right) \mathtt{E} \ .
+\color{darkblue}{L_e}  &=& (1 - \mathtt{C}) \,\mathtt{E} + \mathtt{C} \,\mathbf{T}_\mathrm{coat} \mathtt{E}  \nonumber \\
+                        &=& \mathrm{lerp}\left(1,  \mathbf{T}_\mathrm{coat}, \mathtt{C}\right) \mathtt{E} \ .
 \end{eqnarray}
 which in principle is a function of direction due to the varying transmittance. This can also be thought of as a lobe in its own right (representing light self-emitted, rather than reflected or transmitted).
 
@@ -1456,8 +1456,8 @@ To summarize, we have thus expressed the model as the following linear combinati
          \begin{aligned}
             \; f_\mathrm{PBR}               &=& \!\!\!\!\!\!\!\!\!\!                                                    &\mathrm{lerp}\left(\color{darkblue}{f_\textrm{transparent}},                              f_\mathrm{surface}          ,      \mathtt{\alpha}\right)                           \ ,   \; \nonumber \\
             \; f_\mathrm{surface}           &=& \!\!\!\!\!\!\!\!\!\!\mathtt{F} \,\color{darkblue}{f_\mathrm{fuzz}}    + &\mathrm{lerp}\left(1,                              \quad\quad\; 1 - E[\color{darkblue}{\overline{f_\mathrm{fuzz}}}]   ,    \;\mathtt{F}     \right) f_\textrm{coated-base}    \ ,   \; \nonumber \\
-            \; f_\mathrm{coated-base}       &=& \!\!\!\!\!\!\!\!\!\!\mathtt{C} \,\color{darkblue}{f_\mathrm{coat}}    + &\mathrm{lerp}\left(1,                          T_\mathrm{coat} (1 - E[\color{darkblue}{f_\mathrm{coat}}])             ,      \mathtt{C}     \right) f_\textrm{base-substrate} \ ,   \; \nonumber \\
-            \; \color{darkblue}{L_e}        &=& \!\!\!\!\!\!\!\!\!\!                                                    &\mathrm{lerp}\left(1,                                                                        T_\mathrm{coat}          ,      \mathtt{C}     \right) \mathtt{E}                \ ,   \; \nonumber \\
+            \; f_\mathrm{coated-base}       &=& \!\!\!\!\!\!\!\!\!\!\mathtt{C} \,\color{darkblue}{f_\mathrm{coat}}    + &\mathrm{lerp}\left(1,                          \mathbf{T}^2_\mathrm{coat} (1 - E[\color{darkblue}{f_\mathrm{coat}}])             ,      \mathtt{C}     \right) f_\textrm{base-substrate} \ ,   \; \nonumber \\
+            \; \color{darkblue}{L_e}        &=& \!\!\!\!\!\!\!\!\!\!                                                    &\mathrm{lerp}\left(1,                                                                        \mathbf{T}_\mathrm{coat}          ,      \mathtt{C}     \right) \mathtt{E}                \ ,   \; \nonumber \\
             \; f_\textrm{base-substrate}    &=& \!\!\!\!\!\!\!\!\!\!                                                    &\mathrm{lerp}\left(f_\textrm{dielectric-base}, \color{darkblue}{f_\mathrm{conductor}}                                 ,      \mathtt{M}     \right)                           \ ,   \; \nonumber \\
             \; f_\textrm{dielectric-base}   &=& \!\!\!\!\!\!\!\!\!\!\color{darkblue}{f^R_\textrm{specular}}           + &(1 - E[\color{darkblue}{f^R_\textrm{specular}}]) f^T_\mathrm{dielectric-base}                                                                                                 \ ,   \; \nonumber \\
             \; f^T_\mathrm{dielectric-base} &=& \!\!\!\!\!\!\!\!\!\!                                                   &\mathrm{lerp}(\mathrm{lerp}(\color{darkblue}{f_\mathrm{diffuse}}, \color{darkblue}{f_\textrm{SSS}}, \mathtt{S}), \color{darkblue}{f^T_\textrm{specular}}, \mathtt{T})          \ .   \;
