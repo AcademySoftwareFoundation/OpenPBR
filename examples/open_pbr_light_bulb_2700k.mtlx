@@ -4,7 +4,6 @@
     <input name="surfaceshader" type="surfaceshader" nodename="open_pbr_surface_surfaceshader" />
   </surfacematerial>
   <open_pbr_surface name="open_pbr_surface_surfaceshader" type="surfaceshader">
-    <input name="emission_weight" type="float" value="1.0" />
     <input name="emission_color" type="color3" value="0.759, 0.452, 0.152" />
     <input name="emission_luminance" type="float" value="10000" />
   </open_pbr_surface>
