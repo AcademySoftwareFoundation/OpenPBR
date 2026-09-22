@@ -8,6 +8,7 @@
     <input name="specular_ior" type="float" value="1.35" />
     <input name="subsurface_weight" type="float" value="1.0" />
     <input name="subsurface_color" type="color3" value="0.808, 0.811, 0.699" />
-    <input name="subsurface_radius_scale" type="color3" value="1.842, 1.044, 0.35" />
+    <input name="subsurface_radius" type="float" value="1.842" />
+    <input name="subsurface_radius_scale" type="color3" value="1.0, 0.566, 0.19" />
   </open_pbr_surface>
 </materialx>
