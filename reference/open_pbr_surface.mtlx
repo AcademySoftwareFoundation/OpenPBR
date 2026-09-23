@@ -753,7 +753,7 @@
     <!-- Base substrate, attenuated due to absorption color, and (optional) inter-reflection darkening  -->
     <multiply name="base_substrate_attenuated" type="BSDF">
       <input name="in1" type="BSDF" nodename="darkened_base_substrate" />
-      <input name="in2" type="color3" nodename="coat_color" />
+      <input name="in2" type="color3" nodename="coat_color_clamped" />
     </multiply>
     <!-- Coat BSDF  -->
     <open_pbr_anisotropy name="coat_roughness_vector" type="vector2">
