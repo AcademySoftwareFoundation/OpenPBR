@@ -536,7 +536,7 @@ M_\textrm{base-substrate} &=& \mathrm{\mathbf{mix}}(M_\textrm{dielectric-base}, 
 where $\mathtt{M}$ = **`base_metalness`**.
 
 The specific model we stipulate for the metallic Fresnel factor $\mathbf{F}_{\mathrm{metal}}(\mu)$ is the "F82-tint" model of [#Kutz2021], which extends previous work by [#Hoffman2019].
-This is based on the standard Schlick approximation to the metallic Fresnel factor (where $\mathbf{F}_0$ is the RGB reflectivity at normal incidence i.e. **`base_weight`** * **`base_color`**, and $\mu$ is the cosine of the incident angle):
+This is based on the standard Schlick approximation to the metallic Fresnel factor (where $\mathbf{F}_0$ is the RGB reflectivity at normal incidence, derived from **`base_weight`** * **`base_color`** as in equation [metal_colors] below, and $\mu$ is the cosine of the incident angle):
 \begin{equation}
 \mathbf{F}_{\mathrm{Schlick}}(\mu) = \mathbf{F}_0 + (1 - \mathbf{F}_0) (1 - \mu)^5 \ .
 \end{equation}
@@ -548,16 +548,21 @@ where
 \begin{equation} \label{f82_b_coeff}
     \mathbf{b} =  \frac{\mathbf{F}_{\mathrm{Schlick}}(\bar{\mu}) - \mathbf{F}(\bar{\mu})}{\bar{\mu}(1 - \bar{\mu})^6} \ .
 \end{equation}
-Here $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at the "grazing edge" angle cosine $\bar{\mu} = 1/7$ corresponding roughly to $82^\circ$ (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, controlled via $\mathbf{C}_s = \mathtt{specular\_color}$, i.e.
+Here $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at the "grazing edge" angle cosine $\bar{\mu} = 1/7$ corresponding roughly to $82^\circ$ (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, controlled via $\mathbf{C}_s$ (derived from **`specular_color`** as in equation [metal_colors]), i.e.
 \begin{equation}
 \mathbf{F}(\bar{\mu}) = \mathbf{C}_s \, \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
 \end{equation}
 
-The final metallic Fresnel term we employ is then given by an overall multiplication by $\xi_s = \mathtt{specular\_weight}$, ensuring that the entire metallic lobe is suppressed as the weight goes to zero. Similarly to the dielectric, the weight may also exceed one in order to linearly boost the Fresnel, with a clamp put in place to ensure that it remains bounded in $[0,1]$ as $\xi_s \rightarrow \infty$: [^component_wise]
-\begin{equation}
-\mathbf{F}_{\mathrm{metal}}(\mu) = \mathrm{clamp}\bigl(\xi_s \mathbf{F}_{82}(\mu), 0, 1\bigr) \ .
+The final metallic Fresnel term is then
+\begin{equation} \label{metal_fresnel}
+\mathbf{F}_{\mathrm{metal}}(\mu) = \min(\xi_s, 1) \, \max\bigl(\mathbf{F}_{82}(\mu), 0\bigr) \ ,
 \end{equation}
-Note that the clamp at the lower end is applied since $\mathbf{F}_{82}(\mu)$ can become negative for some values of $\mu$, which is not physically meaningful [#Hoffman2019].
+where $\xi_s = \mathtt{specular\_weight}$, and the colors $\mathbf{F}_0$ and $\mathbf{C}_s$ are boosted by $\xi_s$ when $\xi_s > 1$, and clamped to $[0,1]$: [^component_wise]
+\begin{equation} \label{metal_colors}
+\mathbf{F}_0 = \min(k \, \mathtt{base\_weight} \, \mathtt{base\_color}, 1) \ , \quad \mathbf{C}_s = \min(k \, \mathtt{specular\_color}, 1) \ , \quad k = \max(\xi_s, 1) \ .
+\end{equation}
+Thus for $\xi_s \le 1$ the weight simply scales the entire Fresnel curve, so that the metallic lobe vanishes as $\xi_s \rightarrow 0$. For $\xi_s > 1$, scaling the curve directly would produce reflectivities greater than one, so instead the colors are boosted. The result remains a valid F82-tint curve, which is bounded above by one, and tends to a perfect (white) mirror as $\xi_s \rightarrow \infty$. [^metal_weight_f90]
+The clamp at zero is needed since $\mathbf{F}_{82}(\mu)$ can become negative for some values of $\mu$, which is not physically meaningful [#Hoffman2019].
 
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`base_weight`** * **`base_color`**.
 Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
@@ -568,7 +573,7 @@ Metal params                        | Label             | Type     | Range      
 ------------------------------------|-------------------|----------|:---------------:|:-------------:|:-------------------:|----------------------------------------------
 **`base_weight`**                   | Weight            | `float`  | $ [0, 1]      $ |               | $ 1               $ | Scalar multiplier to **`base_color`**
 **`base_color`**                    | Color             | `color3` | $ [0, 1]^3    $ |               | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
-**`specular_weight`**               | Weight            | `float`  | $ [0, \infty) $ |  $ [0, 1] $   | $ 1               $ | Overall multiplier of the metal Fresnel
+**`specular_weight`**               | Weight            | `float`  | $ [0, \infty) $ |  $ [0, 1] $   | $ 1               $ | Multiplier of the metal Fresnel (boosts the Fresnel colors above 1)
 **`specular_color`**                | Color             | `color3` | $ [0, 1]^3    $ |               | $ (1, 1, 1)       $ | Tint color of metallic Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
 **`specular_roughness`**            | Roughness         | `float`  | $ [0, 1]      $ |               | $ 0.3             $ | Roughness of NDF of BRDF $f_\mathrm{conductor}$
 **`specular_roughness_anisotropy`** | Anisotropy        | `float`  | $ [0, 1]      $ |               | $ 0               $ | Anisotropy of NDF of BRDF $f_\mathrm{conductor}$
@@ -1743,6 +1748,8 @@ References
 where $\mathbf{b}$ is defined in equation [f82_b_coeff]. If both $\mathbf{F}_0$ = **`base_weight`** * **`base_color`** and $\mathbf{C}_s = \mathtt{specular\_color}$ are white, then $\mathbf{F}_0 = \mathbf{1}$ and $\mathbf{b}= \mathbf{0}$ reducing to $\mathbf{E}_\mathrm{avg} = \mathbf{1}$, thus the metal satisfies the furnace test in this case. Note however that $\mathbf{F}_{82}(\mu)$ can be slightly negative (for very dark metals), thus it is necessary to clamp it. The albedo of the clamped Fresnel is not exactly given by clamping the formula above, but it is very close (never more than 0.01 incorrect in absolute albedo).
 
 [^component_wise]: Note that in this concise notation, the scalar denotes a constant vector.
+
+[^metal_weight_f90]: Equivalently, since $\mathbf{C}_s$ is defined relative to the Schlick curve, implementations with a generalized Schlick Fresnel may instead take $\mathbf{F}_0 = \min(\xi_s \, \mathtt{base\_weight} \, \mathtt{base\_color}, 1)$ and $\mathbf{F}_{90} = \min(\xi_s, 1)$ (with $\mathbf{C}_s$ as in equation [metal_colors]), and no overall weight.
 
 [^Oren_Nayar_formula]: The $s$ term is given by (with normal $\mathbf{n}$):
 \begin{eqnarray*}
