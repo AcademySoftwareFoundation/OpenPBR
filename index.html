@@ -558,6 +558,7 @@ The final metallic Fresnel term we employ is then given by an overall multiplica
 \mathbf{F}_{\mathrm{metal}}(\mu) = \mathrm{clamp}\bigl(\xi_s \mathbf{F}_{82}(\mu), 0, 1\bigr) \ .
 \end{equation}
 Note that the clamp at the lower end is applied since $\mathbf{F}_{82}(\mu)$ can become negative for some values of $\mu$, which is not physically meaningful [#Hoffman2019].
+When a [thin film](index.html#model/thin-filmiridescence) is present, the multiplication by $\xi_s$ applies to the film-free Fresnel factor only, while the film sits on a substrate with correspondingly scaled colors (see equation [thin_film_fresnel]).
 
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`base_weight`** * **`base_color`**.
 Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
@@ -944,7 +945,20 @@ Regardless of which approach is used, several considerations apply:
 
    - In the case of a metallic base the physics is somewhat ambiguous since, as described in the Metal section, the Fresnel factor for metal is defined according to the Schlick-based "F82-tint" parametrization, which does not specify the underlying physical complex IOR. We suggest that some reasonable approximation is employed to map the Fresnel factor to a best-matching effective complex IOR, for example that described by [#Gulbrandsen2014].
 
-   - Because the thin film is non-absorbing and interference-based, it only redistributes the probabilities of reflection and transmission; therefore, it should not violate energy conservation. 
+   - Because the thin film is non-absorbing and interference-based, it only redistributes the probabilities of reflection and transmission; therefore, it should not violate energy conservation.
+
+   - The film sits above the base, so **`specular_weight`** modulates the base *beneath* the film, rather than scaling the reflection from the film itself (as detailed below).
+
+The film reflectance $\mathbf{R}_\mathrm{film}(\mu)$ is computed with a substrate whose reflectivity is modulated by $\xi_s$ = **`specular_weight`**, in the same way as the base without a film:
+
+   - For a dielectric base, the substrate under the film has the modulated IOR $\eta^\prime$ of equation [modulated_ior].
+   - For a metallic base, the substrate under the film is the effective complex IOR (as described above) corresponding to the metal colors scaled by $w = \min(\xi_s, 1)$, i.e. with reflectivity $w \, \mathbf{F}_0$ at normal incidence and $w \, \mathbf{C}_s \, \mathbf{F}_\mathrm{Schlick}(\bar{\mu})$ at near-grazing incidence (in the notation of the [Metal](index.html#model/basesubstrate/metallicbase) section).
+
+As $\xi_s \rightarrow 0$, the substrate becomes index-matched to the ambient medium, leaving a free-standing film, whose presence is still controlled by **`thin_film_weight`**. The Fresnel factor of the film-covered base is then the blend (with $T$ = **`thin_film_weight`**)
+\begin{equation} \label{thin_film_fresnel}
+\mathbf{F}(\mu) = (1 - T) \, \mathbf{F}_\textrm{no film}(\mu) + T \, \mathbf{R}_\mathrm{film}(\mu) \ ,
+\end{equation}
+where $\mathbf{F}_\textrm{no film}$ is the Fresnel factor of the base without the film. For the metal, $\mathbf{F}_\textrm{no film} = \mathbf{F}_\mathrm{metal}$ carries the multiplication by $\xi_s$, while $\mathbf{R}_\mathrm{film}$ is not scaled by $\xi_s$. So the film remains present even when $\xi_s = 0$.
 
 ![Figure [ior_configs]: Schematic of all 8 possible IOR configurations, including those involving the thin-film.](images/IOR_configs.svg width="95%" align="center")
 
