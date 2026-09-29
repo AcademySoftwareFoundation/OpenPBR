@@ -20,6 +20,7 @@ effectively decoupled, in an unphysical but artistically convenient way.
 ### Additive enhancements
 
 ### Bug fixes
+- #318: Clarifies the specification text so that, consistent with #247, the dispersion curve $n(\lambda)$ is defined by the *unmodified* `specular_ior`, so `specular_weight` modulates only the reflection and transmission Fresnel factors and does not alter the refracted direction at any wavelength.
 
 ## [1.1] - Jun 28, 2024
 
