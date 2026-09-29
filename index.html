@@ -606,7 +606,7 @@ Given the angle cosine $\mu_i$ of rays incident to the base, the angle cosine $\
 \begin{equation} \label{refracted_dir}
 \mu_t^2 = 1 - (1 - \mu_i^2) / \eta^2_\mathrm{ti} \ .
 \end{equation}
-This refraction direction remains unmodified by **`specular_weight`** (only the Fresnel factors change).
+This refraction direction remains unmodified by **`specular_weight`** (only the reflection and transmission Fresnel factors change).
 
 ![Figure [dielectric_fresnel]: Fresnel factors for rays entering (left) and exiting (right) the base dielectric.](images/dielectric_fresnel.svg width="95%" align="center")
 
@@ -891,8 +891,9 @@ It follows that if the Abbe number $V_d$ and IOR $n_d = n(\lambda_d)$ are given,
 B &=& \frac{n_d - 1}{V_d \; (\lambda^{-2}_F - \lambda^{-2}_C)} \ , \nonumber \\
 A &=& n_d - \frac{B}{\lambda^2_d} \ .
 \end{eqnarray}
-We assume that **`specular_ior`** (including any modulation via **`specular_weight`** as in equation [modulated_ior]) defines $n(\lambda_d)$.
+We assume that the *unmodified* **`specular_ior`** defines $n(\lambda_d)$.
 Thus the IOR $n$ at any wavelength $\lambda$ is determined, given $V_d$. A renderer can use this known $n(\lambda)$ function to model the effect of dispersion, for example by stochastically choosing a wavelength sample and tracing the refracted ray direction according to the corresponding IOR.
+As for the non-dispersive case, **`specular_weight`** does not alter the refracted ray direction at any wavelength, and only modulates the Fresnel factors (by applying equation [modulated_ior] to the IOR ratio formed from $n(\lambda)$), as described in the [dielectric base](index.html#model/basesubstrate/dielectricbase) section.
 
 However the Abbe number itself is not very intuitive to work with, as the dispersion effect increases as the Abbe number decreases (zero dispersion occurs at infinite Abbe number). We therefore prefer to use a more artist-friendly parametrization, where the Abbe number is specified by
 \begin{equation}
