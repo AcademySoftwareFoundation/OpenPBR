@@ -16,6 +16,7 @@ effectively decoupled, in an unphysical but artistically convenient way.
 - #250: This PR ensures that the `geometry_thin_walled` property, which indicates if a material's geometry should be treated as "thin-walled" (i.e., like a sheet or membrane without interior volume), is correctly connected to and represented within the <surface> node of MaterialX.
 - #231: Introduces a new parameter called `emission_weight`, providing a simple $[0,1]$ dimensionless scale facto r for the `emission_luminance`.
 - #238: Prior to this change, if `specular_weight` was set to a value greater than 1, it could lead to unphysical metallic Fresnel factors > 1. By introducing the clamp, the code ensures that, regardless of the value given to specular_weight, the resulting metal Fresnel reflectance remains within a physical range.
+- #320: Clarifies that `specular_weight` modulates the base beneath a thin film rather than scaling the film itself, so the film remains present (as a free-standing film) as `specular_weight` goes to zero. For a metallic base, `min(specular_weight, 1)` acts as the fractional coverage of the metal beneath the film, so that a vanishingly thin film has no effect. The reference MaterialX graph adds a free-standing film lobe, weighted by `1 - min(specular_weight, 1)`, to the metal thin-film branch; the dielectric branch already behaved this way.
 
 ### Additive enhancements
 
