@@ -956,9 +956,9 @@ The film reflectance $\mathbf{R}_\mathrm{film}(\mu)$ is computed with the film o
 
 For the metallic base, the film reflectance is therefore
 \begin{equation} \label{thin_film_metal}
-\mathbf{R}_\mathrm{film}(\mu) = w \, \mathbf{R}_\mathrm{film}(\mu;\, \tilde{\mathbf{n}}) + (1 - w) \, R_\mathrm{film}(\mu;\, 1) \ ,
+\mathbf{R}_\mathrm{film}(\mu) = w \, \mathbf{R}_\mathrm{film}(\mu;\, \tilde{\mathbf{n}}) + (1 - w) \, \mathbf{R}_\mathrm{film}(\mu;\, 1) \ ,
 \end{equation}
-where $\mathbf{R}_\mathrm{film}(\mu;\, \tilde{\mathbf{n}})$ is the reflectance of the film on the metal, with the effective complex IOR $\tilde{\mathbf{n}}$ (as described above) corresponding to the metal colors $\mathbf{F}_0$ and $\mathbf{C}_s$ without the multiplication by $\xi_s$, and $R_\mathrm{film}(\mu;\, 1)$ is the reflectance of a free-standing film (i.e. with the surrounding medium on both sides). For $\xi_s > 1$, $w = 1$ and the film-covered metal is boosted in the same way as $\mathbf{F}_\mathrm{metal}$.
+where $\mathbf{R}_\mathrm{film}(\mu;\, \tilde{\mathbf{n}})$ is the reflectance of the film on the metal, with the effective complex IOR $\tilde{\mathbf{n}}$ (as described above) corresponding to the metal colors $\mathbf{F}_0$ and $\mathbf{C}_s$ without the multiplication by $\xi_s$, and $\mathbf{R}_\mathrm{film}(\mu;\, 1)$ is the reflectance of a free-standing film (i.e. with the surrounding medium on both sides). For $\xi_s > 1$, $w = 1$ and the film-covered metal is boosted in the same way as $\mathbf{F}_\mathrm{metal}$.
 
 In both cases, as the film thickness goes to zero $\mathbf{R}_\mathrm{film}$ reduces to the Fresnel factor of the base without the film (up to the accuracy of the effective IOR, for the metal), so a vanishingly thin film has no effect. As $\xi_s \rightarrow 0$, the base beneath the film becomes index-matched to the surrounding medium, leaving a free-standing film, whose presence is still controlled by **`thin_film_weight`**. The Fresnel factor of the film-covered base is then the blend (with $T$ = **`thin_film_weight`**)
 \begin{equation} \label{thin_film_fresnel}
