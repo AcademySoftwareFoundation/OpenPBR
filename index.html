@@ -918,7 +918,7 @@ The IOR $n_c = \mathtt{coat\_ior}$ of the coat medium $V_\mathrm{coat}$ will alt
 This ratio then determines the specular Fresnel factor, as in Equation [modulated_ior].
 (Note that as discussed in the coat [TIR](index.html#model/coat/totalinternalreflection) section, evaluation of the specular Fresnel factor may need to be further modified to model the refraction of the ray inside the coat).
 
-The absorption of the medium $V_\mathrm{coat}$ is parametrized by **`coat_color`**, which is assumed to specify the _square_ of the transmittance of the coat at normal incidence (i.e. $T_\mathrm{coat}$ = **`coat_color`** in the notation of Equation [non-reciprocal-albedo-scaling-with-T]). Thus the observed tint color of the underlying base due to absorption in the coat is approximately given by **`coat_color`** due to the absorption along the incident and outgoing rays (note that the specular reflection from the coat itself is _not_ tinted).
+The absorption of the medium $V_\mathrm{coat}$ is parametrized by **`coat_color`**, which is assumed to specify the _square_ of the transmittance $\mathbf{T}_\mathrm{coat}$ of the coat at normal incidence (i.e. $\mathbf{T}^2_\mathrm{coat}$ = **`coat_color`** in the notation of Equation [non-reciprocal-albedo-scaling-with-T]). Thus the observed tint color of the underlying base due to absorption in the coat is approximately given by **`coat_color`** due to the absorption along the incident and outgoing rays (note that the specular reflection from the coat itself is _not_ tinted).
 
 In the full light transport within the coat, various physical effects [^porosity] occur which we assume are accounted for in the ground truth appearance.
 
