@@ -300,7 +300,7 @@ However the parameters of the physical model that we describe do not specify all
 
    - Any shader networks which drive the parameters of the model.
 
-   - The assumed convention for converting the input **`geometry_normal`**, **`geometry_coat_normal`**, **`geometry_tangent`** and **`geometry_coat_tangent`** maps, if present, to the final shading normal of the local surface at each point. (See the Normal maps and Tangents section for a more detailed discussion).
+   - The assumed convention for converting the input **`geometry_normal`**, **`geometry_coat_normal`**, **`geometry_tangent`** and **`geometry_coat_tangent`** maps, if present, to the final shading normal of the local surface at each point (see the [Normal maps and tangents](index.html#model/normalmapsandtangents) section for a more detailed discussion).
 
 As in practice OpenPBR will be integrated within data exchange frameworks such as MaterialX and USD, the specific form and content of this metadata is outside the scope of this specification.
 
@@ -378,7 +378,7 @@ Microfacet model
 We give here some general assumptions about the form and parametrization of the BSDFs which describe the interfaces in the model outlined in the previous section.
 
 The BSDFs $f_\mathrm{conductor}$, $f_\mathrm{dielectric}$, $f_\mathrm{coat}$ and $f_\mathrm{diffuse}$ of the [metal](index.html#model/basesubstrate/metal), [dielectric](index.html#model/basesubstrate), [coat](index.html#model/coat) and [glossy-diffuse](index.html#model/basesubstrate/glossy-diffuse) slabs respectively, are each assumed to be described by a standard _microfacet model_. This is a widely used approximation ([#Pharr2023]) in which the surface is assumed to be composed of a heightfield consisting of smooth microfacets of either metal, dielectric or Lambertian material, where the statistical distribution of the normal of these facets, termed the _micronormal_, determines the surface roughness characteristics at the macroscopic scale. (The [fuzz](index.html#model/fuzz) model is distinct and based on a volumetric "microflake" model [#Heitz2015]).
-The average surface orientation at the macroscopic scale is defined by the _macronormal_, which is the mean micronormal. This macronormal is provided by the local geometry, optionally pertubed via techniques such as normal or bump mapping. Control over the macronormal of the base and coat slabs is provided via the parameters **`geometry_normal`** and **`geometry_coat_normal`**.
+The average surface orientation at the macroscopic scale is defined by the _macronormal_, which is the mean micronormal. This macronormal is provided by the local geometry, optionally perturbed via techniques such as normal or bump mapping. Control over the macronormal of the base and coat slabs is provided via the parameters **`geometry_normal`** and **`geometry_coat_normal`**.
 
 A microfacet BRDF has the standard form [^Jacobian] ([#Walter2007], [#Pharr2023]) in the single-scattering approximation:
 \begin{equation}
@@ -1209,7 +1209,7 @@ Opacity params         | Label   | Type    | Range      | Default | Description
 </div>
 
 
-Normal maps and Tangents
+Normal maps and tangents
 -------------------------------------
 
 The geometry of the surface is assumed to be given externally to the model, defining a local unperturbed shading normal and tangent space frame.
@@ -1222,11 +1222,12 @@ The **`geometry_tangent`** $\mathbf{T}_B$ and **`geometry_coat_tangent`** $\math
 In practice, the supplied base normal $\mathbf{N}_B$ (and similarly for the coat) will typically be defined via texture maps which specify how to transform the reference normal $\mathbf{N}'_B$ and reference tangent $\mathbf{T}'_B$ into the perturbed normal $\mathbf{N}_B$. Similarly, the anisotropy tangent $\mathbf{T}_B$ will typically be defined with respect to the reference $\mathbf{N}'_B$ and $\mathbf{T}'_B$, for example via 2D vector "flow maps" [#Vlachos2010]. As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal or tangent in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
 
 It is _not_ required that the resultant input **`geometry_normal`** $\mathbf{N}_B$ and **`geometry_tangent`** $\mathbf{T}_B$ are strictly normalized and orthogonal (and similarly for the coat normal and tangent).
-For example reconstruction filtering techniques such as texture filtering may cause the interpolated normal to not be normalized. However, we _do_ require that the implementation should (if not already ensured) ensure orthonormality of the final vertex shading frame of the BSDF, by applying (via Gram-Schmidt orthogonalization)
+For example reconstruction filtering techniques such as texture filtering may cause the interpolated normal to not be normalized. However, we _do_ require that the implementation ensure (if not already guaranteed) that the final shading frame of the BSDF is orthonormal, by applying Gram-Schmidt orthogonalization. That is, the normal is first normalized, and then the tangent is projected onto the plane orthogonal to the *normalized* normal and normalized:
 \begin{align*}
-&\mathbf{N}_B \rightarrow \mathrm{normalize}(\mathbf{N}_B), &\quad& \mathbf{T}_B \rightarrow \mathrm{normalize}\bigl(\mathbf{T}_B - (\mathbf{N}_B\cdot \mathbf{T}_B) \mathbf{N}_B\bigr) \nonumber \\
-&\mathbf{N}_C \rightarrow \mathrm{normalize}(\mathbf{N}_C), &\quad& \mathbf{T}_C \rightarrow \mathrm{normalize}\bigl(\mathbf{T}_C - (\mathbf{N}_C\cdot \mathbf{T}_C) \mathbf{N}_C\bigr) \ .
+&\hat{\mathbf{N}}_B = \mathrm{normalize}(\mathbf{N}_B), &\quad& \hat{\mathbf{T}}_B = \mathrm{normalize}\bigl(\mathbf{T}_B - (\hat{\mathbf{N}}_B\cdot \mathbf{T}_B) \hat{\mathbf{N}}_B\bigr) \nonumber \\
+&\hat{\mathbf{N}}_C = \mathrm{normalize}(\mathbf{N}_C), &\quad& \hat{\mathbf{T}}_C = \mathrm{normalize}\bigl(\mathbf{T}_C - (\hat{\mathbf{N}}_C\cdot \mathbf{T}_C) \hat{\mathbf{N}}_C\bigr) \ .
 \end{align*}
+The bitangent of each frame then follows from the cross product of the resulting unit normal and tangent. If the projected tangent is degenerate (i.e. the supplied tangent is zero, or parallel to the normal), the implementation may substitute any unit vector orthogonal to the normal, for example one derived from the unperturbed shading frame.
 
 
 
@@ -1624,7 +1625,7 @@ References
 
 [#Veach1997]: Eric Veach. *Robust Monte Carlo Methods for Light Transport Simulation*, Ph.D. dissertation, Stanford University (1997).
 
-[#Vlachos2010]: Alex Vlachos, Alexey Agapov and Ryan Mitchell. *Water Flow in Portal 2*, ACM SIGGRAPH (2010)
+[#Vlachos2010]: Alex Vlachos, Alexey Agapov and Ryan Mitchell. *Water Flow in Portal 2*, Advances in Real-Time Rendering in Games, SIGGRAPH Course (2010).
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
 
