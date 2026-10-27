@@ -20,6 +20,7 @@ effectively decoupled, in an unphysical but artistically convenient way.
 ### Additive enhancements
 
 ### Bug fixes
+- #330: Clarifies the specification text so that `specular_color` tints only the dielectric BRDF, and does not affect the albedo-scaling weight of the light passed into the dielectric base (i.e. the weight is computed from the *untinted* BRDF albedo). This matches the MaterialX `dielectric_bsdf` definition, and avoids a spurious color shift of the substrate towards the complement of the tint.
 - #317: Fixes a bug in the MaterialX graph (introduced in #253) where the base under the coat was connected to a non-existent `coat_color` node, which MaterialX silently replaced with white, so `coat_color` did not tint the coated base.
 
 ## [1.1] - Jun 28, 2024
