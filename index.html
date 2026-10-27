@@ -634,7 +634,7 @@ In both cases the associated transmission Fresnel factor for the refracted ray i
 
 For physical consistency, we assume that this modification of the Fresnel factor happens at the microfacet level of the base dielectric interface. Thus in principle the multiple scattering lobe should be calculated accordingly taking this into account. In practice, it is a good enough approximation to simply apply the usual microfacet multiple scattering compensation schemes, with the modulated IOR ratio.
 
-As noted, a further tint factor of **`specular_color`** is applied to the entire macroscopic dielectric BRDF (for both entering and exiting rays), while the BTDF is unaffected by this tint. That is, the transmission Fresnel factor remains one minus the *untinted* reflection Fresnel factor. Correspondingly, if layering is implemented via albedo-scaling, the weight of the light passed to the interior of the dielectric is computed from the albedo of the untinted BRDF (see equation [dielectric_base_mixture]).
+As noted, a further tint factor of **`specular_color`** is applied to the entire macroscopic dielectric BRDF (for both entering and exiting rays), while the BTDF is unaffected by this tint. That is, the transmission Fresnel factor remains one minus the *untinted* reflection Fresnel factor, so the light transmitted through the interface (in either direction) is independent of **`specular_color`**.
 
 
 Specular params                     | Label      | Type     | Range           | Norm       | Default       | Description
@@ -1413,11 +1413,11 @@ The "specular" BTDF/BSSRDF $\color{darkblue}{f^T_\textrm{specular}}$ corresponds
 
 Note that in this albedo-scaling approximation, the transmission Fresnel factor associated with $\color{darkblue}{f^T_\textrm{specular}}$ and $\color{darkblue}{f_\textrm{SSS}}$ can be *omitted* as the energy conservation of the dielectric BSDF as a whole is maintained automatically, even without explicit multiple scattering compensation.
 
-The albedo-scaling weight $1 - E[\color{darkblue}{\overline{f^R_\textrm{specular}}}]$ is computed from the *untinted* BRDF, since (as described in the Dielectric base section) the **`specular_color`** tint suppresses only the reflection, and does not alter the amount of light transmitted into the dielectric. Energy conservation is still guaranteed since $\mathbf{C}_s \le 1$. If the tinted albedo $E[\color{darkblue}{f^R_\textrm{specular}}]$ were used instead, the reflected light suppressed by the tint would be transferred into the substrate lobes, causing an unintended color shift of the substrate towards the complement of the tint (e.g. a blue **`specular_color`** would make the diffuse or transmitted light appear more yellow).
+In this approximation, the weight $1 - E[\color{darkblue}{\overline{f^R_\textrm{specular}}}]$ is computed from the *untinted* BRDF. This follows from the physical definition of **`specular_color`** given in the Dielectric base section, i.e. the tint suppresses only the reflection, and does not alter the amount of light transmitted into the dielectric. Energy conservation is still guaranteed since $\mathbf{C}_s \le 1$. If the tinted albedo $E[\color{darkblue}{f^R_\textrm{specular}}]$ were used instead, the reflected light suppressed by the tint would be transferred into the substrate lobes, causing an unintended color shift of the substrate towards the complement of the tint (e.g. a blue **`specular_color`** would make the diffuse or transmitted light appear more yellow).
 
 Since $\color{darkblue}{f^R_\textrm{specular}}$ appears in each of the three component slabs of the dielectric base, it
 follows that on collecting terms, $f_\textrm{dielectric-base}$ reduces to:
-\begin{equation} \label{dielectric_base_mixture}
+\begin{equation}
 f_\textrm{dielectric-base} = \color{darkblue}{f^R_\textrm{specular}}  + (1 - E[\color{darkblue}{\overline{f^R_\textrm{specular}}}]) \,f^T_\mathrm{dielectric-base} \ ,
 \end{equation}
 where $f^T_\mathrm{dielectric-base}$, the total effective transmission lobe of the dielectric-base, is:
