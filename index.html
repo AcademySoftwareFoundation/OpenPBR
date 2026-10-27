@@ -561,7 +561,7 @@ where $\xi_s = \mathtt{specular\_weight}$, and the colors $\mathbf{F}_0$ and $\m
 \begin{equation} \label{metal_colors}
 \mathbf{F}_0 = \min(k \, \mathtt{base\_weight} \, \mathtt{base\_color}, 1) \ , \quad \mathbf{C}_s = \min(k \, \mathtt{specular\_color}, 1) \ , \quad k = \max(\xi_s, 1) \ .
 \end{equation}
-Thus for $\xi_s \le 1$ the weight simply scales the entire Fresnel curve, so that the metallic lobe vanishes as $\xi_s \rightarrow 0$. For $\xi_s > 1$, scaling the curve directly would produce reflectivities greater than one, so instead the colors are boosted. The result remains a valid F82-tint curve, which is bounded above by one, and tends to a perfect (white) mirror as $\xi_s \rightarrow \infty$. [^metal_weight_f90]
+Thus for $\xi_s \le 1$ the weight simply scales the entire Fresnel curve, so that the metallic lobe vanishes as $\xi_s \rightarrow 0$. For $\xi_s > 1$, scaling the curve directly would produce reflectivities greater than one, so instead the colors are boosted. The result remains a valid F82-tint curve, which is bounded above by one, and tends to a perfect (white) mirror as $\xi_s \rightarrow \infty$, for non-zero colors (since the boost is multiplicative, a channel which is zero in **`base_color`** or **`specular_color`** remains zero for any $\xi_s$). [^metal_weight_f90]
 The clamp at zero is needed since $\mathbf{F}_{82}(\mu)$ can become negative for some values of $\mu$, which is not physically meaningful [#Hoffman2019].
 
 This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`base_weight`** * **`base_color`**.
