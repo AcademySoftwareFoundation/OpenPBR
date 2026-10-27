@@ -592,7 +592,7 @@ Both the opaque and translucent dielectric-base share the same dielectric interf
 
 - The **`specular_weight`** parameter provides a convenient, texturable linear $[0, 1]$ multiplier of the base dielectric reflectivity at normal incidence via reduction of the IOR below the reference value. When **`specular_weight`** is $0$, the specular reflection disappears entirely, as the IOR of the dielectric is then equal to that of the surrounding medium. Equation [modulated_ior] below gives the formula for the applied IOR modulation. However the refraction direction is *not* modified by **`specular_weight`**, as this control is designed to vary only the reflectivity without disturbing the refraction appearance. Thus the reflection highlight and the refraction direction are effectively *decoupled*, in an unphysical but artistically convenient way. As a convenience, we also allow the **`specular_weight`** to exceed $1$, thus increasing the reflectivity via increase of the IOR above the reference value.
 
-- The **`specular_color`** parameter tints the Fresnel factor of $f_\mathrm{dielectric}$, but only in the BRDF, i.e. the light incident from the upper or lower hemisphere which is reflected back into the same hemisphere. The light transmitted from above or below is assumed to be unaffected. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight.
+- The **`specular_color`** parameter tints the Fresnel factor of $f_\mathrm{dielectric}$, but only in the BRDF, i.e. the light incident from the upper or lower hemisphere which is reflected back into the same hemisphere. The light transmitted from above or below is assumed to be unaffected. In particular, the reflected light suppressed by the tint is *not* redistributed into transmission, so the tint does not alter the amount of light entering (or exiting) the interior of the dielectric. This is technically unphysical if altered from the default white color (as real dielectrics have a Fresnel factor dependent only on the index of refraction), but can be useful in practice to artificially tint the specular highlight.
 
 - The **`specular_retroreflectivity`** mixes the dielectric BRDF with the [retroreflective](index.html#model/microfacetmodel/retroreflectivity) modification of the microfacet model. Note that this alters the BRDF of the dielectric only, leaving the BTDF unchanged, so refraction is undisturbed.
 
@@ -634,13 +634,13 @@ In both cases the associated transmission Fresnel factor for the refracted ray i
 
 For physical consistency, we assume that this modification of the Fresnel factor happens at the microfacet level of the base dielectric interface. Thus in principle the multiple scattering lobe should be calculated accordingly taking this into account. In practice, it is a good enough approximation to simply apply the usual microfacet multiple scattering compensation schemes, with the modulated IOR ratio.
 
-As noted, a further tint factor of **`specular_color`** is applied to the entire macroscopic dielectric BRDF (for both entering and exiting rays), while the BTDF is unaffected by this tint.
+As noted, a further tint factor of **`specular_color`** is applied to the entire macroscopic dielectric BRDF (for both entering and exiting rays), while the BTDF is unaffected by this tint. That is, the transmission Fresnel factor remains one minus the *untinted* reflection Fresnel factor. Correspondingly, if layering is implemented via albedo-scaling, the weight of the light passed to the interior of the dielectric is computed from the albedo of the untinted BRDF (see equation [dielectric_base_mixture]).
 
 
 Specular params                     | Label      | Type     | Range           | Norm       | Default       | Description
 ------------------------------------|------------|----------|:---------------:|:----------:|:-------------:|----------------------------------------------
 **`specular_weight`**               | Weight     | `float`  | $ [0, \infty) $ | $ [0, 1] $ | $ 1         $ | Modulates the dielectric reflectivity at normal incidence
-**`specular_color`**                | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric BRDF
+**`specular_color`**                | Color      | `color3` | $ [0, 1]^3    $ |            | $ (1, 1, 1) $ | Tints the dielectric BRDF (without affecting transmission)
 **`specular_roughness`**            | Roughness  | `float`  | $ [0, 1]      $ |            | $ 0.3       $ | Roughness of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_roughness_anisotropy`** | Anisotropy | `float`  | $ [0, 1]      $ |            | $ 0         $ | Anisotropy of NDF of dielectric BSDF $f_\mathrm{dielectric}$
 **`specular_haze`**                 | Haze       | `float`  | $ [0, 1]      $ |            | $ 0.0       $ | Mix weight of dielectric haze lobe
@@ -1402,21 +1402,23 @@ f_\textrm{opaque-base} = \mathrm{lerp}\left(f_\textrm{glossy-diffuse}, f_\textrm
 All of $f_\textrm{translucent-base}$, $f_\textrm{subsurface}$ and $f_\textrm{glossy-diffuse}$ represent the BSDF of a microfacet dielectric interface bounding the dielectric interior and its volumetric media.
 In each case the BSDF can be represented as the sum of a "primary specular" BRDF $\color{darkblue}{f^R_\textrm{specular}}$ corresponding to reflection from the dielectric surface without interaction with the internal medium, and a substrate lobe corresponding to the effect of transmission into and scattering within the medium:
 \begin{align}
-f_\textrm{translucent-base} &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!\!\!\!\!\!\!\! &(1 - E[\color{darkblue}{f^R_\textrm{specular}}]) &\,\color{darkblue}{f^T_\textrm{specular}}     \ , \nonumber \\
-f_\textrm{subsurface}       &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!\!\!\!\!\!\!\! &(1 - E[\color{darkblue}{f^R_\textrm{specular}}]) &\,\color{darkblue}{f_\textrm{SSS}}            \ , \nonumber \\
-f_\textrm{glossy-diffuse}   &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!\!\!\!\!\!\!\! &(1 - E[\color{darkblue}{f^R_\textrm{specular}}]) &\,\color{darkblue}{f_\mathrm{diffuse}}        \ .
+f_\textrm{translucent-base} &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!\!\!\!\!\!\!\! &(1 - E[\color{darkblue}{\overline{f^R_\textrm{specular}}}]) &\,\color{darkblue}{f^T_\textrm{specular}}     \ , \nonumber \\
+f_\textrm{subsurface}       &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!\!\!\!\!\!\!\! &(1 - E[\color{darkblue}{\overline{f^R_\textrm{specular}}}]) &\,\color{darkblue}{f_\textrm{SSS}}            \ , \nonumber \\
+f_\textrm{glossy-diffuse}   &= \color{darkblue}{f^R_\textrm{specular}}  + \!\!\!\!\!\!\!\!\!\! &(1 - E[\color{darkblue}{\overline{f^R_\textrm{specular}}}]) &\,\color{darkblue}{f_\mathrm{diffuse}}        \ .
 \end{align}
-where, as described in the Slabs section, $E[f_X]$ denotes the directional albedo of $f_X$.
+where, as described in the Slabs section, $E[f_X]$ denotes the directional albedo of $f_X$, and $\color{darkblue}{\overline{f^R_\textrm{specular}}}$ denotes the primary specular BRDF with the **`specular_color`** tint set to white (as in the fuzz layering below), i.e. $\color{darkblue}{f^R_\textrm{specular}} = \mathbf{C}_s \,\color{darkblue}{\overline{f^R_\textrm{specular}}}$ with $\mathbf{C}_s$ = **`specular_color`**.
 
 Here the substrate lobes $\color{darkblue}{f^T_\textrm{specular}}$ and $\color{darkblue}{f_\textrm{SSS}}$ are technically BSSRDFs, which model the entry into the internal medium via the dielectric interface, transport of light from entry point to exit points including absorption and scattering processes, and exit from the medium back though the interface, generating both a reflection and transmission component. [^BSDF_BSSRDF_sum]
 The "specular" BTDF/BSSRDF $\color{darkblue}{f^T_\textrm{specular}}$ corresponds to transmission into the medium parametrized in the Translucent base section, and BSSRDF $\color{darkblue}{f_\textrm{SSS}}$ corresponds to transmission into the medium parametrized in the Subsurface section. In the case of $f_\textrm{glossy-diffuse}$, the BSSRDF degenerates into the BRDF $\color{darkblue}{f_\mathrm{diffuse}}$ as described in the Glossy-diffuse section.
 
-Note that in this albedo-scaling approximation, the transmission Fresnel factor associated with $\color{darkblue}{f^T_\textrm{specular}}$ and $\color{darkblue}{f_\textrm{SSS}}$ can be *omitted* as the energy conservation of the dielectric BSDF as a whole is maintained automatically, even without explicit multiple scattering compensation or in the presence of modifications to the reflection Fresnel factor via **`specular_color`**.
+Note that in this albedo-scaling approximation, the transmission Fresnel factor associated with $\color{darkblue}{f^T_\textrm{specular}}$ and $\color{darkblue}{f_\textrm{SSS}}$ can be *omitted* as the energy conservation of the dielectric BSDF as a whole is maintained automatically, even without explicit multiple scattering compensation.
+
+The albedo-scaling weight $1 - E[\color{darkblue}{\overline{f^R_\textrm{specular}}}]$ is computed from the *untinted* BRDF, since (as described in the Dielectric base section) the **`specular_color`** tint suppresses only the reflection, and does not alter the amount of light transmitted into the dielectric. Energy conservation is still guaranteed since $\mathbf{C}_s \le 1$. If the tinted albedo $E[\color{darkblue}{f^R_\textrm{specular}}]$ were used instead, the reflected light suppressed by the tint would be transferred into the substrate lobes, causing an unintended color shift of the substrate towards the complement of the tint (e.g. a blue **`specular_color`** would make the diffuse or transmitted light appear more yellow).
 
 Since $\color{darkblue}{f^R_\textrm{specular}}$ appears in each of the three component slabs of the dielectric base, it
 follows that on collecting terms, $f_\textrm{dielectric-base}$ reduces to:
-\begin{equation}
-f_\textrm{dielectric-base} = \color{darkblue}{f^R_\textrm{specular}}  + (1 - E[\color{darkblue}{f^R_\textrm{specular}}]) \,f^T_\mathrm{dielectric-base} \ ,
+\begin{equation} \label{dielectric_base_mixture}
+f_\textrm{dielectric-base} = \color{darkblue}{f^R_\textrm{specular}}  + (1 - E[\color{darkblue}{\overline{f^R_\textrm{specular}}}]) \,f^T_\mathrm{dielectric-base} \ ,
 \end{equation}
 where $f^T_\mathrm{dielectric-base}$, the total effective transmission lobe of the dielectric-base, is:
 \begin{align}
@@ -1459,7 +1461,7 @@ To summarize, we have thus expressed the model as the following linear combinati
             \; f_\mathrm{coated-base}       &=& \!\!\!\!\!\!\!\!\!\!\mathtt{C} \,\color{darkblue}{f_\mathrm{coat}}    + &\mathrm{lerp}\left(1,                          T_\mathrm{coat} (1 - E[\color{darkblue}{f_\mathrm{coat}}])             ,      \mathtt{C}     \right) f_\textrm{base-substrate} \ ,   \; \nonumber \\
             \; \color{darkblue}{L_e}        &=& \!\!\!\!\!\!\!\!\!\!                                                    &\mathrm{lerp}\left(1,                                                                        T_\mathrm{coat}          ,      \mathtt{C}     \right) \mathtt{E}                \ ,   \; \nonumber \\
             \; f_\textrm{base-substrate}    &=& \!\!\!\!\!\!\!\!\!\!                                                    &\mathrm{lerp}\left(f_\textrm{dielectric-base}, \color{darkblue}{f_\mathrm{conductor}}                                 ,      \mathtt{M}     \right)                           \ ,   \; \nonumber \\
-            \; f_\textrm{dielectric-base}   &=& \!\!\!\!\!\!\!\!\!\!\color{darkblue}{f^R_\textrm{specular}}           + &(1 - E[\color{darkblue}{f^R_\textrm{specular}}]) f^T_\mathrm{dielectric-base}                                                                                                 \ ,   \; \nonumber \\
+            \; f_\textrm{dielectric-base}   &=& \!\!\!\!\!\!\!\!\!\!\color{darkblue}{f^R_\textrm{specular}}           + &(1 - E[\color{darkblue}{\overline{f^R_\textrm{specular}}}]) f^T_\mathrm{dielectric-base}                                                                                                 \ ,   \; \nonumber \\
             \; f^T_\mathrm{dielectric-base} &=& \!\!\!\!\!\!\!\!\!\!                                                   &\mathrm{lerp}(\mathrm{lerp}(\color{darkblue}{f_\mathrm{diffuse}}, \color{darkblue}{f_\textrm{SSS}}, \mathtt{S}), \color{darkblue}{f^T_\textrm{specular}}, \mathtt{T})          \ .   \;
          \end{aligned}
       }
