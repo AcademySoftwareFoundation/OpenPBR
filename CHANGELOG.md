@@ -16,11 +16,13 @@ effectively decoupled, in an unphysical but artistically convenient way.
 - #250: This PR ensures that the `geometry_thin_walled` property, which indicates if a material's geometry should be treated as "thin-walled" (i.e., like a sheet or membrane without interior volume), is correctly connected to and represented within the <surface> node of MaterialX.
 - #231: Introduces a new parameter called `emission_weight`, providing a simple $[0,1]$ dimensionless scale facto r for the `emission_luminance`.
 - #238: Prior to this change, if `specular_weight` was set to a value greater than 1, it could lead to unphysical metallic Fresnel factors > 1. By introducing the clamp, the code ensures that, regardless of the value given to specular_weight, the resulting metal Fresnel reflectance remains within a physical range.
+- #314: Refines the clamp of #238. Rather than clamping the scaled metallic Fresnel curve, a `specular_weight` greater than 1 now boosts the F0 and F82 colors (i.e. `base_weight` * `base_color` and `specular_color`), each clamped to $[0,1]$, while a `specular_weight` of at most 1 still scales the whole metallic lobe (so the look is unchanged in that range). The result is always a valid F82-tint Fresnel curve bounded in $[0,1]$, and unlike the previous clamp it can be expressed in the MaterialX graph via the parameters of `generalized_schlick_bsdf`.
 
 ### Additive enhancements
 
 ### Bug fixes
 - #318: Clarifies the specification text so that, consistent with #247, the dispersion curve $n(\lambda)$ is defined by the *unmodified* `specular_ior`, so `specular_weight` modulates only the reflection and transmission Fresnel factors and does not alter the refracted direction at any wavelength.
+- #317: Fixes a bug in the MaterialX graph (introduced in #253) where the base under the coat was connected to a non-existent `coat_color` node, which MaterialX silently replaced with white, so `coat_color` did not tint the coated base.
 
 ## [1.1] - Jun 28, 2024
 
