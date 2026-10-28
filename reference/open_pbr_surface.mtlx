@@ -616,34 +616,56 @@
       <input name="in1" type="color3" nodename="base_color_clamped" />
       <input name="in2" type="float" nodename="base_weight_clamped" />
     </multiply>
+    <!-- specular_weight <= 1 scales the whole metal lobe, while specular_weight > 1
+         boosts the F0 and F82 colors (each clamped to [0, 1]) -->
+    <min name="metal_weight" type="float">
+      <input name="in1" type="float" nodename="specular_weight_nonnegative" />
+      <input name="in2" type="float" value="1.0" />
+    </min>
+    <max name="metal_boost" type="float">
+      <input name="in1" type="float" nodename="specular_weight_nonnegative" />
+      <input name="in2" type="float" value="1.0" />
+    </max>
+    <multiply name="metal_F0_boosted" type="color3">
+      <input name="in1" type="color3" nodename="metal_reflectivity" />
+      <input name="in2" type="float" nodename="metal_boost" />
+    </multiply>
+    <min name="metal_F0" type="color3">
+      <input name="in1" type="color3" nodename="metal_F0_boosted" />
+      <input name="in2" type="float" value="1.0" />
+    </min>
+    <multiply name="metal_F82_boosted" type="color3">
+      <input name="in1" type="color3" nodename="specular_color_clamped" />
+      <input name="in2" type="float" nodename="metal_boost" />
+    </multiply>
+    <min name="metal_F82" type="color3">
+      <input name="in1" type="color3" nodename="metal_F82_boosted" />
+      <input name="in2" type="float" value="1.0" />
+    </min>
     <generalized_schlick_bsdf name="metal_bsdf" type="BSDF">
-      <input name="weight" type="float" nodename="specular_weight_nonnegative" />
-      <input name="color0" type="color3" nodename="metal_reflectivity" />
-      <input name="color82" type="color3" nodename="specular_color_clamped" />
+      <input name="weight" type="float" nodename="metal_weight" />
+      <input name="color0" type="color3" nodename="metal_F0" />
+      <input name="color82" type="color3" nodename="metal_F82" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" interfacename="geometry_tangent" />
     </generalized_schlick_bsdf>
     <generalized_schlick_bsdf name="metal_bsdf_tf" type="BSDF">
-      <input name="weight" type="float" nodename="specular_weight_nonnegative" />
-      <input name="color0" type="color3" nodename="metal_reflectivity" />
-      <input name="color82" type="color3" nodename="specular_color_clamped" />
+      <input name="weight" type="float" nodename="metal_weight" />
+      <input name="color0" type="color3" nodename="metal_F0" />
+      <input name="color82" type="color3" nodename="metal_F82" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" interfacename="geometry_tangent" />
       <input name="thinfilm_thickness" type="float" nodename="thin_film_thickness_nm" />
       <input name="thinfilm_ior" type="float" nodename="thin_film_ior_nonnegative" />
     </generalized_schlick_bsdf>
-    <!-- Thin film on metal: specular_weight acts as the coverage w = min(specular_weight, 1) of the metal beneath the
+    <!-- Thin film on metal: metal_weight = min(specular_weight, 1) acts as the coverage of the metal beneath the
          film, the remainder being index-matched to the medium above. The film covers both parts, so the uncovered
-         fraction 1 - w reflects as a free-standing film (a dielectric_bsdf with ior 1 carrying the film). -->
-    <min name="metal_film_coverage" type="float">
-      <input name="in1" type="float" nodename="specular_weight_nonnegative" />
-      <input name="in2" type="float" value="1.0" />
-    </min>
+         fraction 1 - metal_weight reflects as a free-standing film (a dielectric_bsdf with ior 1 carrying the film). -->
     <subtract name="metal_film_uncovered" type="float">
       <input name="in1" type="float" value="1.0" />
-      <input name="in2" type="float" nodename="metal_film_coverage" />
+      <input name="in2" type="float" nodename="metal_weight" />
     </subtract>
     <dielectric_bsdf name="metal_bsdf_tf_free_film" type="BSDF">
       <input name="weight" type="float" nodename="metal_film_uncovered" />
@@ -667,17 +689,17 @@
 
     <!-- Metal Haze -->
     <generalized_schlick_bsdf name="metal_bsdf_haze" type="BSDF">
-      <input name="weight" type="float" nodename="specular_weight_nonnegative" />
-      <input name="color0" type="color3" nodename="metal_reflectivity" />
-      <input name="color82" type="color3" nodename="specular_color_clamped" />
+      <input name="weight" type="float" nodename="metal_weight" />
+      <input name="color0" type="color3" nodename="metal_F0" />
+      <input name="color82" type="color3" nodename="metal_F82" />
       <input name="roughness" type="vector2" nodename="haze_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" interfacename="geometry_tangent" />
     </generalized_schlick_bsdf>
     <generalized_schlick_bsdf name="metal_bsdf_haze_tf" type="BSDF">
-      <input name="weight" type="float" nodename="specular_weight_nonnegative" />
-      <input name="color0" type="color3" nodename="metal_reflectivity" />
-      <input name="color82" type="color3" nodename="specular_color_clamped" />
+      <input name="weight" type="float" nodename="metal_weight" />
+      <input name="color0" type="color3" nodename="metal_F0" />
+      <input name="color82" type="color3" nodename="metal_F82" />
       <input name="roughness" type="vector2" nodename="haze_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" interfacename="geometry_tangent" />
@@ -737,8 +759,8 @@
     </subtract>
     <!-- Approximate base metal albedo estimate, Emetal  -->
     <multiply name="Emetal" type="color3">
-      <input name="in1" type="color3" nodename="base_color_clamped" />
-      <input name="in2" type="float" nodename="specular_weight_nonnegative" />
+      <input name="in1" type="color3" nodename="metal_F0" />
+      <input name="in2" type="float" nodename="metal_weight" />
     </multiply>
     <!-- Approximate base dielectric albedo estimate, Edielectric  -->
     <mix name="Edielectric" type="color3">
@@ -792,7 +814,7 @@
     <!-- Base substrate, attenuated due to absorption color, and (optional) inter-reflection darkening  -->
     <multiply name="base_substrate_attenuated" type="BSDF">
       <input name="in1" type="BSDF" nodename="darkened_base_substrate" />
-      <input name="in2" type="color3" nodename="coat_color" />
+      <input name="in2" type="color3" nodename="coat_color_clamped" />
     </multiply>
     <!-- Coat BSDF  -->
     <open_pbr_anisotropy name="coat_roughness_vector" type="vector2">
