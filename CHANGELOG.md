@@ -21,6 +21,7 @@ How to read this document : ✨ new feature &nbsp;|&nbsp; 🎨 look-changing &nb
 - 🧹 [Missing section links](https://github.com/AcademySoftwareFoundation/OpenPBR/pull/309) **#309**: Adds missing links to sections of the specification.
 - 🧹 [Equation reference capitalization](https://github.com/AcademySoftwareFoundation/OpenPBR/pull/315) **#315**: Makes the capitalization of equation references consistent.
 - 🧹 [Subsurface color range](https://github.com/AcademySoftwareFoundation/OpenPBR/pull/325) **#325**: Fixes the range of `subsurface_color` in the parameter table to indicate it is 3-dimensional.
+- 🎨 [length parameter default unit](https://github.com/AcademySoftwareFoundation/OpenPBR/pull/331) **#331**: Defining the default unit of the `transmission_depth` and `subsurface_radius` length parameters to be in centimeters, if not defined otherwise by the material's metadata.
 
 ## [[1.1.1]](https://github.com/AcademySoftwareFoundation/OpenPBR/tree/v1.1.1) - April 17, 2026
 - 🐛 [Metal edge tint and ignored thin-walled](https://github.com/AcademySoftwareFoundation/OpenPBR/pull/300) **#300**: Fixes two issues in the MaterialX implementation, the edge tint was incorrectly multiplied by the specular weight (backported from **#240**) and `geometry_thin_walled` was not connected to the shader (backported from **AcademySoftwareFoundation/MaterialX#2759**).
