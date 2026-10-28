@@ -16,7 +16,7 @@ To guarantee a non-ambiguous way to transport and present the model across diffe
   - Curly brackets `{}` indicate a discrete set of possible values.
 - **Norm**: when the range of possible values differs from the range of typically useful values, the latter is indicated in this column. For example, a **`specular_ior`** can take arbitrarily high values, but a refractive index of 3 is considered a very high value already, above that of diamond.
 - **Default**: the suggested default value.
-- **Unit**: where relevant, otherwise assumed to be dimensionless. Note that lengths (other than `thin_film_thickness`) can be assumed to be in the world space units of the scene.
+- **Unit**: where relevant, otherwise assumed to be dimensionless. Note that lengths (other than `thin_film_thickness`) can be assumed to be in a unit defined by the materials metadata, if not provided the default unit for length is cm to ensure consistency between applications.
 
 
 | Identifier                            | Label               | Type      | Range             | Norm          | Default              | Unit             |
