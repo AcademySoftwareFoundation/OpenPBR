@@ -1215,19 +1215,21 @@ Normal maps and tangents
 The geometry of the surface is assumed to be given externally to the model, defining a local unperturbed shading normal and tangent space frame.
 
 However we allow for normal mapping, which (optionally) alters this unperturbed shading frame, as a part of the material model, as this alters the light transport and appearance fundamentally.
-There is an input **`geometry_normal`** for the perturbed shading normal $\mathbf{N}_B$ of all slabs of the base, and a separate input **`geometry_coat_normal`** for the perturbed shading normal $\mathbf{N}_C$ of the coat slab. Separately perturbing the coat normal allows for the appearance of a finite thickness coat on top of the base.
+There is an input **`geometry_normal`** for the perturbed shading normal $\mathbf{n}_\mathrm{base}$ of all slabs of the base, and a separate input **`geometry_coat_normal`** for the perturbed shading normal $\mathbf{n}_\mathrm{coat}$ of the coat slab. Separately perturbing the coat normal allows for the appearance of a finite thickness coat on top of the base.
 
-The **`geometry_tangent`** $\mathbf{T}_B$ and **`geometry_coat_tangent`** $\mathbf{T}_C$ may also be specified, to define the direction of the microfacet anisotropy on the base slabs and coat slab, for effects such as brushed metal.
+The **`geometry_tangent`** $\mathbf{t}_\mathrm{base}$ and **`geometry_coat_tangent`** $\mathbf{t}_\mathrm{coat}$ may also be specified, to define the direction of the microfacet anisotropy on the base slabs and coat slab, for effects such as brushed metal.
 
-In practice, the supplied base normal $\mathbf{N}_B$ (and similarly for the coat) will typically be defined via texture maps which specify how to transform the reference normal $\mathbf{N}'_B$ and reference tangent $\mathbf{T}'_B$ into the perturbed normal $\mathbf{N}_B$. Similarly, the anisotropy tangent $\mathbf{T}_B$ will typically be defined with respect to the reference $\mathbf{N}'_B$ and $\mathbf{T}'_B$, for example via 2D vector "flow maps" [#Vlachos2010]. As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal or tangent in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
+In practice, the supplied base normal $\mathbf{n}_\mathrm{base}$ (and similarly for the coat) will typically be defined via texture maps which specify how to transform the reference normal $\mathbf{n}'_\mathrm{base}$ and reference tangent $\mathbf{t}'_\mathrm{base}$ into the perturbed normal $\mathbf{n}_\mathrm{base}$. Similarly, the anisotropy tangent $\mathbf{t}_\mathrm{base}$ will typically be defined with respect to the reference $\mathbf{n}'_\mathrm{base}$ and $\mathbf{t}'_\mathrm{base}$, for example via 2D vector "flow maps" [#Vlachos2010]. As noted in the Metadata section, the particular parametrization which maps the contents of the texture to the perturbation of the normal or tangent in the shading frame is not defined in the model itself, as this can be done in multiple ways. It is instead just assumed that the material is packaged with metadata that makes this mapping unambiguous.
 
-It is _not_ required that the resultant input **`geometry_normal`** $\mathbf{N}_B$ and **`geometry_tangent`** $\mathbf{T}_B$ are strictly normalized and orthogonal (and similarly for the coat normal and tangent).
+It is _not_ required that the resultant input **`geometry_normal`** $\mathbf{n}_\mathrm{base}$ and **`geometry_tangent`** $\mathbf{t}_\mathrm{base}$ are strictly normalized and orthogonal (and similarly for the coat normal and tangent).
 For example reconstruction filtering techniques such as texture filtering may cause the interpolated normal to not be normalized. However, we _do_ require that the implementation ensure (if not already guaranteed) that the final shading frame of the BSDF is orthonormal, by applying Gram-Schmidt orthogonalization. That is, the normal is first normalized, and then the tangent is projected onto the plane orthogonal to the *normalized* normal and normalized:
-\begin{align*}
-&\hat{\mathbf{N}}_B = \mathrm{normalize}(\mathbf{N}_B), &\quad& \hat{\mathbf{T}}_B = \mathrm{normalize}\bigl(\mathbf{T}_B - (\hat{\mathbf{N}}_B\cdot \mathbf{T}_B) \hat{\mathbf{N}}_B\bigr) \nonumber \\
-&\hat{\mathbf{N}}_C = \mathrm{normalize}(\mathbf{N}_C), &\quad& \hat{\mathbf{T}}_C = \mathrm{normalize}\bigl(\mathbf{T}_C - (\hat{\mathbf{N}}_C\cdot \mathbf{T}_C) \hat{\mathbf{N}}_C\bigr) \ .
-\end{align*}
-The bitangent of each frame then follows from the cross product of the resulting unit normal and tangent. If the projected tangent is degenerate (i.e. the supplied tangent is zero, or parallel to the normal), the implementation may substitute any unit vector orthogonal to the normal, for example one derived from the unperturbed shading frame.
+\begin{equation*}
+\begin{aligned}
+&\hat{\mathbf{n}}_\mathrm{base} = \mathrm{normalize}(\mathbf{n}_\mathrm{base}), &\quad& \hat{\mathbf{t}}_\mathrm{base} = \mathrm{normalize}\bigl(\mathbf{t}_\mathrm{base} - (\hat{\mathbf{n}}_\mathrm{base}\cdot \mathbf{t}_\mathrm{base}) \hat{\mathbf{n}}_\mathrm{base}\bigr) \\
+&\hat{\mathbf{n}}_\mathrm{coat} = \mathrm{normalize}(\mathbf{n}_\mathrm{coat}), &\quad& \hat{\mathbf{t}}_\mathrm{coat} = \mathrm{normalize}\bigl(\mathbf{t}_\mathrm{coat} - (\hat{\mathbf{n}}_\mathrm{coat}\cdot \mathbf{t}_\mathrm{coat}) \hat{\mathbf{n}}_\mathrm{coat}\bigr) \ .
+\end{aligned}
+\end{equation*}
+The bitangent of each frame then follows from the cross product of the resulting unit normal and tangent, i.e. $\hat{\mathbf{b}}_\mathrm{base} = \hat{\mathbf{n}}_\mathrm{base} \times \hat{\mathbf{t}}_\mathrm{base}$ and $\hat{\mathbf{b}}_\mathrm{coat} = \hat{\mathbf{n}}_\mathrm{coat} \times \hat{\mathbf{t}}_\mathrm{coat}$. If the projected tangent is degenerate (i.e. the supplied tangent is zero, or parallel to the normal), the implementation may substitute any unit vector orthogonal to the normal, for example one derived from the unperturbed shading frame.
 
 
 
@@ -1625,7 +1627,7 @@ References
 
 [#Veach1997]: Eric Veach. *Robust Monte Carlo Methods for Light Transport Simulation*, Ph.D. dissertation, Stanford University (1997).
 
-[#Vlachos2010]: Alex Vlachos, Alexey Agapov and Ryan Mitchell. *Water Flow in Portal 2*, Advances in Real-Time Rendering in Games, SIGGRAPH Course (2010).
+[#Vlachos2010]: Alex Vlachos. *Water Flow in Portal 2*, Advances in Real-Time Rendering in Games, SIGGRAPH Course (2010).
 
 [#Walter2007]: Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E. Torrance. *Microfacet models for refraction through rough surfaces*, EGSR (2007).
 
