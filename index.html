@@ -294,7 +294,7 @@ However the parameters of the physical model that we describe do not specify all
 
    - The assumed color space of all the color parameters. If unspecified, following MaterialX [#Smythe2016], by default this color space is assumed to be [ACEScg](https://docs.acescentral.com/specifications/acescg/). [^ingamut]
 
-   - The floating-point conversion factor from the parameters given in world space length units to meters.
+   - The unit of each length parameter (such as **`subsurface_radius`** and **`transmission_depth`**). If no unit is given, the length is assumed to be in centimeters (see [Parametrization](parametrization.md.html)). The exception is **`thin_film_thickness`**, which is always in micrometers.
 
    - The association between any supplied texture files and the parameters which they specify, generating spatially varying parameters according to the local UV coordinates of the geometry.
 
