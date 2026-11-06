@@ -1,0 +1,39 @@
+name: Validate MaterialX
+
+on:
+  push:
+    paths:
+      - '**.mtlx'
+      - 'validation/validate_mtlx.py'
+      - '.github/workflows/validate-mtlx.yml'
+  pull_request:
+    paths:
+      - '**.mtlx'
+      - 'validation/validate_mtlx.py'
+      - '.github/workflows/validate-mtlx.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install MaterialX
+        run: pip install materialx
+
+      - name: Validate reference implementation
+        run: python validation/validate_mtlx.py reference/open_pbr_surface.mtlx
+
+      - name: Validate example materials
+        run: |
+          failed=0
+          for f in examples/*.mtlx; do
+            echo "--- $f"
+            python validation/validate_mtlx.py "$f" || failed=1
+          done
+          exit $failed
