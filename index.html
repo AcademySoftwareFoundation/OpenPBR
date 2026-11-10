@@ -527,7 +527,7 @@ The metallic base is thus represented as a separate bulk slab which consists of 
 S_\mathrm{metal} = \mathrm{Slab}(f_\mathrm{conductor}) \ .
 \end{equation}
 
-The conductor Fresnel reflection curve is parametrized by the colors at normal and near-grazing incidence (**`base_color`** and **`specular_color`** respectively, scaled by the corresponding weights). This allows for art-directable variation in reflectivity toward the grazing edges by directly specifying the (texturable) colors at normal and grazing incidence to simulate the dip in reflectivity observed in real metals, or just for artistic effect [#Hoffman2019]. Note that these two color parameters are also used for the non-metallic (i.e. dielectric) specular and diffuse BRDFs, as discussed above.
+The conductor Fresnel reflection curve is parametrized by the colors at normal and near-grazing incidence (**`base_color`** and **`specular_color`** respectively, scaled by the corresponding weights). This allows for art-directable variation in reflectivity toward the grazing edges by directly specifying the (texturable) colors at normal and grazing incidence to simulate the dip in reflectivity observed in real metals, or just for artistic effect [#Hoffman2019] (within the range of edge colors that a physical conductor can produce, as described below). Note that these two color parameters are also used for the non-metallic (i.e. dielectric) specular and diffuse BRDFs, as discussed above.
 
 As noted previously, this non-transmissive metallic base is blended as a statistical mixture with the dielectric-base according to the **`base_metalness`** parameter:
 \begin{eqnarray}
@@ -535,37 +535,53 @@ M_\textrm{base-substrate} &=& \mathrm{\mathbf{mix}}(M_\textrm{dielectric-base}, 
 \end{eqnarray}
 where $\mathtt{M}$ = **`base_metalness`**.
 
-The specific model we stipulate for the metallic Fresnel factor $\mathbf{F}_{\mathrm{metal}}(\mu)$ is the "F82-tint" model of [#Kutz2021], which extends previous work by [#Hoffman2019].
-This is based on the standard Schlick approximation to the metallic Fresnel factor (where $\mathbf{F}_0$ is the RGB reflectivity at normal incidence, derived from **`base_weight`** * **`base_color`** as in equation [metal_colors] below, and $\mu$ is the cosine of the incident angle):
-\begin{equation}
-\mathbf{F}_{\mathrm{Schlick}}(\mu) = \mathbf{F}_0 + (1 - \mathbf{F}_0) (1 - \mu)^5 \ .
+The metallic Fresnel factor $\mathbf{F}_{\mathrm{metal}}(\mu)$ is that of a smooth conductor, evaluated per color channel (or per wavelength in a spectral renderer, see below). For a conductor with complex IOR $\tilde{n} = n + i\,k$ relative to the surrounding medium, the Fresnel factor for unpolarized light at incident angle cosine $\mu$ is
+\begin{equation} \label{conductor_fresnel}
+F_\mathrm{conductor}(\mu;\, \tilde{n}) = \frac{1}{2} \left( \left| \frac{\mu - \tilde{n} \mu_t}{\mu + \tilde{n} \mu_t} \right|^2 + \left| \frac{\tilde{n} \mu - \mu_t}{\tilde{n} \mu + \mu_t} \right|^2 \right) \ , \quad \mathrm{with} \quad \mu_t = \sqrt{1 - (1 - \mu^2)/\tilde{n}^2} \ .
 \end{equation}
-To better approximate the actual Fresnel curve of metals, in the F82-tint model the Schlick approximation is augmented [^avg_fresnel_f82] with a correction term (using the notation of [#Kutz2021]):
-\begin{equation}
-\mathbf{F}_{82}(\mu) = \mathbf{F}_{\mathrm{Schlick}}(\mu) - \mathbf{b} \mu (1 - \mu)^6
+
+The complex IOR of the metal is not itself a parameter. It is determined by the two metal colors, and then modulated by **`specular_weight`**, as follows:
+
+  1. The parameters are the reflectivity at normal incidence $\mathbf{F}_0$, and the edge tint $\mathbf{C}_s$ (equation [metal_colors]).
+  2. These define the reflectivity $\mathbf{F}(\bar{\mu})$ at a grazing angle of about $82^\circ$, as the fraction $\mathbf{C}_s$ of the Schlick approximation's reflectivity there (equation [metal_edge]).
+  3. The complex IOR $\tilde{\mathbf{n}}$ then follows uniquely, in each color channel, as that of the conductor with these two reflectivities (equation [metal_ior]).
+  4. The **`specular_weight`** modulates $\tilde{\mathbf{n}}$ in the same way as the IOR of the dielectric base (equation [modulated_metal_ior]).
+
+The colors $\mathbf{F}_0$ and $\mathbf{C}_s$ are derived from **`base_weight`** * **`base_color`** and **`specular_color`** respectively. They are boosted by $\xi_s = \mathtt{specular\_weight}$ when $\xi_s > 1$, and clamped to $[0,1]$: [^component_wise]
+\begin{equation} \label{metal_colors}
+\mathbf{F}_0 = \min(\beta \, \mathtt{base\_weight} \, \mathtt{base\_color}, 1) \ , \quad \mathbf{C}_s = \min(\beta \, \mathtt{specular\_color}, 1) \ , \quad \beta = \max(\xi_s, 1) \ .
 \end{equation}
-where
-\begin{equation} \label{f82_b_coeff}
-    \mathbf{b} =  \frac{\mathbf{F}_{\mathrm{Schlick}}(\bar{\mu}) - \mathbf{F}(\bar{\mu})}{\bar{\mu}(1 - \bar{\mu})^6} \ .
-\end{equation}
-Here $\mathbf{F}(\bar{\mu})$ is the desired metallic reflectivity at the "grazing edge" angle cosine $\bar{\mu} = 1/7$ corresponding roughly to $82^\circ$ (i.e. around silhouettes), ensuring $\mathbf{F}_{82}(\bar{\mu}) = \mathbf{F}(\bar{\mu})$. This desired edge reflectivity is user-specified as a fractional tint of the Schlick curve, controlled via $\mathbf{C}_s$ (derived from **`specular_color`** as in equation [metal_colors]), i.e.
-\begin{equation}
+Following [#Hoffman2019], the edge tint $\mathbf{C}_s$ specifies the reflectivity at the "grazing edge" angle cosine $\bar{\mu} = 1/7$, corresponding roughly to $82^\circ$ (i.e. around silhouettes), as a fraction of the standard Schlick approximation $\mathbf{F}_{\mathrm{Schlick}}(\mu) = \mathbf{F}_0 + (1 - \mathbf{F}_0) (1 - \mu)^5$:
+\begin{equation} \label{metal_edge}
 \mathbf{F}(\bar{\mu}) = \mathbf{C}_s \, \mathbf{F}_\mathrm{Schlick}(\bar{\mu}) \ .
 \end{equation}
+In each channel, the complex IOR $\tilde{n}$ of the metal is then that of the conductor which reproduces both reflectivities:
+\begin{equation} \label{metal_ior}
+F_\mathrm{conductor}(1;\, \tilde{n}) = F_0 \ , \quad F_\mathrm{conductor}(\bar{\mu};\, \tilde{n}) = F(\bar{\mu}) \ .
+\end{equation}
+It is convenient to work with the reflection amplitude at normal incidence, $R_0 = (\tilde{n} - 1)/(\tilde{n} + 1)$, in terms of which $\tilde{n} = (1 + R_0)/(1 - R_0)$ and $F_\mathrm{conductor}(1;\, \tilde{n}) = |R_0|^2$. The first condition of equation [metal_ior] fixes the magnitude $|R_0| = \sqrt{F_0}$, and the second then fixes its phase uniquely, in the range $[0, \pi]$ (since $k \ge 0$). The solution is given to a good approximation by [^metal_ior_inversion]
+\begin{equation} \label{metal_R0}
+R_0 = x + i \sqrt{F_0 - x^2} \ , \quad x = \frac{1 + F_0}{2\,(1 - \bar{\mu}^2)} \sqrt{\frac{p\,(m - F p)}{1 - F}} \ ,
+\end{equation}
+where $F = F(\bar{\mu})$, $p = 1 + \bar{\mu}^2 + 2a$, $m = 1 + \bar{\mu}^2 - 2a$ and $a = \bar{\mu}\,(1 - F_0)/(1 + F_0)$. The lowest reflectivity at $\bar{\mu}$ that any material with this $F_0$ can have is that of the dielectric ($k = 0$) with $R_0 = \sqrt{F_0}$, i.e. $n = (1 + \sqrt{F_0})/(1 - \sqrt{F_0})$. If $F(\bar{\mu})$ is lower than this, no conductor matches it, and this dielectric is used instead, so $x$ is limited to at most $\sqrt{F_0}$. This only occurs if $C_s$ is below a minimum value, which is between about $0.6$ and $0.97$ for $F_0$ between $0.3$ and $0.99$, below the range of real metals.
 
-The final metallic Fresnel term is then
+The **`specular_weight`** then modulates the complex IOR in the same way as the IOR of the dielectric base (equation [modulated_ior]). With $w = \min(\xi_s, 1)$, the amplitude $R_0$ is scaled by $\sqrt{w}$:
+\begin{equation} \label{modulated_metal_ior}
+\tilde{n}^\prime = \frac{1 + \sqrt{w}\, R_0}{1 - \sqrt{w}\, R_0} \ .
+\end{equation}
+This scales the reflectivity at normal incidence to $w F_0$ while keeping the phase of $R_0$, just as equation [modulated_ior] keeps the sign of the (real) amplitude of the dielectric. The modulated metal is thus always a physical conductor, and as $\xi_s \rightarrow 0$ it fades out by becoming index-matched to the surrounding medium ($\tilde{\mathbf{n}}^\prime \rightarrow 1$), as the dielectric does, so that a [thin film](index.html#model/thin-filmiridescence) on the metal becomes a free-standing film. The final metallic Fresnel factor is that of the modulated conductor: [^avg_fresnel_metal]
 \begin{equation} \label{metal_fresnel}
-\mathbf{F}_{\mathrm{metal}}(\mu) = \min(\xi_s, 1) \, \max\bigl(\mathbf{F}_{82}(\mu), 0\bigr) \ ,
+\mathbf{F}_{\mathrm{metal}}(\mu) = F_\mathrm{conductor}(\mu;\, \tilde{\mathbf{n}}^\prime) \ .
 \end{equation}
-where $\xi_s = \mathtt{specular\_weight}$, and the colors $\mathbf{F}_0$ and $\mathbf{C}_s$ are boosted by $\xi_s$ when $\xi_s > 1$, and clamped to $[0,1]$: [^component_wise]
-\begin{equation} \label{metal_colors}
-\mathbf{F}_0 = \min(k \, \mathtt{base\_weight} \, \mathtt{base\_color}, 1) \ , \quad \mathbf{C}_s = \min(k \, \mathtt{specular\_color}, 1) \ , \quad k = \max(\xi_s, 1) \ .
-\end{equation}
-Thus for $\xi_s \le 1$ the weight simply scales the entire Fresnel curve, so that the metallic lobe vanishes as $\xi_s \rightarrow 0$. For $\xi_s > 1$, scaling the curve directly would produce reflectivities greater than one, so instead the colors are boosted. The result remains a valid F82-tint curve, which is bounded above by one, and tends to a perfect (white) mirror as $\xi_s \rightarrow \infty$, for non-zero colors (since the boost is multiplicative, a channel which is zero in **`base_color`** or **`specular_color`** remains zero for any $\xi_s$). [^metal_weight_f90]
-The clamp at zero is needed since $\mathbf{F}_{82}(\mu)$ can become negative for some values of $\mu$, which is not physically meaningful [#Hoffman2019].
+At $\xi_s = 1$, this passes exactly through both colors, $\mathbf{F}_0$ at normal incidence and $\mathbf{F}(\bar{\mu})$ at $\bar{\mu}$. [^f82_tint_model] As for the dielectric, the reflectivity of the modulated metal still rises to one at grazing incidence, so this is not an even scaling of the whole Fresnel curve.
 
-This formulation has the useful property that it reduces to the regular Schlick reflectivity at the default values of **`specular_weight`** and **`base_weight`** * **`base_color`**.
-Note that the edge cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
+For $\xi_s > 1$, scaling the reflectivity directly would produce reflectivities greater than one, so instead the colors are boosted (equation [metal_colors]). The result remains a physical conductor, which tends to a perfect (white) mirror as $\xi_s \rightarrow \infty$, for non-zero **`base_color`** (since the boost is multiplicative, a channel which is zero in **`base_color`** remains zero for any $\xi_s$).
+
+For real metals, this Fresnel factor reproduces the measured curve very closely in each channel, since a real metal is a conductor with exactly these two reflectivities at each wavelength. It also makes the metal a well-defined physical substrate for the thin film, whose reflectance depends on the amplitude and phase of the reflection from the metal.
+
+In a spectral renderer, the two colors are converted to reflectance spectra $F_0(\lambda)$ and $F(\bar{\mu}; \lambda)$, using any suitable spectral uplifting, and equation [metal_ior], equation [modulated_metal_ior] and equation [metal_fresnel] are applied at each wavelength. Since reflectivities average linearly over the spectrum, this reproduces both colors at normal incidence and at $\bar{\mu}$. Applying the equations per RGB channel instead is an approximation to this spectral result away from normal incidence (most noticeably under a thin film).
+
+At the default **`specular_color`**, the edge reflectivity is that of the Schlick approximation, and the metallic Fresnel factor is then very close to the regular Schlick reflectivity (within $0.005$ at the default **`base_color`**). Note that the edge reflectivity at $\bar{\mu}$ cannot be brighter than the standard Schlick term, but this is generally true in real metals. We consider this a benefit of this parametrization, as it makes it impossible to produce physically implausible metals with excessively bright edges.
 
 The **`specular_retroreflectivity`** mixes the metallic BRDF with the [retroreflective](index.html#model/microfacetmodel/retroreflectivity) modification of the microfacet model.
 
@@ -573,7 +589,7 @@ Metal params                        | Label             | Type     | Range      
 ------------------------------------|-------------------|----------|:---------------:|:-------------:|:-------------------:|----------------------------------------------
 **`base_weight`**                   | Weight            | `float`  | $ [0, 1]      $ |               | $ 1               $ | Scalar multiplier to **`base_color`**
 **`base_color`**                    | Color             | `color3` | $ [0, 1]^3    $ |               | $ (0.8, 0.8, 0.8) $ | Color of Fresnel reflection albedo at normal incidence, $\mathbf{F}_0$
-**`specular_weight`**               | Weight            | `float`  | $ [0, \infty) $ |  $ [0, 1] $   | $ 1               $ | Multiplier of the metal Fresnel (boosts the Fresnel colors above 1)
+**`specular_weight`**               | Weight            | `float`  | $ [0, \infty) $ |  $ [0, 1] $   | $ 1               $ | Modulates the metal's complex IOR, scaling the reflectivity at normal incidence (boosts the Fresnel colors above 1)
 **`specular_color`**                | Color             | `color3` | $ [0, 1]^3    $ |               | $ (1, 1, 1)       $ | Tint color of metallic Fresnel reflection albedo at near-grazing incidence (i.e. around silhouettes)
 **`specular_roughness`**            | Roughness         | `float`  | $ [0, 1]      $ |               | $ 0.3             $ | Roughness of NDF of BRDF $f_\mathrm{conductor}$
 **`specular_roughness_anisotropy`** | Anisotropy        | `float`  | $ [0, 1]      $ |               | $ 0               $ | Anisotropy of NDF of BRDF $f_\mathrm{conductor}$
@@ -947,9 +963,22 @@ Regardless of which approach is used, several considerations apply:
 
    - In the case of a dielectric base, the thin film should also generate color fringes in the transmission lobe. This is important, for example, when rendering soap bubbles (see [#Belcour2017]).
 
-   - In the case of a metallic base the physics is somewhat ambiguous since, as described in the Metal section, the Fresnel factor for metal is defined according to the Schlick-based "F82-tint" parametrization, which does not specify the underlying physical complex IOR. We suggest that some reasonable approximation is employed to map the Fresnel factor to a best-matching effective complex IOR, for example that described by [#Gulbrandsen2014].
+   - In the case of a metallic base, the film sits on the conductor with the modulated complex IOR $\tilde{\mathbf{n}}^\prime$ of equation [modulated_metal_ior], described in the [Metal](index.html#model/basesubstrate/metallicbase) section.
 
-   - Because the thin film is non-absorbing and interference-based, it only redistributes the probabilities of reflection and transmission; therefore, it should not violate energy conservation. 
+   - Because the thin film is non-absorbing and interference-based, it only redistributes the probabilities of reflection and transmission; therefore, it should not violate energy conservation.
+
+   - The film sits above the base, so **`specular_weight`** modulates the base *beneath* the film, rather than scaling the reflection from the film itself (as detailed below).
+
+The film reflectance $\mathbf{R}_\mathrm{film}(\mu)$ is computed with the film on top of the base, as modulated by $\xi_s$ = **`specular_weight`** in the same way as the base without a film:
+
+   - For a dielectric base, $\xi_s$ modulates the IOR, so the film sits on a substrate with the modulated IOR $\eta^\prime$ of equation [modulated_ior].
+   - For a metallic base, $\xi_s$ modulates the complex IOR, so the film sits on a conductor substrate with the modulated complex IOR $\tilde{\mathbf{n}}^\prime$ of equation [modulated_metal_ior].
+
+In both cases, as the film thickness goes to zero $\mathbf{R}_\mathrm{film}$ reduces exactly to the Fresnel factor of the base without the film, so a vanishingly thin film has no effect. As $\xi_s \rightarrow 0$, the base beneath the film becomes index-matched to the surrounding medium ($\eta^\prime \rightarrow 1$ or $\tilde{\mathbf{n}}^\prime \rightarrow 1$), leaving a free-standing film, whose presence is still controlled by **`thin_film_weight`**. The Fresnel factor of the film-covered base is then the blend (with $T$ = **`thin_film_weight`**)
+\begin{equation} \label{thin_film_fresnel}
+\mathbf{F}(\mu) = (1 - T) \, \mathbf{F}_\textrm{no film}(\mu) + T \, \mathbf{R}_\mathrm{film}(\mu) \ ,
+\end{equation}
+where $\mathbf{F}_\textrm{no film}$ is the Fresnel factor of the base without the film (for the metal, $\mathbf{F}_\mathrm{metal}$). So the film remains present even when $\xi_s = 0$.
 
 ![Figure [ior_configs]: Schematic of all 8 possible IOR configurations, including those involving the thin-film.](images/IOR_configs.svg width="95%" align="center")
 
@@ -1702,6 +1731,8 @@ References
 
 [#Portsmouth2025]: Jamie Portsmouth, Laurent Belcour, Matthias Raab and Francis Liu. *The Minimal Retroreflective Microfacet Model*, to appear (2025)
 
+[#Portsmouth2026]: Jamie Portsmouth. *Physicist Friendly Metallic Fresnel: From F0 and F82 to Spectral Optical Constants*, preparing for submission (2026).
+
 [#Revie2011]: Donald Revie, *Implementing Fur Using Deferred Shading*, GPU Pro 2 (2011).
 
 [#Schott2023]: SCHOTT. [*Interactive Abbe Diagram*](https://www.schott.com/en-gb/interactive-abbe-diagram) (2023).
@@ -1741,15 +1772,21 @@ References
 
 [^anisotropy_g]: Technically, $g$ is the _mean cosine of deflection_ of the phase function, which is not specific to the Henyey--Greenstein phase function model [#d'Eon2021].
 
-[^avg_fresnel_f82]: The *hemispherical albedo* (or *average albedo*) of the F82-tint model, i.e. $\mathbf{E}_\mathrm{avg} \equiv 2 \int_0^1 \mathbf{F}_{82}(\mu) \,\mu\,\mathrm{d}\mu$, is required in multiple scattering compensation schemes, for example. It is given exactly by:
+[^avg_fresnel_metal]: The *hemispherical albedo* (or *average albedo*) of the Fresnel factor, i.e. $\mathbf{E}_\mathrm{avg} \equiv 2 \int_0^1 \mathbf{F}(\mu) \,\mu\,\mathrm{d}\mu$, is required in multiple scattering compensation schemes, for example. For the metal it has no closed form, but it is given to within about $0.02$ for real metals, at any **`specular_weight`**, by the albedo of the Schlick approximation with a correction term chosen to pass through the same reflectivities at normal incidence and at $\bar{\mu}$:
 \begin{equation}
-   \mathbf{E}_\mathrm{avg} = \mathbf{F}_0 + (\mathbf{1} - \mathbf{F}_0)/21 - \mathbf{b}/126 \ .
+   \mathbf{E}_\mathrm{avg} \approx \mathbf{F}^\prime_0 + (\mathbf{1} - \mathbf{F}^\prime_0)/21 - \mathbf{b}/126 \ , \quad \mathbf{b} = \frac{\mathbf{F}^\prime_\mathrm{Schlick}(\bar{\mu}) - \mathbf{F}_\mathrm{metal}(\bar{\mu})}{\bar{\mu}(1 - \bar{\mu})^6} \ ,
 \end{equation}
-where $\mathbf{b}$ is defined in equation [f82_b_coeff]. If both $\mathbf{F}_0$ = **`base_weight`** * **`base_color`** and $\mathbf{C}_s = \mathtt{specular\_color}$ are white, then $\mathbf{F}_0 = \mathbf{1}$ and $\mathbf{b}= \mathbf{0}$ reducing to $\mathbf{E}_\mathrm{avg} = \mathbf{1}$, thus the metal satisfies the furnace test in this case. Note however that $\mathbf{F}_{82}(\mu)$ can be slightly negative (for very dark metals), thus it is necessary to clamp it. The albedo of the clamped Fresnel is not exactly given by clamping the formula above, but it is very close (never more than 0.01 incorrect in absolute albedo).
+where $\mathbf{F}^\prime_0 = w \mathbf{F}_0$, and $\mathbf{F}^\prime_\mathrm{Schlick}$ is the Schlick approximation with reflectivity $\mathbf{F}^\prime_0$ at normal incidence. If both $\mathbf{F}_0$ and $\mathbf{C}_s$ are white and $\xi_s = 1$, then the metal is a perfect mirror and $\mathbf{E}_\mathrm{avg} = \mathbf{1}$, thus the metal satisfies the furnace test in this case.
+
+[^f82_tint_model]: At $\xi_s = 1$, the metal is close in appearance to the "F82-tint" model of [#Kutz2021] (extending [#Hoffman2019]) used in earlier versions of this specification, which passes through the same two reflectivities by adding a correction term to the Schlick approximation. For real metals the two differ by about $0.005$ to $0.05$ in reflectivity, most of all close to grazing incidence.
+
+[^metal_ior_inversion]: Equation [metal_R0] solves equation [metal_ior] exactly in the surface-impedance approximation of the Fresnel factor, which holds for good conductors ($|\tilde{n}| \gg 1$) [#Portsmouth2026]. It is accurate to about $0.005$ in reflectivity for typical metals, and can be made exact by a few Newton steps along the circle $|R_0| = \sqrt{F_0}$. With $v = \cos(\phi/2)$, where $\phi$ is the phase of $R_0$, so that $R_0 = \sqrt{F_0}\,\bigl(v + i\sqrt{1 - v^2}\bigr)^2$, start from $v = \sqrt{(1 + x/\sqrt{F_0})/2}$ and iterate
+\begin{equation}
+   v \leftarrow \mathrm{clamp}\bigl(v - G(v)/G^\prime(v), \, 0, \, 1\bigr) \ , \quad G(v) = F_\mathrm{conductor}\bigl(\bar{\mu};\, \tilde{n}(v)\bigr) - F(\bar{\mu}) \ ,
+\end{equation}
+with $G^\prime$ evaluated by a finite difference. For $F_0 \ge 0.02$, two steps give an error below $10^{-4}$ in reflectivity at every angle, and three steps below $10^{-5}$. Inputs that no conductor matches converge to $v = 1$.
 
 [^component_wise]: Note that in this concise notation, the scalar denotes a constant vector.
-
-[^metal_weight_f90]: Equivalently, since $\mathbf{C}_s$ is defined relative to the Schlick curve, implementations with a generalized Schlick Fresnel may instead take $\mathbf{F}_0 = \min(\xi_s \, \mathtt{base\_weight} \, \mathtt{base\_color}, 1)$ and $\mathbf{F}_{90} = \min(\xi_s, 1)$ (with $\mathbf{C}_s$ as in equation [metal_colors]), and no overall weight.
 
 [^Oren_Nayar_formula]: The $s$ term is given by (with normal $\mathbf{n}$):
 \begin{eqnarray*}

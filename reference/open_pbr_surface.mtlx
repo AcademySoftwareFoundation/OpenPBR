@@ -616,8 +616,8 @@
       <input name="in1" type="color3" nodename="base_color_clamped" />
       <input name="in2" type="float" nodename="base_weight_clamped" />
     </multiply>
-    <!-- specular_weight <= 1 scales the whole metal lobe, while specular_weight > 1
-         boosts the F0 and F82 colors (each clamped to [0, 1]) -->
+    <!-- specular_weight > 1 boosts the metal colors (each clamped to [0, 1]), while w = min(specular_weight, 1)
+         modulates the metal's complex IOR -->
     <min name="metal_weight" type="float">
       <input name="in1" type="float" nodename="specular_weight_nonnegative" />
       <input name="in2" type="float" value="1.0" />
@@ -634,32 +634,104 @@
       <input name="in1" type="color3" nodename="metal_F0_boosted" />
       <input name="in2" type="float" value="1.0" />
     </min>
-    <multiply name="metal_F82_boosted" type="color3">
+    <multiply name="metal_tint_boosted" type="color3">
       <input name="in1" type="color3" nodename="specular_color_clamped" />
       <input name="in2" type="float" nodename="metal_boost" />
     </multiply>
-    <min name="metal_F82" type="color3">
-      <input name="in1" type="color3" nodename="metal_F82_boosted" />
+    <min name="metal_tint" type="color3">
+      <input name="in1" type="color3" nodename="metal_tint_boosted" />
       <input name="in2" type="float" value="1.0" />
     </min>
-    <generalized_schlick_bsdf name="metal_bsdf" type="BSDF">
-      <input name="weight" type="float" nodename="metal_weight" />
-      <input name="color0" type="color3" nodename="metal_F0" />
-      <input name="color82" type="color3" nodename="metal_F82" />
+    <!-- The metal is the conductor with reflectance metal_F0 at normal incidence and metal_tint times the Schlick
+         reflectance at the grazing angle cosine 1/7 (about 82 degrees). Its normal-incidence reflection amplitude is
+         R0 = sqrt(F0) (cos phi + i sin phi). specular_weight scales R0 by sqrt(w), keeping its phase, and the modulated
+         complex IOR is then (1 + R0')/(1 - R0'), whose real part simplifies to (1 - w F0)/|1 - R0'|^2. -->
+    <open_pbr_metal_phase name="metal_phase_cosine" type="color3">
+      <input name="F0" type="color3" nodename="metal_F0" />
+      <input name="tint" type="color3" nodename="metal_tint" />
+    </open_pbr_metal_phase>
+    <clamp name="metal_F0_safe" type="color3">
+      <input name="in" type="color3" nodename="metal_F0" />
+      <input name="low" type="float" value="0.0001" />
+      <input name="high" type="float" value="0.9999" />
+    </clamp>
+    <multiply name="metal_F0_modulated" type="color3">
+      <input name="in1" type="color3" nodename="metal_F0_safe" />
+      <input name="in2" type="float" nodename="metal_weight" />
+    </multiply>
+    <power name="metal_R0_magnitude" type="color3">
+      <input name="in1" type="color3" nodename="metal_F0_modulated" />
+      <input name="in2" type="float" value="0.5" />
+    </power>
+    <multiply name="metal_phase_cosine_sq" type="color3">
+      <input name="in1" type="color3" nodename="metal_phase_cosine" />
+      <input name="in2" type="color3" nodename="metal_phase_cosine" />
+    </multiply>
+    <invert name="metal_phase_sine_sq" type="color3">
+      <input name="in" type="color3" nodename="metal_phase_cosine_sq" />
+    </invert>
+    <max name="metal_phase_sine_sq_pos" type="color3">
+      <input name="in1" type="color3" nodename="metal_phase_sine_sq" />
+      <input name="in2" type="float" value="0.0" />
+    </max>
+    <power name="metal_phase_sine" type="color3">
+      <input name="in1" type="color3" nodename="metal_phase_sine_sq_pos" />
+      <input name="in2" type="float" value="0.5" />
+    </power>
+    <multiply name="metal_R0_real" type="color3">
+      <input name="in1" type="color3" nodename="metal_R0_magnitude" />
+      <input name="in2" type="color3" nodename="metal_phase_cosine" />
+    </multiply>
+    <multiply name="metal_R0_imag" type="color3">
+      <input name="in1" type="color3" nodename="metal_R0_magnitude" />
+      <input name="in2" type="color3" nodename="metal_phase_sine" />
+    </multiply>
+    <invert name="metal_one_minus_R0_real" type="color3">
+      <input name="in" type="color3" nodename="metal_R0_real" />
+    </invert>
+    <multiply name="metal_one_minus_R0_real_sq" type="color3">
+      <input name="in1" type="color3" nodename="metal_one_minus_R0_real" />
+      <input name="in2" type="color3" nodename="metal_one_minus_R0_real" />
+    </multiply>
+    <multiply name="metal_R0_imag_sq" type="color3">
+      <input name="in1" type="color3" nodename="metal_R0_imag" />
+      <input name="in2" type="color3" nodename="metal_R0_imag" />
+    </multiply>
+    <add name="metal_ior_denom" type="color3">
+      <input name="in1" type="color3" nodename="metal_one_minus_R0_real_sq" />
+      <input name="in2" type="color3" nodename="metal_R0_imag_sq" />
+    </add>
+    <invert name="metal_one_minus_F0_modulated" type="color3">
+      <input name="in" type="color3" nodename="metal_F0_modulated" />
+    </invert>
+    <divide name="metal_ior" type="color3">
+      <input name="in1" type="color3" nodename="metal_one_minus_F0_modulated" />
+      <input name="in2" type="color3" nodename="metal_ior_denom" />
+    </divide>
+    <multiply name="metal_two_R0_imag" type="color3">
+      <input name="in1" type="color3" nodename="metal_R0_imag" />
+      <input name="in2" type="float" value="2.0" />
+    </multiply>
+    <divide name="metal_extinction" type="color3">
+      <input name="in1" type="color3" nodename="metal_two_R0_imag" />
+      <input name="in2" type="color3" nodename="metal_ior_denom" />
+    </divide>
+    <conductor_bsdf name="metal_bsdf" type="BSDF">
+      <input name="ior" type="color3" nodename="metal_ior" />
+      <input name="extinction" type="color3" nodename="metal_extinction" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" interfacename="geometry_tangent" />
-    </generalized_schlick_bsdf>
-    <generalized_schlick_bsdf name="metal_bsdf_tf" type="BSDF">
-      <input name="weight" type="float" nodename="metal_weight" />
-      <input name="color0" type="color3" nodename="metal_F0" />
-      <input name="color82" type="color3" nodename="metal_F82" />
+    </conductor_bsdf>
+    <conductor_bsdf name="metal_bsdf_tf" type="BSDF">
+      <input name="ior" type="color3" nodename="metal_ior" />
+      <input name="extinction" type="color3" nodename="metal_extinction" />
       <input name="roughness" type="vector2" nodename="main_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" interfacename="geometry_tangent" />
       <input name="thinfilm_thickness" type="float" nodename="thin_film_thickness_nm" />
       <input name="thinfilm_ior" type="float" nodename="thin_film_ior_nonnegative" />
-    </generalized_schlick_bsdf>
+    </conductor_bsdf>
     <mix name="metal_bsdf_tf_mix" type="BSDF">
       <input name="fg" type="BSDF" nodename="metal_bsdf_tf" />
       <input name="bg" type="BSDF" nodename="metal_bsdf" />
@@ -667,24 +739,22 @@
     </mix>
 
     <!-- Metal Haze -->
-    <generalized_schlick_bsdf name="metal_bsdf_haze" type="BSDF">
-      <input name="weight" type="float" nodename="metal_weight" />
-      <input name="color0" type="color3" nodename="metal_F0" />
-      <input name="color82" type="color3" nodename="metal_F82" />
+    <conductor_bsdf name="metal_bsdf_haze" type="BSDF">
+      <input name="ior" type="color3" nodename="metal_ior" />
+      <input name="extinction" type="color3" nodename="metal_extinction" />
       <input name="roughness" type="vector2" nodename="haze_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" interfacename="geometry_tangent" />
-    </generalized_schlick_bsdf>
-    <generalized_schlick_bsdf name="metal_bsdf_haze_tf" type="BSDF">
-      <input name="weight" type="float" nodename="metal_weight" />
-      <input name="color0" type="color3" nodename="metal_F0" />
-      <input name="color82" type="color3" nodename="metal_F82" />
+    </conductor_bsdf>
+    <conductor_bsdf name="metal_bsdf_haze_tf" type="BSDF">
+      <input name="ior" type="color3" nodename="metal_ior" />
+      <input name="extinction" type="color3" nodename="metal_extinction" />
       <input name="roughness" type="vector2" nodename="haze_roughness" />
       <input name="normal" type="vector3" interfacename="geometry_normal" />
       <input name="tangent" type="vector3" interfacename="geometry_tangent" />
       <input name="thinfilm_thickness" type="float" nodename="thin_film_thickness_nm" />
       <input name="thinfilm_ior" type="float" nodename="thin_film_ior_nonnegative" />
-    </generalized_schlick_bsdf>
+    </conductor_bsdf>
     <mix name="metal_bsdf_haze_tf_mix" type="BSDF">
       <input name="fg" type="BSDF" nodename="metal_bsdf_haze_tf" />
       <input name="bg" type="BSDF" nodename="metal_bsdf_haze" />
@@ -928,6 +998,468 @@
       <input name="in2" type="float" nodename="alpha_y" />
     </combine2>
     <output name="out" type="vector2" nodename="result" />
+  </nodegraph>
+
+  <!--
+    OpenPBR metal phase node definition
+  -->
+  <nodedef name="ND_open_pbr_metal_phase" node="open_pbr_metal_phase" nodegroup="pbr"
+           doc="Cosine of the phase of the normal-incidence reflection amplitude R0 = (n - 1)/(n + 1) of the conductor with reflectance F0 at normal incidence and tint times the Schlick reflectance at the grazing angle cosine 1/7 (per channel), as defined in the OpenPBR specification.">
+    <input name="F0" type="color3" value="0.8, 0.8, 0.8" />
+    <input name="tint" type="color3" value="1.0, 1.0, 1.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <!--
+    OpenPBR metal phase graph definition
+  -->
+  <nodegraph name="NG_open_pbr_metal_phase" nodedef="ND_open_pbr_metal_phase">
+    <clamp name="F0_safe" type="color3">
+      <input name="in" type="color3" interfacename="F0" />
+      <input name="low" type="float" value="0.0001" />
+      <input name="high" type="float" value="0.9999" />
+    </clamp>
+    <power name="amplitude" type="color3">
+      <input name="in1" type="color3" nodename="F0_safe" />
+      <input name="in2" type="float" value="0.5" />
+    </power>
+    <!-- Reflectance at the grazing angle cosine 1/7: the edge tint times the Schlick reflectance there -->
+    <invert name="one_minus_F0" type="color3">
+      <input name="in" type="color3" nodename="F0_safe" />
+    </invert>
+    <multiply name="schlick_term" type="color3">
+      <input name="in1" type="color3" nodename="one_minus_F0" />
+      <input name="in2" type="float" value="0.4626643660" />
+    </multiply>
+    <add name="schlick" type="color3">
+      <input name="in1" type="color3" nodename="F0_safe" />
+      <input name="in2" type="color3" nodename="schlick_term" />
+    </add>
+    <multiply name="F82" type="color3">
+      <input name="in1" type="color3" interfacename="tint" />
+      <input name="in2" type="color3" nodename="schlick" />
+    </multiply>
+    <!-- Closed form, exact in the good-conductor (surface-impedance) limit: Re(R0) = x, with
+         x = (1 + F0)/(2 (1 - c^2)) sqrt(p (m - F82 p)/(1 - F82)), p, m = 1 + c^2 +/- 2a, a = c (1 - F0)/(1 + F0), c = 1/7 -->
+    <add name="one_plus_F0" type="color3">
+      <input name="in1" type="color3" nodename="F0_safe" />
+      <input name="in2" type="float" value="1.0" />
+    </add>
+    <divide name="a_ratio" type="color3">
+      <input name="in1" type="color3" nodename="one_minus_F0" />
+      <input name="in2" type="color3" nodename="one_plus_F0" />
+    </divide>
+    <multiply name="two_a" type="color3">
+      <input name="in1" type="color3" nodename="a_ratio" />
+      <input name="in2" type="float" value="0.2857142857" />
+    </multiply>
+    <add name="p" type="color3">
+      <input name="in1" type="color3" nodename="two_a" />
+      <input name="in2" type="float" value="1.020408163" />
+    </add>
+    <subtract name="m" type="color3">
+      <input name="in1" type="color3" value="1.020408163, 1.020408163, 1.020408163" />
+      <input name="in2" type="color3" nodename="two_a" />
+    </subtract>
+    <multiply name="F82_p" type="color3">
+      <input name="in1" type="color3" nodename="F82" />
+      <input name="in2" type="color3" nodename="p" />
+    </multiply>
+    <subtract name="m_minus_F82_p" type="color3">
+      <input name="in1" type="color3" nodename="m" />
+      <input name="in2" type="color3" nodename="F82_p" />
+    </subtract>
+    <multiply name="p_m_minus_F82_p" type="color3">
+      <input name="in1" type="color3" nodename="p" />
+      <input name="in2" type="color3" nodename="m_minus_F82_p" />
+    </multiply>
+    <invert name="one_minus_F82" type="color3">
+      <input name="in" type="color3" nodename="F82" />
+    </invert>
+    <max name="one_minus_F82_safe" type="color3">
+      <input name="in1" type="color3" nodename="one_minus_F82" />
+      <input name="in2" type="float" value="0.000001" />
+    </max>
+    <divide name="radicand" type="color3">
+      <input name="in1" type="color3" nodename="p_m_minus_F82_p" />
+      <input name="in2" type="color3" nodename="one_minus_F82_safe" />
+    </divide>
+    <max name="radicand_pos" type="color3">
+      <input name="in1" type="color3" nodename="radicand" />
+      <input name="in2" type="float" value="0.0" />
+    </max>
+    <power name="radicand_sqrt" type="color3">
+      <input name="in1" type="color3" nodename="radicand_pos" />
+      <input name="in2" type="float" value="0.5" />
+    </power>
+    <multiply name="x_scale" type="color3">
+      <input name="in1" type="color3" nodename="one_plus_F0" />
+      <input name="in2" type="float" value="0.5104166667" />
+    </multiply>
+    <multiply name="R0_real" type="color3">
+      <input name="in1" type="color3" nodename="x_scale" />
+      <input name="in2" type="color3" nodename="radicand_sqrt" />
+    </multiply>
+    <!-- Starting value of v = cos(phi/2) = sqrt((1 + cos phi)/2); x > sqrt(F0), where no conductor matches F82, gives v = 1 -->
+    <divide name="cosine_estimate" type="color3">
+      <input name="in1" type="color3" nodename="R0_real" />
+      <input name="in2" type="color3" nodename="amplitude" />
+    </divide>
+    <add name="one_plus_cosine" type="color3">
+      <input name="in1" type="color3" nodename="cosine_estimate" />
+      <input name="in2" type="float" value="1.0" />
+    </add>
+    <multiply name="half_one_plus_cosine" type="color3">
+      <input name="in1" type="color3" nodename="one_plus_cosine" />
+      <input name="in2" type="float" value="0.5" />
+    </multiply>
+    <clamp name="half_one_plus_cosine_clamped" type="color3">
+      <input name="in" type="color3" nodename="half_one_plus_cosine" />
+      <input name="low" type="float" value="0.0" />
+      <input name="high" type="float" value="1.0" />
+    </clamp>
+    <power name="v0" type="color3">
+      <input name="in1" type="color3" nodename="half_one_plus_cosine_clamped" />
+      <input name="in2" type="float" value="0.5" />
+    </power>
+    <!-- Three Newton steps on v, matching the reflectance at the grazing angle exactly (the derivative by a backward difference) -->
+    <open_pbr_conductor_edge name="edge1" type="color3">
+      <input name="amplitude" type="color3" nodename="amplitude" />
+      <input name="half_phase_cosine" type="color3" nodename="v0" />
+    </open_pbr_conductor_edge>
+    <subtract name="g1" type="color3">
+      <input name="in1" type="color3" nodename="edge1" />
+      <input name="in2" type="color3" nodename="F82" />
+    </subtract>
+    <subtract name="v_back1" type="color3">
+      <input name="in1" type="color3" nodename="v0" />
+      <input name="in2" type="float" value="0.001" />
+    </subtract>
+    <open_pbr_conductor_edge name="edge_back1" type="color3">
+      <input name="amplitude" type="color3" nodename="amplitude" />
+      <input name="half_phase_cosine" type="color3" nodename="v_back1" />
+    </open_pbr_conductor_edge>
+    <subtract name="edge_diff1" type="color3">
+      <input name="in1" type="color3" nodename="edge1" />
+      <input name="in2" type="color3" nodename="edge_back1" />
+    </subtract>
+    <multiply name="slope_raw1" type="color3">
+      <input name="in1" type="color3" nodename="edge_diff1" />
+      <input name="in2" type="float" value="1000.0" />
+    </multiply>
+    <min name="slope1" type="color3">
+      <input name="in1" type="color3" nodename="slope_raw1" />
+      <input name="in2" type="float" value="-0.000000001" />
+    </min>
+    <divide name="step1" type="color3">
+      <input name="in1" type="color3" nodename="g1" />
+      <input name="in2" type="color3" nodename="slope1" />
+    </divide>
+    <subtract name="v_unclamped1" type="color3">
+      <input name="in1" type="color3" nodename="v0" />
+      <input name="in2" type="color3" nodename="step1" />
+    </subtract>
+    <clamp name="v1" type="color3">
+      <input name="in" type="color3" nodename="v_unclamped1" />
+      <input name="low" type="float" value="0.001" />
+      <input name="high" type="float" value="1.0" />
+    </clamp>
+    <open_pbr_conductor_edge name="edge2" type="color3">
+      <input name="amplitude" type="color3" nodename="amplitude" />
+      <input name="half_phase_cosine" type="color3" nodename="v1" />
+    </open_pbr_conductor_edge>
+    <subtract name="g2" type="color3">
+      <input name="in1" type="color3" nodename="edge2" />
+      <input name="in2" type="color3" nodename="F82" />
+    </subtract>
+    <subtract name="v_back2" type="color3">
+      <input name="in1" type="color3" nodename="v1" />
+      <input name="in2" type="float" value="0.001" />
+    </subtract>
+    <open_pbr_conductor_edge name="edge_back2" type="color3">
+      <input name="amplitude" type="color3" nodename="amplitude" />
+      <input name="half_phase_cosine" type="color3" nodename="v_back2" />
+    </open_pbr_conductor_edge>
+    <subtract name="edge_diff2" type="color3">
+      <input name="in1" type="color3" nodename="edge2" />
+      <input name="in2" type="color3" nodename="edge_back2" />
+    </subtract>
+    <multiply name="slope_raw2" type="color3">
+      <input name="in1" type="color3" nodename="edge_diff2" />
+      <input name="in2" type="float" value="1000.0" />
+    </multiply>
+    <min name="slope2" type="color3">
+      <input name="in1" type="color3" nodename="slope_raw2" />
+      <input name="in2" type="float" value="-0.000000001" />
+    </min>
+    <divide name="step2" type="color3">
+      <input name="in1" type="color3" nodename="g2" />
+      <input name="in2" type="color3" nodename="slope2" />
+    </divide>
+    <subtract name="v_unclamped2" type="color3">
+      <input name="in1" type="color3" nodename="v1" />
+      <input name="in2" type="color3" nodename="step2" />
+    </subtract>
+    <clamp name="v2" type="color3">
+      <input name="in" type="color3" nodename="v_unclamped2" />
+      <input name="low" type="float" value="0.001" />
+      <input name="high" type="float" value="1.0" />
+    </clamp>
+    <open_pbr_conductor_edge name="edge3" type="color3">
+      <input name="amplitude" type="color3" nodename="amplitude" />
+      <input name="half_phase_cosine" type="color3" nodename="v2" />
+    </open_pbr_conductor_edge>
+    <subtract name="g3" type="color3">
+      <input name="in1" type="color3" nodename="edge3" />
+      <input name="in2" type="color3" nodename="F82" />
+    </subtract>
+    <subtract name="v_back3" type="color3">
+      <input name="in1" type="color3" nodename="v2" />
+      <input name="in2" type="float" value="0.001" />
+    </subtract>
+    <open_pbr_conductor_edge name="edge_back3" type="color3">
+      <input name="amplitude" type="color3" nodename="amplitude" />
+      <input name="half_phase_cosine" type="color3" nodename="v_back3" />
+    </open_pbr_conductor_edge>
+    <subtract name="edge_diff3" type="color3">
+      <input name="in1" type="color3" nodename="edge3" />
+      <input name="in2" type="color3" nodename="edge_back3" />
+    </subtract>
+    <multiply name="slope_raw3" type="color3">
+      <input name="in1" type="color3" nodename="edge_diff3" />
+      <input name="in2" type="float" value="1000.0" />
+    </multiply>
+    <min name="slope3" type="color3">
+      <input name="in1" type="color3" nodename="slope_raw3" />
+      <input name="in2" type="float" value="-0.000000001" />
+    </min>
+    <divide name="step3" type="color3">
+      <input name="in1" type="color3" nodename="g3" />
+      <input name="in2" type="color3" nodename="slope3" />
+    </divide>
+    <subtract name="v_unclamped3" type="color3">
+      <input name="in1" type="color3" nodename="v2" />
+      <input name="in2" type="color3" nodename="step3" />
+    </subtract>
+    <clamp name="v3" type="color3">
+      <input name="in" type="color3" nodename="v_unclamped3" />
+      <input name="low" type="float" value="0.001" />
+      <input name="high" type="float" value="1.0" />
+    </clamp>
+    <!-- cos(phi) = 2 v^2 - 1 -->
+    <multiply name="v_sq" type="color3">
+      <input name="in1" type="color3" nodename="v3" />
+      <input name="in2" type="color3" nodename="v3" />
+    </multiply>
+    <multiply name="two_v_sq" type="color3">
+      <input name="in1" type="color3" nodename="v_sq" />
+      <input name="in2" type="float" value="2.0" />
+    </multiply>
+    <subtract name="phase_cosine" type="color3">
+      <input name="in1" type="color3" nodename="two_v_sq" />
+      <input name="in2" type="float" value="1.0" />
+    </subtract>
+    <output name="out" type="color3" nodename="phase_cosine" />
+  </nodegraph>
+
+  <!--
+    OpenPBR conductor edge reflectance node definition
+  -->
+  <nodedef name="ND_open_pbr_conductor_edge" node="open_pbr_conductor_edge" nodegroup="pbr"
+           doc="Reflectance at the grazing angle cosine 1/7 of the conductor whose normal-incidence reflection amplitude is R0 = amplitude (v + i sqrt(1 - v^2))^2, with v = half_phase_cosine (per channel).">
+    <input name="amplitude" type="color3" value="0.5, 0.5, 0.5" />
+    <input name="half_phase_cosine" type="color3" value="1.0, 1.0, 1.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <!--
+    OpenPBR conductor edge reflectance graph definition
+  -->
+  <nodegraph name="NG_open_pbr_conductor_edge" nodedef="ND_open_pbr_conductor_edge">
+    <multiply name="v_sq" type="color3">
+      <input name="in1" type="color3" interfacename="half_phase_cosine" />
+      <input name="in2" type="color3" interfacename="half_phase_cosine" />
+    </multiply>
+    <invert name="one_minus_v_sq" type="color3">
+      <input name="in" type="color3" nodename="v_sq" />
+    </invert>
+    <max name="one_minus_v_sq_pos" type="color3">
+      <input name="in1" type="color3" nodename="one_minus_v_sq" />
+      <input name="in2" type="float" value="0.0" />
+    </max>
+    <power name="half_phase_sine" type="color3">
+      <input name="in1" type="color3" nodename="one_minus_v_sq_pos" />
+      <input name="in2" type="float" value="0.5" />
+    </power>
+    <multiply name="two_v_sq" type="color3">
+      <input name="in1" type="color3" nodename="v_sq" />
+      <input name="in2" type="float" value="2.0" />
+    </multiply>
+    <subtract name="phase_cosine" type="color3">
+      <input name="in1" type="color3" nodename="two_v_sq" />
+      <input name="in2" type="float" value="1.0" />
+    </subtract>
+    <multiply name="v_times_sine" type="color3">
+      <input name="in1" type="color3" interfacename="half_phase_cosine" />
+      <input name="in2" type="color3" nodename="half_phase_sine" />
+    </multiply>
+    <multiply name="phase_sine" type="color3">
+      <input name="in1" type="color3" nodename="v_times_sine" />
+      <input name="in2" type="float" value="2.0" />
+    </multiply>
+    <multiply name="R0_real" type="color3">
+      <input name="in1" type="color3" interfacename="amplitude" />
+      <input name="in2" type="color3" nodename="phase_cosine" />
+    </multiply>
+    <multiply name="R0_imag" type="color3">
+      <input name="in1" type="color3" interfacename="amplitude" />
+      <input name="in2" type="color3" nodename="phase_sine" />
+    </multiply>
+    <!-- Complex IOR n + ik = (1 + R0)/(1 - R0) -->
+    <invert name="one_minus_R0_real" type="color3">
+      <input name="in" type="color3" nodename="R0_real" />
+    </invert>
+    <multiply name="one_minus_R0_real_sq" type="color3">
+      <input name="in1" type="color3" nodename="one_minus_R0_real" />
+      <input name="in2" type="color3" nodename="one_minus_R0_real" />
+    </multiply>
+    <multiply name="R0_imag_sq" type="color3">
+      <input name="in1" type="color3" nodename="R0_imag" />
+      <input name="in2" type="color3" nodename="R0_imag" />
+    </multiply>
+    <add name="denom" type="color3">
+      <input name="in1" type="color3" nodename="one_minus_R0_real_sq" />
+      <input name="in2" type="color3" nodename="R0_imag_sq" />
+    </add>
+    <multiply name="amplitude_sq" type="color3">
+      <input name="in1" type="color3" interfacename="amplitude" />
+      <input name="in2" type="color3" interfacename="amplitude" />
+    </multiply>
+    <invert name="one_minus_amplitude_sq" type="color3">
+      <input name="in" type="color3" nodename="amplitude_sq" />
+    </invert>
+    <divide name="n" type="color3">
+      <input name="in1" type="color3" nodename="one_minus_amplitude_sq" />
+      <input name="in2" type="color3" nodename="denom" />
+    </divide>
+    <multiply name="two_R0_imag" type="color3">
+      <input name="in1" type="color3" nodename="R0_imag" />
+      <input name="in2" type="float" value="2.0" />
+    </multiply>
+    <divide name="k" type="color3">
+      <input name="in1" type="color3" nodename="two_R0_imag" />
+      <input name="in2" type="color3" nodename="denom" />
+    </divide>
+    <!-- Unpolarized Fresnel reflectance of the conductor n + ik at the incident angle cosine c = 1/7 -->
+    <multiply name="n_sq" type="color3">
+      <input name="in1" type="color3" nodename="n" />
+      <input name="in2" type="color3" nodename="n" />
+    </multiply>
+    <multiply name="k_sq" type="color3">
+      <input name="in1" type="color3" nodename="k" />
+      <input name="in2" type="color3" nodename="k" />
+    </multiply>
+    <subtract name="n_sq_minus_k_sq" type="color3">
+      <input name="in1" type="color3" nodename="n_sq" />
+      <input name="in2" type="color3" nodename="k_sq" />
+    </subtract>
+    <subtract name="t" type="color3">
+      <input name="in1" type="color3" nodename="n_sq_minus_k_sq" />
+      <input name="in2" type="float" value="0.9795918367" />
+    </subtract>
+    <multiply name="t_sq" type="color3">
+      <input name="in1" type="color3" nodename="t" />
+      <input name="in2" type="color3" nodename="t" />
+    </multiply>
+    <multiply name="n_sq_k_sq" type="color3">
+      <input name="in1" type="color3" nodename="n_sq" />
+      <input name="in2" type="color3" nodename="k_sq" />
+    </multiply>
+    <multiply name="four_n_sq_k_sq" type="color3">
+      <input name="in1" type="color3" nodename="n_sq_k_sq" />
+      <input name="in2" type="float" value="4.0" />
+    </multiply>
+    <add name="w_sq" type="color3">
+      <input name="in1" type="color3" nodename="t_sq" />
+      <input name="in2" type="color3" nodename="four_n_sq_k_sq" />
+    </add>
+    <power name="w" type="color3">
+      <input name="in1" type="color3" nodename="w_sq" />
+      <input name="in2" type="float" value="0.5" />
+    </power>
+    <add name="w_plus_t" type="color3">
+      <input name="in1" type="color3" nodename="w" />
+      <input name="in2" type="color3" nodename="t" />
+    </add>
+    <multiply name="half_w_plus_t" type="color3">
+      <input name="in1" type="color3" nodename="w_plus_t" />
+      <input name="in2" type="float" value="0.5" />
+    </multiply>
+    <max name="half_w_plus_t_pos" type="color3">
+      <input name="in1" type="color3" nodename="half_w_plus_t" />
+      <input name="in2" type="float" value="0.0" />
+    </max>
+    <power name="a" type="color3">
+      <input name="in1" type="color3" nodename="half_w_plus_t_pos" />
+      <input name="in2" type="float" value="0.5" />
+    </power>
+    <multiply name="two_a_c" type="color3">
+      <input name="in1" type="color3" nodename="a" />
+      <input name="in2" type="float" value="0.2857142857" />
+    </multiply>
+    <add name="w_plus_c_sq" type="color3">
+      <input name="in1" type="color3" nodename="w" />
+      <input name="in2" type="float" value="0.02040816327" />
+    </add>
+    <subtract name="rs_num" type="color3">
+      <input name="in1" type="color3" nodename="w_plus_c_sq" />
+      <input name="in2" type="color3" nodename="two_a_c" />
+    </subtract>
+    <add name="rs_den" type="color3">
+      <input name="in1" type="color3" nodename="w_plus_c_sq" />
+      <input name="in2" type="color3" nodename="two_a_c" />
+    </add>
+    <divide name="rs" type="color3">
+      <input name="in1" type="color3" nodename="rs_num" />
+      <input name="in2" type="color3" nodename="rs_den" />
+    </divide>
+    <multiply name="w_c_sq" type="color3">
+      <input name="in1" type="color3" nodename="w" />
+      <input name="in2" type="float" value="0.02040816327" />
+    </multiply>
+    <add name="rp_base" type="color3">
+      <input name="in1" type="color3" nodename="w_c_sq" />
+      <input name="in2" type="float" value="0.9596001666" />
+    </add>
+    <multiply name="two_a_c_s_sq" type="color3">
+      <input name="in1" type="color3" nodename="two_a_c" />
+      <input name="in2" type="float" value="0.9795918367" />
+    </multiply>
+    <subtract name="rp_num" type="color3">
+      <input name="in1" type="color3" nodename="rp_base" />
+      <input name="in2" type="color3" nodename="two_a_c_s_sq" />
+    </subtract>
+    <add name="rp_den" type="color3">
+      <input name="in1" type="color3" nodename="rp_base" />
+      <input name="in2" type="color3" nodename="two_a_c_s_sq" />
+    </add>
+    <divide name="rp_ratio" type="color3">
+      <input name="in1" type="color3" nodename="rp_num" />
+      <input name="in2" type="color3" nodename="rp_den" />
+    </divide>
+    <multiply name="rp" type="color3">
+      <input name="in1" type="color3" nodename="rs" />
+      <input name="in2" type="color3" nodename="rp_ratio" />
+    </multiply>
+    <add name="rs_plus_rp" type="color3">
+      <input name="in1" type="color3" nodename="rs" />
+      <input name="in2" type="color3" nodename="rp" />
+    </add>
+    <multiply name="reflectance" type="color3">
+      <input name="in1" type="color3" nodename="rs_plus_rp" />
+      <input name="in2" type="float" value="0.5" />
+    </multiply>
+    <output name="out" type="color3" nodename="reflectance" />
   </nodegraph>
 
 </materialx>
