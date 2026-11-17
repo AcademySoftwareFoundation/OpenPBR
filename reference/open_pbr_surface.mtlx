@@ -280,31 +280,100 @@
       <input name="high" type="float" value="1.0" />
     </clamp>
 
-    <!-- Roughening due to coat-->
-    <power name="coat_roughness_to_power_4" type="float">
+    <!-- Roughening due to coat (physics-based formula, see spec Roughening section) -->
+    <!-- Convert roughness to GGX alpha: alpha = roughness^2 -->
+    <multiply name="coat_alpha" type="float">
       <input name="in1" type="float" nodename="coat_roughness_clamped" />
-      <input name="in2" type="float" value="4.0" />
-    </power>
-    <multiply name="two_times_coat_roughness_to_power_4" type="float">
-      <input name="in1" type="float" nodename="coat_roughness_to_power_4" />
+      <input name="in2" type="float" nodename="coat_roughness_clamped" />
+    </multiply>
+    <multiply name="specular_alpha" type="float">
+      <input name="in1" type="float" nodename="specular_roughness_clamped" />
+      <input name="in2" type="float" nodename="specular_roughness_clamped" />
+    </multiply>
+    <!-- B(eta) = 1.05 * (eta-1) * sqrt(1 + eta^2) / eta -->
+    <subtract name="roughening_eta_minus_1" type="float">
+      <input name="in1" type="float" nodename="coat_ior_nonnegative" />
+      <input name="in2" type="float" value="1.0" />
+    </subtract>
+    <multiply name="roughening_eta_sqr" type="float">
+      <input name="in1" type="float" nodename="coat_ior_nonnegative" />
+      <input name="in2" type="float" nodename="coat_ior_nonnegative" />
+    </multiply>
+    <add name="roughening_one_plus_eta_sqr" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="roughening_eta_sqr" />
+    </add>
+    <sqrt name="roughening_sqrt_one_plus_eta_sqr" type="float">
+      <input name="in" type="float" nodename="roughening_one_plus_eta_sqr" />
+    </sqrt>
+    <multiply name="roughening_eta_minus_1_times_sqrt" type="float">
+      <input name="in1" type="float" nodename="roughening_eta_minus_1" />
+      <input name="in2" type="float" nodename="roughening_sqrt_one_plus_eta_sqr" />
+    </multiply>
+    <divide name="roughening_B_eta_unscaled" type="float">
+      <input name="in1" type="float" nodename="roughening_eta_minus_1_times_sqrt" />
+      <input name="in2" type="float" nodename="coat_ior_nonnegative" />
+    </divide>
+    <multiply name="roughening_B_eta" type="float">
+      <input name="in1" type="float" nodename="roughening_B_eta_unscaled" />
+      <input name="in2" type="float" value="1.05" />
+    </multiply>
+    <!-- alpha_raw^2 = (eta * alpha_b)^2 + (B * alpha_c)^2 -->
+    <multiply name="roughening_eta_alpha_b" type="float">
+      <input name="in1" type="float" nodename="coat_ior_nonnegative" />
+      <input name="in2" type="float" nodename="specular_alpha" />
+    </multiply>
+    <multiply name="roughening_eta_alpha_b_sqr" type="float">
+      <input name="in1" type="float" nodename="roughening_eta_alpha_b" />
+      <input name="in2" type="float" nodename="roughening_eta_alpha_b" />
+    </multiply>
+    <multiply name="roughening_B_alpha_c" type="float">
+      <input name="in1" type="float" nodename="roughening_B_eta" />
+      <input name="in2" type="float" nodename="coat_alpha" />
+    </multiply>
+    <multiply name="roughening_B_alpha_c_sqr" type="float">
+      <input name="in1" type="float" nodename="roughening_B_alpha_c" />
+      <input name="in2" type="float" nodename="roughening_B_alpha_c" />
+    </multiply>
+    <add name="roughening_alpha_raw_sqr" type="float">
+      <input name="in1" type="float" nodename="roughening_eta_alpha_b_sqr" />
+      <input name="in2" type="float" nodename="roughening_B_alpha_c_sqr" />
+    </add>
+    <sqrt name="roughening_alpha_raw" type="float">
+      <input name="in" type="float" nodename="roughening_alpha_raw_sqr" />
+    </sqrt>
+    <!-- alpha_eff = 0.85 * tanh(alpha_raw / 0.85), via tanh(x) = (exp(2x)-1)/(exp(2x)+1) -->
+    <divide name="roughening_x" type="float">
+      <input name="in1" type="float" nodename="roughening_alpha_raw" />
+      <input name="in2" type="float" value="0.85" />
+    </divide>
+    <multiply name="roughening_two_x" type="float">
+      <input name="in1" type="float" nodename="roughening_x" />
       <input name="in2" type="float" value="2.0" />
     </multiply>
-    <power name="specular_roughness_to_power_4" type="float">
-      <input name="in1" type="float" nodename="specular_roughness_clamped" />
-      <input name="in2" type="float" value="4.0" />
-    </power>
-    <add name="add_coat_and_spec_roughnesses_to_power_4" type="float">
-      <input name="in1" type="float" nodename="two_times_coat_roughness_to_power_4" />
-      <input name="in2" type="float" nodename="specular_roughness_to_power_4" />
+    <exp name="roughening_e2x" type="float">
+      <input name="in" type="float" nodename="roughening_two_x" />
+    </exp>
+    <subtract name="roughening_e2x_minus_1" type="float">
+      <input name="in1" type="float" nodename="roughening_e2x" />
+      <input name="in2" type="float" value="1.0" />
+    </subtract>
+    <add name="roughening_e2x_plus_1" type="float">
+      <input name="in1" type="float" nodename="roughening_e2x" />
+      <input name="in2" type="float" value="1.0" />
     </add>
-    <min name="min_1_add_coat_and_spec_roughnesses_to_power_4" type="float">
-      <input name="in1" type="float" value="1.0" />
-      <input name="in2" type="float" nodename="add_coat_and_spec_roughnesses_to_power_4" />
-    </min>
-    <power name="coat_affected_specular_roughness" type="float">
-      <input name="in1" type="float" nodename="min_1_add_coat_and_spec_roughnesses_to_power_4" />
-      <input name="in2" type="float" value="0.25" />
-    </power>
+    <divide name="roughening_tanh" type="float">
+      <input name="in1" type="float" nodename="roughening_e2x_minus_1" />
+      <input name="in2" type="float" nodename="roughening_e2x_plus_1" />
+    </divide>
+    <multiply name="roughening_alpha_eff" type="float">
+      <input name="in1" type="float" value="0.85" />
+      <input name="in2" type="float" nodename="roughening_tanh" />
+    </multiply>
+    <!-- r_eff = sqrt(alpha_eff) -->
+    <sqrt name="coat_affected_specular_roughness" type="float">
+      <input name="in" type="float" nodename="roughening_alpha_eff" />
+    </sqrt>
     <mix name="effective_specular_roughness" type="float">
       <input name="fg" type="float" nodename="coat_affected_specular_roughness" />
       <input name="bg" type="float" nodename="specular_roughness_clamped" />
