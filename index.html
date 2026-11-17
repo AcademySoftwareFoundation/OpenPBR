@@ -621,19 +621,19 @@ Now the modification of the Fresnel factors due to **`specular_weight`** of this
 \end{equation}
 For convenience, we also allow $\xi_s = \mathtt{specular\_weight}$ to exceed 1 so that the reflectivity is increased above the level set by **`specular_ior`**. The clamp inside the square root ensures that the scaled reflection coefficient cannot exceed $1$.
 
-There are two cases to consider:
+There are two cases to consider, according to whether TIR is possible. This depends only on the unmodified $\eta_\mathrm{ti}$, since the modulated $\eta^\prime_\mathrm{ti}$ is on the same side of 1, or equal to 1 when $\xi_s = 0$:
 
-  - If there is no TIR possible (i.e. $\eta_\mathrm{ti}, \eta^\prime_\mathrm{ti} \ge 1$), then the modulated $\eta^\prime_\mathrm{ti}$ is used in
+  - If there is no TIR possible (i.e. $\eta_\mathrm{ti} \ge 1$), then the modulated $\eta^\prime_\mathrm{ti}$ is used in
     the angle-dependent dielectric Fresnel formula $F(\mu_i, \eta^\prime_\mathrm{ti})$, which produces the desired reflectivity modulation at any incident angle cosine $\mu_i$.
 
-  - However, if TIR *is* possible (i.e. $\eta_\mathrm{ti}, \eta^\prime_\mathrm{ti} \lt 1$), then a different procedure is used.
+  - However, if TIR *is* possible (i.e. $\eta_\mathrm{ti} \lt 1$), then a different procedure is used.
     If the incident ray direction generates TIR then the reflection is unmodified with Fresnel factor 1 (and no transmission occurs).
     However if the incident ray does *not* undergo TIR, then we apply the physical
     [Stokes relations](https://en.wikipedia.org/wiki/Stokes_relations) (valid for a smooth dielectric interface)
       \begin{equation} \label{stokes_reciprocity}
       F(\mu_i, \eta_\mathrm{ti}) = F(\mu_t, 1/\eta_\mathrm{ti})
       \end{equation}
-    which means the ray that enters along the refraction direction *reversed*, reflects the same amount as the original reflection. We maintain this relation after the IOR modulation (ensuring reciprocity), setting the reflection Fresnel factor to $F(\mu_t, 1/\eta^\prime_\mathrm{ti})$ (since $\eta^\prime_\mathrm{ti} \lt 1$, this maps to a Fresnel curve without TIR). Thus the modulated reflection curve for entering and exiting rays has the same shape, except with the curve for rays incident from the higher IOR hemisphere squeezed into a cone (with TIR occuring outside this cone).
+    which means the ray that enters along the refraction direction *reversed*, reflects the same amount as the original reflection. We maintain this relation after the IOR modulation (ensuring reciprocity), setting the reflection Fresnel factor to $F(\mu_t, 1/\eta^\prime_\mathrm{ti})$ (since $\eta^\prime_\mathrm{ti} \le 1$, this maps to a Fresnel curve without TIR). Thus the modulated reflection curve for entering and exiting rays has the same shape, except with the curve for rays incident from the higher IOR hemisphere squeezed into a cone (with TIR occuring outside this cone).
 
 In both cases the associated transmission Fresnel factor for the refracted ray is given by one minus the reflection Fresnel factor, however as noted the refracted ray direction is computed using the *unmodified* IOR ratio $\eta_\mathrm{ti}$.
 
